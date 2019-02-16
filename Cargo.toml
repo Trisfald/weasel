@@ -1,0 +1,8 @@
+[package]
+name = "weasel-ttbs"
+version = "0.1.0"
+authors = ["trisfald"]
+edition = "2018"
+
+[dependencies]
+num-traits = "0.2"
