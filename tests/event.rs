@@ -4,18 +4,28 @@ use std::any::Any;
 use std::marker::PhantomData;
 use weasel::ability::ActivateAbility;
 use weasel::actor::{Action, Actor, ActorRules, AlterAbilities};
+use weasel::battle::EndBattle;
 use weasel::battle::{Battle, BattleRules, BattleState};
 #[cfg(feature = "serialization")]
 use weasel::battle_rules_with_user;
+use weasel::character::AlterStatistics;
+use weasel::creature::{ConvertCreature, CreateCreature, RemoveCreature};
 use weasel::entity::EntityId;
 use weasel::entropy::Entropy;
+use weasel::entropy::ResetEntropy;
 use weasel::event::{
     Conditional, DummyEvent, Event, EventKind, EventProcessor, EventQueue, EventTrigger,
 };
+use weasel::fight::ApplyImpact;
 use weasel::metric::WriteMetrics;
+use weasel::round::{EndRound, ResetRounds, StartRound};
 use weasel::rules::ability::SimpleAbility;
 #[cfg(feature = "serialization")]
 use weasel::serde::FlatEvent;
+use weasel::space::{MoveEntity, ResetSpace};
+use weasel::team::{
+    ConcludeObjectives, Conclusion, CreateTeam, Relation, ResetObjectives, SetRelations,
+};
 #[cfg(feature = "serialization")]
 use weasel::user::{UserEventPacker, UserRules};
 use weasel::{battle_rules, battle_rules_with_actor, rules::empty::*};
@@ -301,44 +311,56 @@ fn user_event_serde() {
     user_event_check!(server, data);
 }
 
+/// Returns a vector containig an instance of all possible events.
+macro_rules! events_vec {
+    () => {{
+        battle_rules! {}
+        static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
+        static ABILITY_1_ID: u32 = 1;
+        // Collect all events into a vector.
+        let mut events: Vec<Box<dyn Event<CustomRules>>> = Vec::new();
+        events.push(DummyEvent::trigger(&mut ()).event());
+        events.push(StartRound::trigger(&mut (), ENTITY_1_ID.clone()).event());
+        events.push(EndRound::trigger(&mut ()).event());
+        events.push(CreateTeam::trigger(&mut (), TEAM_1_ID).event());
+        events.push(CreateCreature::trigger(&mut (), TEAM_1_ID, CREATURE_1_ID, ()).event());
+        events.push(ActivateAbility::trigger(&mut (), ENTITY_1_ID.clone(), ABILITY_1_ID).event());
+        events.push(ResetEntropy::trigger(&mut ()).event());
+        events.push(MoveEntity::trigger(&mut (), ENTITY_1_ID.clone(), ()).event());
+        events.push(ApplyImpact::trigger(&mut (), ()).event());
+        events.push(AlterStatistics::trigger(&mut (), ENTITY_1_ID.clone(), ()).event());
+        events.push(AlterAbilities::trigger(&mut (), ENTITY_1_ID.clone(), ()).event());
+        events.push(
+            SetRelations::trigger(&mut (), &[(TEAM_1_ID, TEAM_1_ID, Relation::Ally)]).event(),
+        );
+        events.push(ConvertCreature::trigger(&mut (), CREATURE_1_ID, TEAM_1_ID).event());
+        events.push(EndBattle::trigger(&mut ()).event());
+        events.push(ConcludeObjectives::trigger(&mut (), TEAM_1_ID, Conclusion::Victory).event());
+        events.push(ResetObjectives::trigger(&mut (), TEAM_1_ID).event());
+        events.push(ResetRounds::trigger(&mut ()).event());
+        events.push(ResetSpace::trigger(&mut ()).event());
+        events.push(RemoveCreature::trigger(&mut (), CREATURE_1_ID).event());
+        events
+    }};
+}
+
+#[test]
+fn events_debug() {
+    let events = events_vec!();
+    for event in events {
+        assert!(
+            format!("{:?}", event).contains(&format!("{:?}", event.kind())),
+            "{:?} does not contain {:?}",
+            event,
+            event.kind()
+        );
+    }
+}
+
 #[cfg(feature = "serialization")]
 #[test]
 fn events_serde() {
-    use weasel::battle::EndBattle;
-    use weasel::character::AlterStatistics;
-    use weasel::creature::{ConvertCreature, CreateCreature, RemoveCreature};
-    use weasel::entropy::ResetEntropy;
-    use weasel::fight::ApplyImpact;
-    use weasel::round::{EndRound, ResetRounds, StartRound};
-    use weasel::space::{MoveEntity, ResetSpace};
-    use weasel::team::{
-        ConcludeObjectives, Conclusion, CreateTeam, Relation, ResetObjectives, SetRelations,
-    };
-
-    battle_rules! {}
-    static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
-    static ABILITY_1_ID: u32 = 1;
-    // Collect all events into a vector.
-    let mut events: Vec<Box<dyn Event<CustomRules>>> = Vec::new();
-    events.push(DummyEvent::trigger(&mut ()).event());
-    events.push(StartRound::trigger(&mut (), ENTITY_1_ID.clone()).event());
-    events.push(EndRound::trigger(&mut ()).event());
-    events.push(CreateTeam::trigger(&mut (), TEAM_1_ID).event());
-    events.push(CreateCreature::trigger(&mut (), TEAM_1_ID, CREATURE_1_ID, ()).event());
-    events.push(ActivateAbility::trigger(&mut (), ENTITY_1_ID.clone(), ABILITY_1_ID).event());
-    events.push(ResetEntropy::trigger(&mut ()).event());
-    events.push(MoveEntity::trigger(&mut (), ENTITY_1_ID.clone(), ()).event());
-    events.push(ApplyImpact::trigger(&mut (), ()).event());
-    events.push(AlterStatistics::trigger(&mut (), ENTITY_1_ID.clone(), ()).event());
-    events.push(AlterAbilities::trigger(&mut (), ENTITY_1_ID.clone(), ()).event());
-    events.push(SetRelations::trigger(&mut (), &[(TEAM_1_ID, TEAM_1_ID, Relation::Ally)]).event());
-    events.push(ConvertCreature::trigger(&mut (), CREATURE_1_ID, TEAM_1_ID).event());
-    events.push(EndBattle::trigger(&mut ()).event());
-    events.push(ConcludeObjectives::trigger(&mut (), TEAM_1_ID, Conclusion::Victory).event());
-    events.push(ResetObjectives::trigger(&mut (), TEAM_1_ID).event());
-    events.push(ResetRounds::trigger(&mut ()).event());
-    events.push(ResetSpace::trigger(&mut ()).event());
-    events.push(RemoveCreature::trigger(&mut (), CREATURE_1_ID).event());
+    let events = events_vec!();
     // Serialize all events.
     let flat_events: Vec<_> = events
         .iter()
@@ -347,8 +369,7 @@ fn events_serde() {
         .collect();
     let json = serde_json::to_string(&flat_events).unwrap();
     // Deserialize all events.
-    let deserialized_flat_events: Vec<FlatEvent<CustomRules>> =
-        serde_json::from_str(&json).unwrap();
+    let deserialized_flat_events: Vec<FlatEvent<_>> = serde_json::from_str(&json).unwrap();
     let deserialized_events: Vec<_> = deserialized_flat_events
         .into_iter()
         .map(|e| e.boxed())

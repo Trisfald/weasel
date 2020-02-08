@@ -16,7 +16,7 @@ use std::ops::{Deref, Range};
 pub type EventId = u32;
 
 /// Enum to represent all different kinds of events.
-// Internal note: remember to update the event serialization tests in tests/event.rs
+// Internal note: remember to update the event debug and serialization tests in tests/event.rs
 // each time a new event is added to weasel.
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum EventKind {
