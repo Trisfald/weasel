@@ -360,3 +360,65 @@ where
         self.err()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::battle::BattleRules;
+    use crate::event::{DummyEvent, EventTrigger};
+    use crate::{battle_rules, rules::empty::*};
+
+    #[test]
+    fn unfold() {
+        battle_rules! {}
+        let mut processor = ();
+        let trigger = DummyEvent::trigger(&mut processor);
+        // Test a direct unfolding.
+        let error: WeaselErrorType<CustomRules> =
+            WeaselError::InvalidEvent(trigger.event(), Box::new(WeaselError::EmptyEventProcessor));
+        assert_eq!(error.clone().unfold(), WeaselError::EmptyEventProcessor);
+        // Test unfolding of multierrors.
+        let error: WeaselErrorType<CustomRules> = WeaselError::MultiError(vec![error]);
+        assert_eq!(
+            error.unfold(),
+            WeaselError::MultiError(vec![WeaselError::EmptyEventProcessor])
+        );
+    }
+
+    #[test]
+    fn filter() {
+        battle_rules! {}
+        let mut processor = ();
+        let trigger = DummyEvent::trigger(&mut processor);
+        // Test a direct filtering.
+        let error: WeaselErrorType<CustomRules> =
+            WeaselError::InvalidEvent(trigger.event(), Box::new(WeaselError::EmptyEventProcessor));
+        assert_eq!(
+            error
+                .clone()
+                .filter(|err| {
+                    if let WeaselError::EmptyEventProcessor = err {
+                        false
+                    } else {
+                        true
+                    }
+                })
+                .err(),
+            None
+        );
+        // Test filtering of multierrors.
+        let error: WeaselErrorType<CustomRules> = WeaselError::MultiError(vec![error]);
+        assert_eq!(
+            error
+                .filter(|err| {
+                    if let WeaselError::EmptyEventProcessor = err {
+                        false
+                    } else {
+                        true
+                    }
+                })
+                .err(),
+            None
+        );
+    }
+}

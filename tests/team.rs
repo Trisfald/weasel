@@ -199,7 +199,7 @@ fn diplomacy() {
             .err()
             .map(|e| e.unfold()),
         Some(WeaselError::TeamNotFound(TEAM_ERR_ID))
-    );    
+    );
     assert_eq!(
         SetRelations::trigger(
             &mut server,
