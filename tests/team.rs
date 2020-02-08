@@ -130,7 +130,7 @@ fn diplomacy() {
             .err(),
         None
     );
-    // Checks.
+    // Check that diplomacy is created correctly.
     let entities = server.battle().entities();
     assert_eq!(entities.relation(&TEAM_1_ID, &TEAM_ERR_ID), None);
     assert_eq!(
@@ -185,6 +185,7 @@ fn diplomacy() {
     vec.sort_unstable();
     assert_eq!(vec, vec![TEAM_1_ID, TEAM_2_ID]);
     // Set team three ally with team two and team one enemy with team two.
+    // Check that pre-conditions are checked.
     assert_eq!(
         SetRelations::trigger(&mut server, &[(TEAM_1_ID, TEAM_ERR_ID, Relation::Ally)])
             .fire()
@@ -192,6 +193,13 @@ fn diplomacy() {
             .map(|e| e.unfold()),
         Some(WeaselError::TeamNotFound(TEAM_ERR_ID))
     );
+    assert_eq!(
+        SetRelations::trigger(&mut server, &[(TEAM_ERR_ID, TEAM_1_ID, Relation::Ally)])
+            .fire()
+            .err()
+            .map(|e| e.unfold()),
+        Some(WeaselError::TeamNotFound(TEAM_ERR_ID))
+    );    
     assert_eq!(
         SetRelations::trigger(
             &mut server,
@@ -218,6 +226,7 @@ fn diplomacy() {
         .map(|e| e.unfold()),
         Some(WeaselError::SelfRelation)
     );
+    // Fire a correct event to change diplomacy.
     assert_eq!(
         SetRelations::trigger(
             &mut server,
@@ -230,7 +239,7 @@ fn diplomacy() {
         .err(),
         None
     );
-    // Checks.
+    // Check that diplomacy is updated correctly.
     let entities = server.battle().entities();
     assert_eq!(
         entities.relation(&TEAM_1_ID, &TEAM_1_ID),
