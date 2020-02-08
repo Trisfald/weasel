@@ -1,17 +1,57 @@
-# Weasel Template Turn Battle System
-[![Build Status](https://travis-ci.org/Trisfald/weasel-ttbs.svg?branch=master)](https://travis-ci.org/Trisfald/weasel-ttbs)
-[![Code Coverage](https://codecov.io/gh/Trisfald/weasel-ttbs/branch/master/graph/badge.svg)](https://codecov.io/gh/Trisfald/weasel-ttbs)
+# Weasel Turn Battle System
+[![Build Status](https://travis-ci.org/Trisfald/weasel.svg?branch=master)](https://travis-ci.org/Trisfald/weasel)
+[![Code Coverage](https://codecov.io/gh/Trisfald/weasel/branch/master/graph/badge.svg)](https://codecov.io/gh/Trisfald/weasel)
+[![crates.io](https://meritbadge.herokuapp.com/weasel)](https://crates.io/crates/weasel)
+[![Released API docs](https://docs.rs/weasel/badge.svg)](https://docs.rs/weasel)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-At its core, weasel is a customizable battle system for turn-based games.
+weasel is a customizable battle system for turn-based games.
 
-#### The key objectives of this project are:
+* Simple way to define the combat's rules, taking advantage of Rust's strong type system.
+* Battle events are collected into a timeline to support save and restore, replays, and more.
+* Client/server architecture; all battle events are verified by the server.
+* Minimal performance overhead.
 
-* Extremely customizable battle system
-* Defining the combat's rules should be easy 
-* Supporting undo/redo of battle events 
-* Simple yet powerful interface to integrate with the rest of the game (graphics, AI, etc)
+## Examples
 
-### Contributing
+```
+use weasel::{Server, battle_rules, rules::empty::*};
+use weasel::battle::{Battle, BattleRules};
+use weasel::team::CreateTeam;
+use weasel::event::EventTrigger;
+
+battle_rules! {}
+
+let battle = Battle::builder(CustomRules::new()).build(); 
+let mut server = Server::builder(battle).build();
+
+CreateTeam::trigger(&mut server, 1).fire().unwrap();
+assert_eq!(server.battle().entities().teams().count(), 1);
+```
+
+You can find real examples of battle systems made with weasel in [examples](examples/).
+
+## How does it work?
+
+To use this library, you would create instances of its main objects: `server` and `client`.
+You will notice that both of them are parameterized with a `BattleRules` generic type.\
+A `server` is mandatory to manage a game. A server can be also a client.
+For example, a typical single player game needs only one server.\
+A `client` is a participant to a game. It sends commands to a server on behalf of a player.
+A multiplayer game would have one server and multiple clients.
+
+Once you have instantiated a `server` and possibly one or more `clients`,
+you are ready to begin a new game.\
+Games are carried forward by creating `events`.
+There are many kind of events, see the documentation to know more.
+
+Through a `server` or a `client` you'll be able to access the full state of the battle,
+including the full timeline of events.
+
+## Contributing
 
 Thanks for your interest in contributing! There are many ways to contribute to this project. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+weasel is provided under the MIT license. See [LICENSE](LICENSE).
