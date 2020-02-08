@@ -59,6 +59,25 @@ impl ActorRules<CustomRules> for CustomActorRules {
 battle_rules_with_actor! { CustomActorRules }
 
 #[test]
+fn abilities_generated() {
+    // Create a server with a creature.
+    let mut server = util::server(CustomRules::new());
+    util::team(&mut server, TEAM_1_ID);
+    util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, ());
+    // Verify that abilities were generated.
+    assert_eq!(
+        server
+            .battle()
+            .entities()
+            .actor(&ENTITY_1_ID)
+            .unwrap()
+            .abilities()
+            .count(),
+        1
+    );
+}
+
+#[test]
 fn ability_activation() {
     // Create a server with a creature.
     let mut server = util::server(CustomRules::new());
