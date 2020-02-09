@@ -164,10 +164,7 @@ impl ActorRules<PiratesRules> for PiratesActorRules {
         let target = action.activation.as_ref().unwrap();
         // We now compute the outcome of firing the cannons: an impact.
         // First retrieve the crew of this ship.
-        let crew = action.actor
-            .statistic(&STAT_CREW)
-            .unwrap()
-            .value();
+        let crew = action.actor.statistic(&STAT_CREW).unwrap().value();
         // Damage is 10 + a random value between crew/20 and crew/5.
         let damage = 10 + entropy.generate(crew / 20, crew / 5);
         // Damage hull if the ability is cannonball, otherwise the crew.
