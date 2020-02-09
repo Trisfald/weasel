@@ -29,7 +29,7 @@ impl<R: BattleRules> Rights<R> {
     }
 
     /// Add rights for `team` to `player`.
-    pub fn add(&mut self, player: PlayerId, team: &TeamId<R>) {
+    fn add(&mut self, player: PlayerId, team: &TeamId<R>) {
         if let Some((_, rights)) = self.data.iter_mut().find(|(e, _)| *e == player) {
             if rights.iter_mut().find(|e| *e == team).is_none() {
                 rights.push(team.clone());
@@ -40,7 +40,7 @@ impl<R: BattleRules> Rights<R> {
     }
 
     /// Remove rights for `team` to `player`.
-    pub fn remove(&mut self, player: PlayerId, team: &TeamId<R>) {
+    fn remove(&mut self, player: PlayerId, team: &TeamId<R>) {
         if let Some((_, rights)) = self.data.iter_mut().find(|(e, _)| *e == player) {
             let index = rights.iter().position(|e| e == team);
             if let Some(index) = index {
@@ -51,17 +51,17 @@ impl<R: BattleRules> Rights<R> {
     }
 
     /// Removes all stored rights.
-    pub fn clear(&mut self) {
+    fn clear(&mut self) {
         self.data.clear();
     }
 
     /// Returns an iterator over all players' rights.
-    pub fn get(&self) -> impl Iterator<Item = (PlayerId, &[TeamId<R>])> {
+    fn get(&self) -> impl Iterator<Item = (PlayerId, &[TeamId<R>])> {
         self.data.iter().map(|(player, vec)| (*player, &vec[..]))
     }
 
     /// Returns `true` if `player` has rights for `team`.
-    pub fn check(&self, player: PlayerId, team: &TeamId<R>) -> bool {
+    fn check(&self, player: PlayerId, team: &TeamId<R>) -> bool {
         if let Some((_, rights)) = self.data.iter().find(|(e, _)| *e == player) {
             return rights.iter().any(|e| e == team);
         }
@@ -69,7 +69,7 @@ impl<R: BattleRules> Rights<R> {
     }
 
     /// Remove all occurrences of a team from all players' rights.
-    pub fn remove_team(&mut self, team: &TeamId<R>) {
+    fn remove_team(&mut self, team: &TeamId<R>) {
         for (_, rights) in &mut self.data {
             let index = rights.iter().position(|e| e == team);
             if let Some(index) = index {
@@ -80,7 +80,7 @@ impl<R: BattleRules> Rights<R> {
     }
 
     /// Remove all rights of a player.
-    pub fn remove_player(&mut self, player: PlayerId) {
+    fn remove_player(&mut self, player: PlayerId) {
         let index = self.data.iter().position(|(e, _)| *e == player);
         if let Some(index) = index {
             self.data.remove(index);

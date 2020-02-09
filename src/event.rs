@@ -56,8 +56,10 @@ pub enum EventKind {
     ResetRounds,
     /// Reset the space model.
     ResetSpace,
-    /// Removes a creature from the battle.
+    /// Remove a creature from the battle.
     RemoveCreature,
+    /// Remove a team from the battle.
+    RemoveTeam,
     /// A user defined event with an unique id.
     UserEvent(UserEventId),
 }
@@ -681,7 +683,7 @@ impl<R: BattleRules> MultiClientSink<R> {
 
     /// Adds a new sink.
     /// Returns an error if another sink with the same id already exists.
-    pub(crate) fn add(&mut self, sink: Box<dyn ClientSink<R>>) -> WeaselResult<(), R> {
+    fn add(&mut self, sink: Box<dyn ClientSink<R>>) -> WeaselResult<(), R> {
         if self.sinks.iter().any(|e| e.id() == sink.id()) {
             Err(WeaselError::DuplicatedEventSink(sink.id()))
         } else {
@@ -692,7 +694,7 @@ impl<R: BattleRules> MultiClientSink<R> {
 
     /// Sends all `events` to an existing sink.
     /// Returns an error if sending the events failed or the sink doesn't exist.
-    pub(crate) fn send<I>(&mut self, id: EventSinkId, events: I) -> WeaselResult<(), R>
+    fn send<I>(&mut self, id: EventSinkId, events: I) -> WeaselResult<(), R>
     where
         I: Iterator<Item = VersionedEventWrapper<R>>,
     {
@@ -715,7 +717,7 @@ impl<R: BattleRules> MultiClientSink<R> {
     }
 
     /// Removes the sink with the given `id`, if it exists.
-    pub(crate) fn remove(&mut self, id: EventSinkId) {
+    fn remove(&mut self, id: EventSinkId) {
         let index = self.sinks.iter().position(|e| e.id() == id);
         if let Some(index) = index {
             self.sinks.remove(index);
@@ -739,7 +741,7 @@ impl<R: BattleRules> MultiClientSink<R> {
         }
     }
 
-    pub(crate) fn sinks(&self) -> impl Iterator<Item = &Box<dyn ClientSink<R>>> {
+    fn sinks(&self) -> impl Iterator<Item = &Box<dyn ClientSink<R>>> {
         self.sinks.iter()
     }
 }

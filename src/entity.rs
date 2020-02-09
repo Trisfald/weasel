@@ -322,21 +322,18 @@ impl<R: BattleRules> Entities<R> {
     /// Removes a creature from the battle. The creature must exist.
     ///
     /// Returns the removed creature.
-    pub(crate) fn remove_creature(
-        &mut self,
-        creature_id: &CreatureId<R>,
-    ) -> WeaselResult<Creature<R>, R> {
+    pub(crate) fn remove_creature(&mut self, id: &CreatureId<R>) -> WeaselResult<Creature<R>, R> {
         // Extract the creature.
         let creature = self
             .creatures
-            .remove(creature_id)
-            .ok_or_else(|| WeaselError::CreatureNotFound(creature_id.clone()))?;
+            .remove(id)
+            .ok_or_else(|| WeaselError::CreatureNotFound(id.clone()))?;
         // Remove the creature's id from the team list of creatures.
         let team = self
             .teams
             .get_mut(creature.team_id())
             .ok_or_else(|| WeaselError::TeamNotFound(creature.team_id().clone()))?;
-        team.remove_creature(creature_id);
+        team.remove_creature(id);
         Ok(creature)
     }
 
@@ -366,6 +363,26 @@ impl<R: BattleRules> Entities<R> {
         // Change the creature's team.
         creature.set_team_id(team_id.clone());
         Ok(())
+    }
+
+    /// Removes a team from the battle. The team must exist and be empty.
+    ///
+    /// Returns the removed team.
+    pub(crate) fn remove_team(&mut self, id: &TeamId<R>) -> WeaselResult<Team<R>, R> {
+        // Check preconditions.
+        let team = self
+            .teams
+            .get(id)
+            .ok_or_else(|| WeaselError::TeamNotFound(id.clone()))?;
+        if team.creatures().peekable().peek().is_some() {
+            return Err(WeaselError::TeamNotEmpty(id.clone()));
+        }
+        // Extract the team.
+        let team = self
+            .teams
+            .remove(id)
+            .ok_or_else(|| WeaselError::TeamNotFound(id.clone()))?;
+        Ok(team)
     }
 }
 
