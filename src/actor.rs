@@ -82,8 +82,8 @@ pub trait ActorRules<R: BattleRules> {
         Box::new(std::iter::empty())
     }
 
-    /// Returns true if `creature` can activate `ability` with the given activation profile.
-    /// `ability` is guaranteed to be known by the actor.
+    /// Returns true if the actor can activate this ability with the given activation profile.
+    /// The ability is guaranteed to be known by the actor.
     ///
     /// The provided implementation accepts any activation.
     fn activable(&self, _action: Action<R>) -> bool {
