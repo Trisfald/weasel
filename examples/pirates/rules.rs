@@ -154,7 +154,7 @@ impl ActorRules<PiratesRules> for PiratesActorRules {
     // Method called when an ability is activated.
     fn activate(
         &self,
-        state: &BattleState<PiratesRules>,
+        _state: &BattleState<PiratesRules>,
         action: Action<PiratesRules>,
         mut event_queue: &mut Option<EventQueue<PiratesRules>>,
         entropy: &mut Entropy<PiratesRules>,
@@ -164,11 +164,7 @@ impl ActorRules<PiratesRules> for PiratesActorRules {
         let target = action.activation.as_ref().unwrap();
         // We now compute the outcome of firing the cannons: an impact.
         // First retrieve the crew of this ship.
-        let id = action.actor.entity_id();
-        let crew = state
-            .entities()
-            .character(id)
-            .unwrap()
+        let crew = action.actor
             .statistic(&STAT_CREW)
             .unwrap()
             .value();
