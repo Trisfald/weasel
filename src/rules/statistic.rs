@@ -92,3 +92,17 @@ where
         &self.id
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn simple_statistic_bounds() {
+        let mut stat = SimpleStatistic::with_value(1, 10, 20, 15);
+        stat.add(100);
+        assert_eq!(stat.value(), stat.max());
+        stat.add(-100);
+        assert_eq!(stat.value(), stat.min());
+    }
+}
