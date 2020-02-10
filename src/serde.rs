@@ -14,7 +14,7 @@ use crate::fight::ApplyImpact;
 use crate::player::PlayerId;
 use crate::round::{EndRound, ResetRounds, StartRound};
 use crate::space::{MoveEntity, ResetSpace};
-use crate::team::{ConcludeObjectives, CreateTeam, ResetObjectives, SetRelations};
+use crate::team::{ConcludeObjectives, CreateTeam, RemoveTeam, ResetObjectives, SetRelations};
 use crate::user::{UserEventPackage, UserEventPacker};
 use serde::{Deserialize, Serialize};
 
@@ -119,6 +119,7 @@ flat_event! {
     ResetRounds, "ResetRounds<R>: Serialize", "ResetRounds<R>: Deserialize<'de>",
     ResetSpace, "ResetSpace<R>: Serialize", "ResetSpace<R>: Deserialize<'de>",
     RemoveCreature, "RemoveCreature<R>: Serialize", "RemoveCreature<R>: Deserialize<'de>",
+    RemoveTeam, "RemoveTeam<R>: Serialize", "RemoveTeam<R>: Deserialize<'de>",
 }
 
 /// A versioned event wrapper containing a flattened event.

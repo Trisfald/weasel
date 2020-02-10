@@ -46,6 +46,8 @@ pub enum WeaselError<V, TI, EI, CI, PI, AI, MI, E> {
     ConvertedCreatureUnaccepted(TI, CI),
     /// This creature conversion is not valid.
     InvalidCreatureConversion(TI, CI),
+    /// The team is not empty.
+    TeamNotEmpty(TI),
     /// Position is invalid.
     PositionError(Option<PI>, PI),
     /// The entity doesn't exist.
@@ -142,6 +144,7 @@ where
                 "creature {:?} is already part of team {:?}",
                 creature_id, team_id
             ),
+            WeaselError::TeamNotEmpty(id) => write!(f, "team {:?} has at least one creature", id),
             WeaselError::PositionError(source, destination) => write!(
                 f,
                 "can't move entity from position {:?} to position {:?}",

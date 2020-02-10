@@ -4,15 +4,13 @@ use std::any::Any;
 use std::marker::PhantomData;
 use weasel::ability::ActivateAbility;
 use weasel::actor::{Action, Actor, ActorRules, AlterAbilities};
-use weasel::battle::EndBattle;
-use weasel::battle::{Battle, BattleRules, BattleState};
+use weasel::battle::{Battle, BattleRules, BattleState, EndBattle};
 #[cfg(feature = "serialization")]
 use weasel::battle_rules_with_user;
 use weasel::character::AlterStatistics;
 use weasel::creature::{ConvertCreature, CreateCreature, RemoveCreature};
 use weasel::entity::EntityId;
-use weasel::entropy::Entropy;
-use weasel::entropy::ResetEntropy;
+use weasel::entropy::{Entropy, ResetEntropy};
 use weasel::event::{
     Conditional, DummyEvent, Event, EventKind, EventProcessor, EventQueue, EventTrigger,
 };
@@ -24,7 +22,7 @@ use weasel::rules::ability::SimpleAbility;
 use weasel::serde::FlatEvent;
 use weasel::space::{MoveEntity, ResetSpace};
 use weasel::team::{
-    ConcludeObjectives, Conclusion, CreateTeam, Relation, ResetObjectives, SetRelations,
+    ConcludeObjectives, Conclusion, CreateTeam, Relation, RemoveTeam, ResetObjectives, SetRelations,
 };
 #[cfg(feature = "serialization")]
 use weasel::user::{UserEventPacker, UserRules};
@@ -340,6 +338,7 @@ macro_rules! events_vec {
         events.push(ResetRounds::trigger(&mut ()).event());
         events.push(ResetSpace::trigger(&mut ()).event());
         events.push(RemoveCreature::trigger(&mut (), CREATURE_1_ID).event());
+        events.push(RemoveTeam::trigger(&mut (), TEAM_1_ID).event());
         events
     }};
 }

@@ -3,14 +3,15 @@ use weasel::ability::ActivateAbility;
 use weasel::actor::{Action, Actor, ActorRules};
 use weasel::battle::{BattleRules, BattleState};
 use weasel::battle_rules_with_team;
-use weasel::creature::{ConvertCreature, CreateCreature};
+use weasel::creature::{ConvertCreature, CreateCreature, RemoveCreature};
 use weasel::entity::EntityId;
 use weasel::entropy::Entropy;
 use weasel::event::{DummyEvent, EventKind, EventQueue, EventTrigger};
 use weasel::metric::{system::*, ReadMetrics, WriteMetrics};
+use weasel::player::PlayerId;
 use weasel::team::{
-    ConcludeObjectives, Conclusion, CreateTeam, EntityAddition, Relation, ResetObjectives,
-    SetRelations, Team, TeamRules,
+    ConcludeObjectives, Conclusion, CreateTeam, EntityAddition, Relation, RemoveTeam,
+    ResetObjectives, SetRelations, Team, TeamRules,
 };
 use weasel::WeaselError;
 use weasel::{battle_rules, rules::empty::*};
@@ -717,4 +718,57 @@ fn check_objectives() {
             .count(),
         1
     );
+}
+
+#[test]
+fn remove_team() {
+    static PLAYER_1_ID: PlayerId = 1;
+    battle_rules! {}
+    // Create a battle with one team.
+    let mut server = util::server(CustomRules::new());
+    util::team(&mut server, TEAM_1_ID);
+    // Add player rights to this team.
+    assert_eq!(server.rights_mut().add(PLAYER_1_ID, &TEAM_1_ID).err(), None);
+    assert!(server.rights().check(PLAYER_1_ID, &TEAM_1_ID));
+    // Add a creature to the team.
+    util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, ());
+    assert_eq!(
+        server
+            .battle()
+            .entities()
+            .team(&TEAM_1_ID)
+            .unwrap()
+            .creatures()
+            .count(),
+        1
+    );
+    // Removing the team should fail if the id is invalid or the team is not empty.
+    assert_eq!(
+        RemoveTeam::trigger(&mut server, TEAM_ERR_ID)
+            .fire()
+            .err()
+            .map(|e| e.unfold()),
+        Some(WeaselError::TeamNotFound(TEAM_ERR_ID))
+    );
+    assert_eq!(
+        RemoveTeam::trigger(&mut server, TEAM_1_ID)
+            .fire()
+            .err()
+            .map(|e| e.unfold()),
+        Some(WeaselError::TeamNotEmpty(TEAM_1_ID))
+    );
+    // Remove the creature and then the team.
+    assert_eq!(
+        RemoveCreature::trigger(&mut server, CREATURE_1_ID)
+            .fire()
+            .err(),
+        None
+    );
+    assert_eq!(
+        RemoveTeam::trigger(&mut server, TEAM_1_ID).fire().err(),
+        None
+    );
+    // Check that both rights and team disappeared.
+    assert!(!server.rights().check(PLAYER_1_ID, &TEAM_1_ID));
+    assert!(server.battle().entities().team(&TEAM_1_ID).is_none());
 }

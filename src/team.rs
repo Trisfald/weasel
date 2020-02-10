@@ -9,7 +9,7 @@ use crate::metric::ReadMetrics;
 use crate::util::Id;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
-use std::fmt::Debug;
+use std::fmt::{Debug, Formatter, Result};
 use std::hash::{Hash, Hasher};
 use std::{any::Any, iter};
 
@@ -198,8 +198,8 @@ pub struct CreateTeam<R: BattleRules> {
     objectives_seed: Option<ObjectivesSeed<R>>,
 }
 
-impl<R: BattleRules> std::fmt::Debug for CreateTeam<R> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<R: BattleRules> Debug for CreateTeam<R> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(
             f,
             "CreateTeam {{ id: {:?}, relations: {:?}, objectives_seed: {:?} }}",
@@ -406,8 +406,8 @@ pub(crate) struct RelationshipPair<R: BattleRules> {
     pub(crate) second: TeamId<R>,
 }
 
-impl<R: BattleRules> std::fmt::Debug for RelationshipPair<R> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<R: BattleRules> Debug for RelationshipPair<R> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(
             f,
             "RelationshipPair {{ first: {:?}, second: {:?} }}",
@@ -464,8 +464,8 @@ pub struct SetRelations<R: BattleRules> {
     relations: Vec<(TeamId<R>, TeamId<R>, Relation)>,
 }
 
-impl<R: BattleRules> std::fmt::Debug for SetRelations<R> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<R: BattleRules> Debug for SetRelations<R> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "SetRelations {{ relations: {:?} }}", self.relations)
     }
 }
@@ -594,8 +594,8 @@ pub struct ConcludeObjectives<R: BattleRules> {
     conclusion: Conclusion,
 }
 
-impl<R: BattleRules> std::fmt::Debug for ConcludeObjectives<R> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<R: BattleRules> Debug for ConcludeObjectives<R> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(
             f,
             "ConcludeObjectives {{ id: {:?}, conclusion: {:?} }}",
@@ -736,9 +736,13 @@ impl<R: BattleRules> ResetObjectives<R> {
     }
 }
 
-impl<R: BattleRules> std::fmt::Debug for ResetObjectives<R> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "ResetObjectives {{ seed: {:?} }}", self.seed)
+impl<R: BattleRules> Debug for ResetObjectives<R> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(
+            f,
+            "ResetObjectives {{ id: {:?}, seed: {:?} }}",
+            self.id, self.seed
+        )
     }
 }
 
@@ -822,6 +826,114 @@ where
         Box::new(ResetObjectives {
             id: self.id.clone(),
             seed: self.seed.clone(),
+        })
+    }
+}
+
+/// Event to remove a team from a battle.
+/// Teams can be removed only if they are empty.
+#[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
+pub struct RemoveTeam<R: BattleRules> {
+    #[cfg_attr(
+        feature = "serialization",
+        serde(bound(
+            serialize = "TeamId<R>: Serialize",
+            deserialize = "TeamId<R>: Deserialize<'de>"
+        ))
+    )]
+    id: TeamId<R>,
+}
+
+impl<R: BattleRules> RemoveTeam<R> {
+    /// Returns a trigger for this event.
+    pub fn trigger<P: EventProcessor<R>>(
+        processor: &mut P,
+        id: TeamId<R>,
+    ) -> RemoveTeamTrigger<R, P> {
+        RemoveTeamTrigger { processor, id }
+    }
+
+    /// Returns the id of the team to be removed.
+    pub fn id(&self) -> &TeamId<R> {
+        &self.id
+    }
+}
+
+impl<R: BattleRules> Debug for RemoveTeam<R> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "RemoveTeam {{ id: {:?} }}", self.id)
+    }
+}
+
+impl<R: BattleRules> Clone for RemoveTeam<R> {
+    fn clone(&self) -> Self {
+        RemoveTeam {
+            id: self.id.clone(),
+        }
+    }
+}
+
+impl<R: BattleRules + 'static> Event<R> for RemoveTeam<R> {
+    fn verify(&self, battle: &Battle<R>) -> WeaselResult<(), R> {
+        // Team must exist.
+        if let Some(team) = battle.entities().team(&self.id) {
+            // Team must not have any creature.
+            if team.creatures().peekable().peek().is_some() {
+                return Err(WeaselError::TeamNotEmpty(self.id.clone()));
+            }
+            Ok(())
+        } else {
+            Err(WeaselError::TeamNotFound(self.id.clone()))
+        }
+    }
+
+    fn apply(&self, battle: &mut Battle<R>, _: &mut Option<EventQueue<R>>) {
+        // Remove the team.
+        battle
+            .state
+            .entities
+            .remove_team(&self.id)
+            .unwrap_or_else(|err| panic!("constraint violated: {:?}", err));
+        // Remove rights of players towards this team.
+        battle.rights_mut().remove_team(&self.id);
+    }
+
+    fn kind(&self) -> EventKind {
+        EventKind::RemoveTeam
+    }
+
+    fn box_clone(&self) -> Box<dyn Event<R>> {
+        Box::new(self.clone())
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+/// Trigger to build and fire a `RemoveTeam` event.
+pub struct RemoveTeamTrigger<'a, R, P>
+where
+    R: BattleRules,
+    P: EventProcessor<R>,
+{
+    processor: &'a mut P,
+    id: TeamId<R>,
+}
+
+impl<'a, R, P> EventTrigger<'a, R, P> for RemoveTeamTrigger<'a, R, P>
+where
+    R: BattleRules + 'static,
+    P: EventProcessor<R>,
+{
+    fn processor(&'a mut self) -> &'a mut P {
+        self.processor
+    }
+
+    /// Returns a `RemoveTeam` event.
+    fn event(&self) -> Box<dyn Event<R>> {
+        Box::new(RemoveTeam {
+            id: self.id.clone(),
         })
     }
 }
