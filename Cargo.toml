@@ -41,3 +41,7 @@ required-features = ["random"]
 [[example]]
 name = "pirates"
 required-features = ["random", "serialization"]
+
+[[example]]
+name = "autosave"
+required-features = ["serialization"]
