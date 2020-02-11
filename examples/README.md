@@ -8,4 +8,4 @@ A simple game in which the player engages in a naval battle, ideal to get yourse
 
 ## [Autosave](autosave/)
 
-Not a game, but a simple program to demonstrate how to use event sinks to forward events.
+A simple program to demonstrate how to use event sinks to forward events.
