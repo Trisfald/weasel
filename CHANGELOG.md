@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - RemoveTeam event.
 - An example showing how to use event sinks.
+- Example to demonstrate how to crate user defined events and metrics.
 
 ## [0.1.0] - 2020-02-08
 ### Added

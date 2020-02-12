@@ -45,3 +45,8 @@ required-features = ["random", "serialization"]
 [[example]]
 name = "autosave"
 required-features = ["serialization"]
+
+[[example]]
+name = "user-event"
+path = "examples/user_event/main.rs"
+required-features = ["serialization"]

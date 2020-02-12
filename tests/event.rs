@@ -22,9 +22,9 @@ use weasel::space::{MoveEntity, ResetSpace};
 use weasel::team::{
     ConcludeObjectives, Conclusion, CreateTeam, Relation, RemoveTeam, ResetObjectives, SetRelations,
 };
-use weasel::user::{UserRules, UserMetricId};
 #[cfg(feature = "serialization")]
-use weasel::user::{UserEventPacker};
+use weasel::user::UserEventPacker;
+use weasel::user::{UserMetricId, UserRules};
 use weasel::{battle_rules, battle_rules_with_actor, battle_rules_with_user, rules::empty::*};
 use weasel::{WeaselError, WeaselResult};
 
@@ -68,8 +68,10 @@ impl<R> Clone for MyEvent<R> {
     }
 }
 
-impl<R: BattleRules + 'static> Event<R> for MyEvent<R> 
-where UserMetricId<R>: Default {
+impl<R: BattleRules + 'static> Event<R> for MyEvent<R>
+where
+    UserMetricId<R>: Default,
+{
     fn verify(&self, _battle: &Battle<R>) -> WeaselResult<(), R> {
         Ok(())
     }
@@ -269,7 +271,13 @@ fn user_event() {
     // Check that the user event is correct.
     user_event_check!(server, data);
     // Check that the user metric was increased.
-    assert_eq!(server.battle().metrics().user_u64(UserMetricId::<CustomRules>::default()), Some(1));
+    assert_eq!(
+        server
+            .battle()
+            .metrics()
+            .user_u64(UserMetricId::<CustomRules>::default()),
+        Some(1)
+    );
 }
 
 #[cfg(feature = "serialization")]

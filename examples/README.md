@@ -8,4 +8,8 @@ A simple game in which the player engages in a naval battle, ideal to get yourse
 
 ## [Autosave](autosave/)
 
-A simple program to demonstrate how to use event sinks to forward events.
+A simple interactive program to demonstrate how to use event sinks to forward events.
+
+## [User event](user_event/)
+
+Small example showing how to implement user defined events and metrics.
