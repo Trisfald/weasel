@@ -5,8 +5,6 @@ use std::marker::PhantomData;
 use weasel::ability::ActivateAbility;
 use weasel::actor::{Action, Actor, ActorRules, AlterAbilities};
 use weasel::battle::{Battle, BattleRules, BattleState, EndBattle};
-#[cfg(feature = "serialization")]
-use weasel::battle_rules_with_user;
 use weasel::character::AlterStatistics;
 use weasel::creature::{ConvertCreature, CreateCreature, RemoveCreature};
 use weasel::entity::EntityId;
@@ -24,9 +22,10 @@ use weasel::space::{MoveEntity, ResetSpace};
 use weasel::team::{
     ConcludeObjectives, Conclusion, CreateTeam, Relation, RemoveTeam, ResetObjectives, SetRelations,
 };
+use weasel::user::{UserRules, UserMetricId};
 #[cfg(feature = "serialization")]
-use weasel::user::{UserEventPacker, UserRules};
-use weasel::{battle_rules, battle_rules_with_actor, rules::empty::*};
+use weasel::user::{UserEventPacker};
+use weasel::{battle_rules, battle_rules_with_actor, battle_rules_with_user, rules::empty::*};
 use weasel::{WeaselError, WeaselResult};
 
 #[cfg(feature = "serialization")]
@@ -69,12 +68,18 @@ impl<R> Clone for MyEvent<R> {
     }
 }
 
-impl<R: BattleRules + 'static> Event<R> for MyEvent<R> {
+impl<R: BattleRules + 'static> Event<R> for MyEvent<R> 
+where UserMetricId<R>: Default {
     fn verify(&self, _battle: &Battle<R>) -> WeaselResult<(), R> {
         Ok(())
     }
 
-    fn apply(&self, _battle: &mut Battle<R>, _event_queue: &mut Option<EventQueue<R>>) {}
+    fn apply(&self, battle: &mut Battle<R>, _event_queue: &mut Option<EventQueue<R>>) {
+        battle
+            .metrics_mut()
+            .add_user_u64(UserMetricId::<R>::default(), 1)
+            .unwrap();
+    }
 
     fn kind(&self) -> EventKind {
         EventKind::UserEvent(0)
@@ -104,6 +109,7 @@ impl<'a, R, P> EventTrigger<'a, R, P> for MyEventTrigger<'a, R, P>
 where
     R: BattleRules + 'static,
     P: EventProcessor<R>,
+    UserMetricId<R>: Default,
 {
     fn processor(&'a mut self) -> &'a mut P {
         self.processor
@@ -241,7 +247,17 @@ macro_rules! user_event_check {
 
 #[test]
 fn user_event() {
-    battle_rules! {}
+    // Define custom user rules.
+    #[derive(Default)]
+    struct CustomUserRules {}
+
+    impl UserRules<CustomRules> for CustomUserRules {
+        type UserMetricId = u32;
+        #[cfg(feature = "serialization")]
+        type UserEventPackage = ();
+    }
+
+    battle_rules_with_user! { CustomUserRules }
     // Create a server.
     let mut server = util::server(CustomRules::new());
     // Fire an user event.
@@ -252,6 +268,8 @@ fn user_event() {
     );
     // Check that the user event is correct.
     user_event_check!(server, data);
+    // Check that the user metric was increased.
+    assert_eq!(server.battle().metrics().user_u64(UserMetricId::<CustomRules>::default()), Some(1));
 }
 
 #[cfg(feature = "serialization")]
@@ -287,7 +305,7 @@ fn user_event_serde() {
     struct CustomUserRules {}
 
     impl UserRules<CustomRules> for CustomUserRules {
-        type UserMetricId = ();
+        type UserMetricId = u32;
         type UserEventPackage = Package;
     }
 

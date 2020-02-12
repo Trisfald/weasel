@@ -11,7 +11,7 @@ use crate::event::{
 };
 use crate::fight::FightRules;
 use crate::history::History;
-use crate::metric::{Metrics, ReadMetrics};
+use crate::metric::{Metrics, ReadMetrics, WriteMetrics};
 use crate::player::{Rights, RightsHandle, RightsHandleMut};
 use crate::round::{Rounds, RoundsRules};
 use crate::space::{Space, SpaceRules};
@@ -176,6 +176,11 @@ impl<R: BattleRules + 'static> Battle<R> {
     /// Returns a handle from which metrics can be read.
     pub fn metrics(&self) -> ReadMetrics<R> {
         self.metrics.read_handle()
+    }
+
+    /// Returns a handle from which metrics can be modified.
+    pub fn metrics_mut(&mut self) -> WriteMetrics<R> {
+        self.metrics.write_handle()
     }
 
     /// Returns a handle to access the players' rights to control one or more teams.
