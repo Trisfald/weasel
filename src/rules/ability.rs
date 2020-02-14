@@ -7,7 +7,7 @@ use std::fmt::Debug;
 use std::hash::Hash;
 
 /// A simple generic ability.
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Debug)]
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct SimpleAbility<I, V> {
     id: I,
