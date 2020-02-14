@@ -9,7 +9,7 @@ use std::hash::Hash;
 use std::ops::Add;
 
 /// A simple generic statistic storing current value, minimum and maximum value.
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Debug)]
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct SimpleStatistic<I, V> {
     id: I,

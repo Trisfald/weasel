@@ -1,9 +1,9 @@
 //! Module to handle serialization and deserialization.
 
 use crate::ability::ActivateAbility;
-use crate::actor::AlterAbilities;
+use crate::actor::{AlterAbilities, RegenerateAbilities};
 use crate::battle::{BattleRules, EndBattle, Version};
-use crate::character::AlterStatistics;
+use crate::character::{AlterStatistics, RegenerateStatistics};
 use crate::creature::{ConvertCreature, CreateCreature, RemoveCreature};
 use crate::entropy::ResetEntropy;
 use crate::event::{
@@ -120,6 +120,8 @@ flat_event! {
     ResetSpace, "ResetSpace<R>: Serialize", "ResetSpace<R>: Deserialize<'de>",
     RemoveCreature, "RemoveCreature<R>: Serialize", "RemoveCreature<R>: Deserialize<'de>",
     RemoveTeam, "RemoveTeam<R>: Serialize", "RemoveTeam<R>: Deserialize<'de>",
+    RegenerateStatistics, "RegenerateStatistics<R>: Serialize", "RegenerateStatistics<R>: Deserialize<'de>",
+    RegenerateAbilities, "RegenerateAbilities<R>: Serialize", "RegenerateAbilities<R>: Deserialize<'de>",
 }
 
 /// A versioned event wrapper containing a flattened event.

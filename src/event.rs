@@ -60,6 +60,10 @@ pub enum EventKind {
     RemoveCreature,
     /// Remove a team from the battle.
     RemoveTeam,
+    /// Regenerate the statistics of a character.
+    RegenerateStatistics,
+    /// Regenerate the abilities of an actor.
+    RegenerateAbilities,
     /// A user defined event with an unique id.
     UserEvent(UserEventId),
 }

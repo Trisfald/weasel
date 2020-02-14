@@ -205,7 +205,7 @@ impl<R: BattleRules> Clone for CreateCreature<R> {
 
 impl<R: BattleRules> CreateCreature<R> {
     /// Collects an iterator into an hashmap.
-    /// Values with same key are overridden.
+    /// Subsequent values with same key are ignored.
     fn collect_from_iter<I>(
         it: I,
     ) -> HashMap<<<I as Iterator>::Item as Id>::Id, <I as Iterator>::Item>
@@ -215,7 +215,9 @@ impl<R: BattleRules> CreateCreature<R> {
     {
         let mut map = HashMap::new();
         for e in it {
-            map.insert(e.id().clone(), e);
+            if !map.contains_key(e.id()) {
+                map.insert(e.id().clone(), e);
+            }
         }
         map
     }
@@ -368,7 +370,7 @@ where
     R: BattleRules + 'static,
     P: EventProcessor<R>,
 {
-    /// Adds a seed to drive the generation of this creature statistics.
+    /// Adds a seed to drive the generation of this creature's statistics.
     pub fn statistics_seed(
         &'a mut self,
         seed: StatisticsSeed<R>,
@@ -377,7 +379,7 @@ where
         self
     }
 
-    /// Adds a seed to drive the generation of this creature abilities.
+    /// Adds a seed to drive the generation of this creature's abilities.
     pub fn abilities_seed(
         &'a mut self,
         seed: AbilitiesSeed<R>,

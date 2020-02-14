@@ -1,9 +1,9 @@
 //! Entities that can activate abilities.
 
-use crate::ability::{AbilitiesAlteration, Ability, AbilityId, Activation};
+use crate::ability::{AbilitiesAlteration, AbilitiesSeed, Ability, AbilityId, Activation};
 use crate::battle::{Battle, BattleRules, BattleState};
 use crate::character::Character;
-use crate::entity::EntityId;
+use crate::entity::{Entities, EntityId};
 use crate::entropy::Entropy;
 use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
@@ -13,7 +13,7 @@ use crate::util::Id;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
 use std::any::Any;
-use std::fmt::Debug;
+use std::fmt::{Debug, Formatter, Result};
 
 /// A trait for objects which possess abilities and can act during a round.
 pub trait Actor<R: BattleRules>: Character<R> {
@@ -215,8 +215,8 @@ impl<R: BattleRules> AlterAbilities<R> {
     }
 }
 
-impl<R: BattleRules> std::fmt::Debug for AlterAbilities<R> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<R: BattleRules> Debug for AlterAbilities<R> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(
             f,
             "AlterAbilities {{ id: {:?}, alteration: {:?} }}",
@@ -236,16 +236,7 @@ impl<R: BattleRules> Clone for AlterAbilities<R> {
 
 impl<R: BattleRules + 'static> Event<R> for AlterAbilities<R> {
     fn verify(&self, battle: &Battle<R>) -> WeaselResult<(), R> {
-        // Check if this entity can accept alterations on abilities.
-        if !self.id.is_actor() {
-            return Err(WeaselError::NotAnActor(self.id.clone()));
-        }
-        // Check if the entity exists.
-        battle
-            .entities()
-            .entity(&self.id)
-            .ok_or_else(|| WeaselError::EntityNotFound(self.id.clone()))?;
-        Ok(())
+        verify_is_actor(battle.entities(), &self.id)
     }
 
     fn apply(&self, battle: &mut Battle<R>, _: &mut Option<EventQueue<R>>) {
@@ -304,4 +295,188 @@ where
             alteration: self.alteration.clone(),
         })
     }
+}
+
+/// An event to regenerate the abilities of an actor.
+///
+/// A new set of abilities is created from a seed.\
+/// - Abilities already known by the actor won't be modified.
+/// - Abilities that the actor didn't have before will be added.
+/// - Current actor's abilities that are not present in the new set will be removed
+///   from the actor.
+#[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
+pub struct RegenerateAbilities<R: BattleRules> {
+    #[cfg_attr(
+        feature = "serialization",
+        serde(bound(
+            serialize = "EntityId<R>: Serialize",
+            deserialize = "EntityId<R>: Deserialize<'de>"
+        ))
+    )]
+    id: EntityId<R>,
+
+    #[cfg_attr(
+        feature = "serialization",
+        serde(bound(
+            serialize = "Option<AbilitiesSeed<R>>: Serialize",
+            deserialize = "Option<AbilitiesSeed<R>>: Deserialize<'de>"
+        ))
+    )]
+    seed: Option<AbilitiesSeed<R>>,
+}
+
+impl<R: BattleRules> RegenerateAbilities<R> {
+    /// Returns a trigger for this event.
+    pub fn trigger<'a, P: EventProcessor<R>>(
+        processor: &'a mut P,
+        id: EntityId<R>,
+    ) -> RegenerateAbilitiesTrigger<'a, R, P> {
+        RegenerateAbilitiesTrigger {
+            processor,
+            id,
+            seed: None,
+        }
+    }
+
+    /// Returns the actor's entity id.
+    pub fn id(&self) -> &EntityId<R> {
+        &self.id
+    }
+
+    /// Returns the seed to regenerate the actor's abilities.
+    pub fn seed(&self) -> &Option<AbilitiesSeed<R>> {
+        &self.seed
+    }
+}
+
+impl<R: BattleRules> Debug for RegenerateAbilities<R> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(
+            f,
+            "RegenerateAbilities {{ id: {:?}, seed: {:?} }}",
+            self.id, self.seed
+        )
+    }
+}
+
+impl<R: BattleRules> Clone for RegenerateAbilities<R> {
+    fn clone(&self) -> Self {
+        RegenerateAbilities {
+            id: self.id.clone(),
+            seed: self.seed.clone(),
+        }
+    }
+}
+
+impl<R: BattleRules + 'static> Event<R> for RegenerateAbilities<R> {
+    fn verify(&self, battle: &Battle<R>) -> WeaselResult<(), R> {
+        verify_is_actor(battle.entities(), &self.id)
+    }
+
+    fn apply(&self, battle: &mut Battle<R>, _: &mut Option<EventQueue<R>>) {
+        // Retrieve the actor.
+        let actor = battle
+            .state
+            .entities
+            .actor_mut(&self.id)
+            .unwrap_or_else(|| panic!("constraint violated: actor {:?} not found", self.id));
+        // Generate a new set of abilities.
+        let abilities: Vec<_> = battle
+            .rules
+            .actor_rules()
+            .generate_abilities(
+                &self.seed,
+                &mut battle.entropy,
+                &mut battle.metrics.write_handle(),
+            )
+            .collect();
+        let mut to_remove = Vec::new();
+        // Remove all actor's abilities not present in the new set.
+        for ability in actor.abilities() {
+            if abilities.iter().find(|e| e.id() == ability.id()).is_none() {
+                to_remove.push(ability.id().clone());
+            }
+        }
+        for ability_id in to_remove {
+            actor.remove_ability(&ability_id);
+        }
+        // Add all abilities present in the new set but not in the actor.
+        for ability in abilities {
+            if actor.ability(ability.id()).is_none() {
+                actor.add_ability(ability);
+            }
+        }
+    }
+
+    fn kind(&self) -> EventKind {
+        EventKind::RegenerateAbilities
+    }
+
+    fn box_clone(&self) -> Box<dyn Event<R>> {
+        Box::new(self.clone())
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+/// Trigger to build and fire a `RegenerateAbilities` event.
+pub struct RegenerateAbilitiesTrigger<'a, R, P>
+where
+    R: BattleRules,
+    P: EventProcessor<R>,
+{
+    processor: &'a mut P,
+    id: EntityId<R>,
+    seed: Option<AbilitiesSeed<R>>,
+}
+
+impl<'a, R, P> RegenerateAbilitiesTrigger<'a, R, P>
+where
+    R: BattleRules + 'static,
+    P: EventProcessor<R>,
+{
+    /// Adds a seed to drive the regeneration of this actor's abilities.
+    pub fn seed(
+        &'a mut self,
+        seed: AbilitiesSeed<R>,
+    ) -> &'a mut RegenerateAbilitiesTrigger<'a, R, P> {
+        self.seed = Some(seed);
+        self
+    }
+}
+
+impl<'a, R, P> EventTrigger<'a, R, P> for RegenerateAbilitiesTrigger<'a, R, P>
+where
+    R: BattleRules + 'static,
+    P: EventProcessor<R>,
+{
+    fn processor(&'a mut self) -> &'a mut P {
+        self.processor
+    }
+
+    /// Returns a `RegenerateAbilities` event.
+    fn event(&self) -> Box<dyn Event<R>> {
+        Box::new(RegenerateAbilities {
+            id: self.id.clone(),
+            seed: self.seed.clone(),
+        })
+    }
+}
+
+/// Checks if an entity exists and is an actor.
+fn verify_is_actor<R>(entities: &Entities<R>, id: &EntityId<R>) -> WeaselResult<(), R>
+where
+    R: BattleRules,
+{
+    // Check if this entity claims to be an actor.
+    if !id.is_actor() {
+        return Err(WeaselError::NotAnActor(id.clone()));
+    }
+    // Check if the entity exists.
+    entities
+        .entity(id)
+        .ok_or_else(|| WeaselError::EntityNotFound(id.clone()))?;
+    Ok(())
 }

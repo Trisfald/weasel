@@ -3,9 +3,9 @@ use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::marker::PhantomData;
 use weasel::ability::ActivateAbility;
-use weasel::actor::{Action, Actor, ActorRules, AlterAbilities};
+use weasel::actor::{Action, Actor, ActorRules, AlterAbilities, RegenerateAbilities};
 use weasel::battle::{Battle, BattleRules, BattleState, EndBattle};
-use weasel::character::AlterStatistics;
+use weasel::character::{AlterStatistics, RegenerateStatistics};
 use weasel::creature::{ConvertCreature, CreateCreature, RemoveCreature};
 use weasel::entity::EntityId;
 use weasel::entropy::{Entropy, ResetEntropy};
@@ -361,6 +361,8 @@ macro_rules! events_vec {
         events.push(ResetSpace::trigger(&mut ()).event());
         events.push(RemoveCreature::trigger(&mut (), CREATURE_1_ID).event());
         events.push(RemoveTeam::trigger(&mut (), TEAM_1_ID).event());
+        events.push(RegenerateStatistics::trigger(&mut (), ENTITY_1_ID.clone()).event());
+        events.push(RegenerateAbilities::trigger(&mut (), ENTITY_1_ID.clone()).event());
         events
     }};
 }
