@@ -311,10 +311,10 @@ fn integrity_checks() {
     assert_eq!(server_sink.sink.borrow().disconnections, 1);
     // Fire another event in the client.
     assert_eq!(
-        StartRound::trigger(&mut *client.borrow_mut(), ENTITY_1_ID.clone())
+        StartRound::trigger(&mut *client.borrow_mut(), ENTITY_1_ID)
             .fire()
             .err(),
-        Some(WeaselError::EntityNotFound(ENTITY_1_ID.clone()))
+        Some(WeaselError::EntityNotFound(ENTITY_1_ID))
     );
     // Events should be blocked by the new server.
     assert_eq!(events!(server).len(), 0);
@@ -445,7 +445,7 @@ fn rights() {
             .rights_mut()
             .add(PLAYER_1_ID, &TEAM_1_ID)
             .err(),
-        Some(WeaselError::TeamNotFound(TEAM_1_ID.clone()))
+        Some(WeaselError::TeamNotFound(TEAM_1_ID))
     );
     // Create a team and some rights.
     util::team(&mut *server.borrow_mut(), TEAM_1_ID);
@@ -461,12 +461,12 @@ fn rights() {
     );
     // Check that rights are enforced for the wrong client.
     assert_eq!(
-        StartRound::trigger(&mut *client.borrow_mut(), ENTITY_1_ID.clone())
+        StartRound::trigger(&mut *client.borrow_mut(), ENTITY_1_ID)
             .fire()
             .err(),
         Some(WeaselError::AuthenticationError(
             Some(PLAYER_1_ID),
-            TEAM_1_ID.clone()
+            TEAM_1_ID
         ))
     );
     // Create a client without any authentication.
@@ -485,7 +485,7 @@ fn rights() {
     assert_eq!(client_sink.receive().err(), None);
     // Client events should be rejected.
     assert_eq!(
-        StartRound::trigger(&mut *client.borrow_mut(), ENTITY_1_ID.clone())
+        StartRound::trigger(&mut *client.borrow_mut(), ENTITY_1_ID)
             .fire()
             .err(),
         Some(WeaselError::MissingAuthentication)
@@ -505,7 +505,7 @@ fn rights() {
     assert_eq!(client_sink.receive().err(), None);
     // Check that the good client can send events.
     assert_eq!(
-        StartRound::trigger(&mut *client.borrow_mut(), ENTITY_1_ID.clone())
+        StartRound::trigger(&mut *client.borrow_mut(), ENTITY_1_ID)
             .fire()
             .err(),
         None,
@@ -564,7 +564,7 @@ fn client_server_serde() {
     util::creature(&mut *server.borrow_mut(), TEAM_1_ID, CREATURE_1_ID, ());
     assert_eq!(client_sink.receive().err(), None);
     assert_eq!(
-        StartRound::trigger(&mut *client.borrow_mut(), ENTITY_1_ID.clone())
+        StartRound::trigger(&mut *client.borrow_mut(), ENTITY_1_ID)
             .fire()
             .err(),
         None

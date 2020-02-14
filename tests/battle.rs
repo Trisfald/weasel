@@ -61,7 +61,7 @@ fn end_battle() {
     // End the battle and checks that new events aren't accepted.
     assert_eq!(EndBattle::trigger(&mut server).fire().err(), None);
     assert_eq!(
-        StartRound::trigger(&mut server, ENTITY_1_ID.clone())
+        StartRound::trigger(&mut server, ENTITY_1_ID)
             .fire()
             .err()
             .map(|e| e.unfold()),
@@ -81,7 +81,7 @@ fn end_battle_during_events() {
     // Fire an ability that creates a dummy, an endbattle and an endround.
     // Last event should have been rejected.
     assert_eq!(
-        ActivateAbility::trigger(&mut server, ENTITY_1_ID.clone(), ABILITY_ID)
+        ActivateAbility::trigger(&mut server, ENTITY_1_ID, ABILITY_ID)
             .fire()
             .err()
             .map(|e| e.unfold()),

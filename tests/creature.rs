@@ -265,7 +265,7 @@ fn remove_creature_on_alter() {
     util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, ());
     // Fire an alter statistics event.
     assert_eq!(
-        AlterStatistics::trigger(&mut server, ENTITY_1_ID.clone(), ())
+        AlterStatistics::trigger(&mut server, ENTITY_1_ID, ())
             .fire()
             .err(),
         None

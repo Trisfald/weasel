@@ -104,7 +104,7 @@ fn move_entity() {
     let mut server = init_custom_game();
     // Move the creature into invalid position.
     assert_eq!(
-        MoveEntity::trigger(&mut server, ENTITY_1_ID.clone(), POSITION_1)
+        MoveEntity::trigger(&mut server, ENTITY_1_ID, POSITION_1)
             .fire()
             .err()
             .map(|e| e.unfold()),
@@ -121,7 +121,7 @@ fn move_entity() {
     );
     // Move the creature into a valid position.
     assert_eq!(
-        MoveEntity::trigger(&mut server, ENTITY_1_ID.clone(), POSITION_2)
+        MoveEntity::trigger(&mut server, ENTITY_1_ID, POSITION_2)
             .fire()
             .err(),
         None

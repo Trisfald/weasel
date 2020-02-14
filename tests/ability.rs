@@ -85,47 +85,41 @@ fn ability_activation() {
     util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, ());
     // Ability done by a missing creature should fail.
     assert_eq!(
-        ActivateAbility::trigger(&mut server, ENTITY_ERR_ID.clone(), ABILITY_ID)
+        ActivateAbility::trigger(&mut server, ENTITY_ERR_ID, ABILITY_ID)
             .fire()
             .err()
             .map(|e| e.unfold()),
-        Some(WeaselError::EntityNotFound(ENTITY_ERR_ID.clone()))
+        Some(WeaselError::EntityNotFound(ENTITY_ERR_ID))
     );
     // Fail when creature has not started the round.
     assert_eq!(
-        ActivateAbility::trigger(&mut server, ENTITY_1_ID.clone(), ABILITY_ID)
+        ActivateAbility::trigger(&mut server, ENTITY_1_ID, ABILITY_ID)
             .fire()
             .err()
             .map(|e| e.unfold()),
-        Some(WeaselError::ActorNotReady(ENTITY_1_ID.clone()))
+        Some(WeaselError::ActorNotReady(ENTITY_1_ID))
     );
     // Start a round.
     util::start_round(&mut server, &ENTITY_1_ID);
     // Fail when creature does not know the ability.
     assert_eq!(
-        ActivateAbility::trigger(&mut server, ENTITY_1_ID.clone(), ABILITY_ERR_ID)
+        ActivateAbility::trigger(&mut server, ENTITY_1_ID, ABILITY_ERR_ID)
             .fire()
             .err()
             .map(|e| e.unfold()),
-        Some(WeaselError::AbilityNotKnown(
-            ENTITY_1_ID.clone(),
-            ABILITY_ERR_ID
-        ))
+        Some(WeaselError::AbilityNotKnown(ENTITY_1_ID, ABILITY_ERR_ID))
     );
     // Fail when `activable` returns false.
     assert_eq!(
-        ActivateAbility::trigger(&mut server, ENTITY_1_ID.clone(), ABILITY_ID)
+        ActivateAbility::trigger(&mut server, ENTITY_1_ID, ABILITY_ID)
             .fire()
             .err()
             .map(|e| e.unfold()),
-        Some(WeaselError::AbilityNotActivable(
-            ENTITY_1_ID.clone(),
-            ABILITY_ID
-        ))
+        Some(WeaselError::AbilityNotActivable(ENTITY_1_ID, ABILITY_ID))
     );
     // Succeed in activating an ability.
     assert_eq!(
-        ActivateAbility::trigger(&mut server, ENTITY_1_ID.clone(), ABILITY_ID)
+        ActivateAbility::trigger(&mut server, ENTITY_1_ID, ABILITY_ID)
             .activation(2)
             .fire()
             .err(),

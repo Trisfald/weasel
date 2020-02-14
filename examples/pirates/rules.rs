@@ -177,7 +177,7 @@ impl ActorRules<PiratesRules> for PiratesActorRules {
         // Triggers fired on the event_queue will spawn an event as soon as
         // the current one is done processing. The new events will have a link to the event who
         // generated them.
-        ApplyImpact::trigger(&mut event_queue, (target.clone(), alteration)).fire();
+        ApplyImpact::trigger(&mut event_queue, (*target, alteration)).fire();
     }
 }
 
@@ -200,7 +200,7 @@ impl FightRules<PiratesRules> for PiratesFightRules {
         let target = &impact.0;
         // We know the target will be always there (we end the battle when the first ship sinks).
         // Thus we can safely create alteration events for the target.
-        AlterStatistics::trigger(&mut event_queue, target.clone(), impact.1).fire();
+        AlterStatistics::trigger(&mut event_queue, *target, impact.1).fire();
     }
 }
 

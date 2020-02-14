@@ -83,7 +83,7 @@ impl ActorRules<CustomRules> for CustomActorRules {
         _entropy: &mut Entropy<CustomRules>,
         _metrics: &mut WriteMetrics<CustomRules>,
     ) {
-        AlterAbilities::trigger(&mut event_queue, ENTITY_1_ID.clone(), 0).fire();
+        AlterAbilities::trigger(&mut event_queue, ENTITY_1_ID, 0).fire();
         ApplyImpact::trigger(&mut event_queue, action.ability.power() * 2).fire();
     }
 
@@ -115,7 +115,7 @@ impl FightRules<CustomRules> for CustomFightRules {
         _entropy: &mut Entropy<CustomRules>,
         _metrics: &mut WriteMetrics<CustomRules>,
     ) {
-        AlterStatistics::trigger(&mut event_queue, ENTITY_2_ID.clone(), *impact * 2).fire();
+        AlterStatistics::trigger(&mut event_queue, ENTITY_2_ID, *impact * 2).fire();
     }
 }
 
@@ -141,7 +141,7 @@ fn simple_attack() {
     util::start_round(&mut server, &ENTITY_1_ID);
     // Fire ability.
     assert_eq!(
-        ActivateAbility::trigger(&mut server, ENTITY_1_ID.clone(), ABILITY_ID)
+        ActivateAbility::trigger(&mut server, ENTITY_1_ID, ABILITY_ID)
             .fire()
             .err(),
         None

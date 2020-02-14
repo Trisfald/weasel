@@ -43,10 +43,10 @@ impl RoundsRules<CustomRules> for CustomRoundsRules {
     }
 
     fn eligible(&self, model: &Self::RoundsModel, actor: &dyn Actor<CustomRules>) -> bool {
-        let entity_id = if model.last == Some(ENTITY_1_ID.clone()) {
-            ENTITY_2_ID.clone()
+        let entity_id = if model.last == Some(ENTITY_1_ID) {
+            ENTITY_2_ID
         } else {
-            ENTITY_1_ID.clone()
+            ENTITY_1_ID
         };
         entity_id == *actor.entity_id()
     }
@@ -88,7 +88,7 @@ battle_rules_with_rounds! { CustomRoundsRules }
 macro_rules! server {
     () => {{
         let mut model = Model::default();
-        model.last = Some(ENTITY_2_ID.clone());
+        model.last = Some(ENTITY_2_ID);
         let battle = Battle::builder(CustomRules::new()).build();
         let mut server = Server::builder(battle).build();
         assert_eq!(
@@ -111,18 +111,18 @@ fn start_round() {
     assert_eq!(*server.battle().rounds().state(), RoundState::<_>::Ready);
     // Check start is prevented for faulty conditions.
     assert_eq!(
-        StartRound::trigger(&mut server, ENTITY_ERR_ID.clone())
+        StartRound::trigger(&mut server, ENTITY_ERR_ID)
             .fire()
             .err()
             .map(|e| e.unfold()),
-        Some(WeaselError::EntityNotFound(ENTITY_ERR_ID.clone()))
+        Some(WeaselError::EntityNotFound(ENTITY_ERR_ID))
     );
     assert_eq!(
-        StartRound::trigger(&mut server, ENTITY_2_ID.clone())
+        StartRound::trigger(&mut server, ENTITY_2_ID)
             .fire()
             .err()
             .map(|e| e.unfold()),
-        Some(WeaselError::ActorNotEligible(ENTITY_2_ID.clone()))
+        Some(WeaselError::ActorNotEligible(ENTITY_2_ID))
     );
     assert_eq!(*server.battle().rounds().state(), RoundState::<_>::Ready);
     assert_eq!(server.battle().rounds().model().starts, 0);
@@ -132,7 +132,7 @@ fn start_round() {
     // Post-start checks.
     assert_eq!(
         *server.battle().rounds().state(),
-        RoundState::<_>::Started(ENTITY_1_ID.clone())
+        RoundState::<_>::Started(ENTITY_1_ID)
     );
     assert_eq!(server.battle().rounds().model().starts, 1);
     assert_eq!(
@@ -141,7 +141,7 @@ fn start_round() {
     );
     // Another start in a row must not work.
     assert_eq!(
-        StartRound::trigger(&mut server, ENTITY_2_ID.clone())
+        StartRound::trigger(&mut server, ENTITY_2_ID)
             .fire()
             .err()
             .map(|e| e.unfold()),
@@ -149,7 +149,7 @@ fn start_round() {
     );
     assert_eq!(
         *server.battle().rounds().state(),
-        RoundState::<_>::Started(ENTITY_1_ID.clone())
+        RoundState::<_>::Started(ENTITY_1_ID)
     );
     assert_eq!(server.battle().rounds().model().starts, 1);
     assert_eq!(

@@ -75,6 +75,8 @@ impl<R: BattleRules> Debug for EntityId<R> {
     }
 }
 
+impl<R: BattleRules> Copy for EntityId<R> where CreatureId<R>: Copy {}
+
 impl<R: BattleRules> Display for EntityId<R>
 where
     CreatureId<R>: Display,

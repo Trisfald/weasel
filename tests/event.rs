@@ -168,12 +168,8 @@ fn conditional() {
             _entropy: &mut Entropy<CustomRules>,
             _metrics: &mut WriteMetrics<CustomRules>,
         ) {
-            AlterAbilities::trigger(
-                &mut event_queue,
-                ENTITY_1_ID.clone(),
-                action.activation.unwrap(),
-            )
-            .fire();
+            AlterAbilities::trigger(&mut event_queue, ENTITY_1_ID, action.activation.unwrap())
+                .fire();
             Conditional::new(
                 DummyEvent::trigger(&mut event_queue),
                 std::rc::Rc::new(|state: &BattleState<CustomRules>| {
@@ -206,7 +202,7 @@ fn conditional() {
     // Fire an ability to alter the creature's ability, which will also fire
     // a dummy event if the power is twice the original.
     assert_eq!(
-        ActivateAbility::trigger(&mut server, ENTITY_1_ID.clone(), ABILITY_ID)
+        ActivateAbility::trigger(&mut server, ENTITY_1_ID, ABILITY_ID)
             .activation(POWER)
             .fire()
             .or_else(|err| err.filter(|err| {
@@ -224,7 +220,7 @@ fn conditional() {
     assert_eq!(events[events.len() - 1].kind(), EventKind::AlterAbilities);
     // Refire ability with activation of original power * 2.
     assert_eq!(
-        ActivateAbility::trigger(&mut server, ENTITY_1_ID.clone(), ABILITY_ID)
+        ActivateAbility::trigger(&mut server, ENTITY_1_ID, ABILITY_ID)
             .activation(POWER * 2)
             .fire()
             .err(),
@@ -344,16 +340,16 @@ macro_rules! events_vec {
         // Collect all events into a vector.
         let mut events: Vec<Box<dyn Event<CustomRules>>> = Vec::new();
         events.push(DummyEvent::trigger(&mut ()).event());
-        events.push(StartRound::trigger(&mut (), ENTITY_1_ID.clone()).event());
+        events.push(StartRound::trigger(&mut (), ENTITY_1_ID).event());
         events.push(EndRound::trigger(&mut ()).event());
         events.push(CreateTeam::trigger(&mut (), TEAM_1_ID).event());
         events.push(CreateCreature::trigger(&mut (), TEAM_1_ID, CREATURE_1_ID, ()).event());
-        events.push(ActivateAbility::trigger(&mut (), ENTITY_1_ID.clone(), ABILITY_1_ID).event());
+        events.push(ActivateAbility::trigger(&mut (), ENTITY_1_ID, ABILITY_1_ID).event());
         events.push(ResetEntropy::trigger(&mut ()).event());
-        events.push(MoveEntity::trigger(&mut (), ENTITY_1_ID.clone(), ()).event());
+        events.push(MoveEntity::trigger(&mut (), ENTITY_1_ID, ()).event());
         events.push(ApplyImpact::trigger(&mut (), ()).event());
-        events.push(AlterStatistics::trigger(&mut (), ENTITY_1_ID.clone(), ()).event());
-        events.push(AlterAbilities::trigger(&mut (), ENTITY_1_ID.clone(), ()).event());
+        events.push(AlterStatistics::trigger(&mut (), ENTITY_1_ID, ()).event());
+        events.push(AlterAbilities::trigger(&mut (), ENTITY_1_ID, ()).event());
         events.push(
             SetRelations::trigger(&mut (), &[(TEAM_1_ID, TEAM_1_ID, Relation::Ally)]).event(),
         );

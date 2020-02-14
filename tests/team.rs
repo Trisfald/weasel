@@ -655,7 +655,7 @@ fn check_objectives() {
     // Stard round and fire the ability.
     util::start_round(&mut server, &ENTITY_1_ID);
     assert_eq!(
-        ActivateAbility::trigger(&mut server, ENTITY_1_ID.clone(), ABILITY_ID)
+        ActivateAbility::trigger(&mut server, ENTITY_1_ID, ABILITY_ID)
             .fire()
             .err(),
         None
@@ -688,7 +688,7 @@ fn check_objectives() {
     // Stard round and fire the ability.
     util::start_round(&mut server, &ENTITY_1_ID);
     assert_eq!(
-        ActivateAbility::trigger(&mut server, ENTITY_1_ID.clone(), ABILITY_ID)
+        ActivateAbility::trigger(&mut server, ENTITY_1_ID, ABILITY_ID)
             .fire()
             .err(),
         None
