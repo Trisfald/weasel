@@ -271,10 +271,10 @@ pub struct RegenerateStatistics<R: BattleRules> {
 
 impl<R: BattleRules> RegenerateStatistics<R> {
     /// Returns a trigger for this event.
-    pub fn trigger<'a, P: EventProcessor<R>>(
-        processor: &'a mut P,
+    pub fn trigger<P: EventProcessor<R>>(
+        processor: &'_ mut P,
         id: EntityId<R>,
-    ) -> RegenerateStatisticsTrigger<'a, R, P> {
+    ) -> RegenerateStatisticsTrigger<'_, R, P> {
         RegenerateStatisticsTrigger {
             processor,
             id,

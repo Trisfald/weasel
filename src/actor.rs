@@ -327,10 +327,10 @@ pub struct RegenerateAbilities<R: BattleRules> {
 
 impl<R: BattleRules> RegenerateAbilities<R> {
     /// Returns a trigger for this event.
-    pub fn trigger<'a, P: EventProcessor<R>>(
-        processor: &'a mut P,
+    pub fn trigger<P: EventProcessor<R>>(
+        processor: &'_ mut P,
         id: EntityId<R>,
-    ) -> RegenerateAbilitiesTrigger<'a, R, P> {
+    ) -> RegenerateAbilitiesTrigger<'_, R, P> {
         RegenerateAbilitiesTrigger {
             processor,
             id,
