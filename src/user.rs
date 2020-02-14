@@ -65,3 +65,21 @@ where
         ))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::event::{DummyEvent, EventTrigger};
+    use crate::{battle_rules, rules::empty::*};
+
+    #[cfg(feature = "serialization")]
+    #[test]
+    fn empty_user_event_packer() {
+        battle_rules! {}
+        let result: WeaselResult<_, CustomRules> = ().boxed();
+        assert!(result.is_err());
+        let dummy = DummyEvent::<CustomRules>::trigger(&mut ()).event();
+        let result: WeaselResult<_, CustomRules> = <()>::flattened(dummy);
+        assert!(result.is_err());
+    }
+}
