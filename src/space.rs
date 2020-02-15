@@ -28,23 +28,23 @@ impl<R: BattleRules> Space<R> {
     }
 
     /// See [check_move](SpaceRules::check_move).
-    pub(crate) fn check_move(
+    pub(crate) fn check_move<'a>(
         &self,
-        entity: Option<&dyn Entity<R>>,
+        claim: PositionClaim<'a, R>,
         position: &Position<R>,
     ) -> bool {
-        self.rules.check_move(&self.model, entity, position)
+        self.rules.check_move(&self.model, claim, position)
     }
 
     /// See [move_entity](SpaceRules::move_entity).
-    pub(crate) fn move_entity(
+    pub(crate) fn move_entity<'a>(
         &mut self,
-        entity: Option<&dyn Entity<R>>,
+        claim: PositionClaim<'a, R>,
         position: &Position<R>,
         metrics: &mut WriteMetrics<R>,
     ) {
         self.rules
-            .move_entity(&mut self.model, entity, position, metrics);
+            .move_entity(&mut self.model, claim, position, metrics);
     }
 
     /// Returns the space model.
@@ -93,14 +93,13 @@ pub trait SpaceRules<R: BattleRules> {
 
     /// Checks if a given entity can move into a new position.
     ///
-    /// In the case entity is empty, it is assumed that `position` will be the starting one of a
-    /// new entity.
+    /// The claim tells in which context the entity is trying to acquire the position.
     ///
     /// The provided implementation accepts every move.
-    fn check_move(
+    fn check_move<'a>(
         &self,
         _model: &Self::SpaceModel,
-        _entity: Option<&dyn Entity<R>>,
+        _claim: PositionClaim<'a, R>,
         _position: &Self::Position,
     ) -> bool {
         true
@@ -109,14 +108,13 @@ pub trait SpaceRules<R: BattleRules> {
     /// Moves an entity into a new position.
     ///
     /// Position's correctness will be validated beforehand with `check_move`.\
-    /// In the case entity is empty, it is assumed that `position` will be the starting one of a
-    /// new entity.
+    /// The claim tells in which context the entity is trying to acquire the position.
     ///
     /// The provided implementation does nothing.
-    fn move_entity(
+    fn move_entity<'a>(
         &self,
         _model: &mut Self::SpaceModel,
-        _entity: Option<&dyn Entity<R>>,
+        _claim: PositionClaim<'a, R>,
         _position: &Self::Position,
         _metrics: &mut WriteMetrics<R>,
     ) {
@@ -180,6 +178,14 @@ pub type SpaceModel<R> = <<R as BattleRules>::SR as SpaceRules<R>>::SpaceModel;
 /// the direct changes to the model. All side effects deriving from such change have to be
 /// implemented in the space rules `alter_space` method.
 pub type SpaceAlteration<R> = <<R as BattleRules>::SR as SpaceRules<R>>::SpaceAlteration;
+
+/// Represents a claim to a given position coming from an entity.
+pub enum PositionClaim<'a, R: BattleRules> {
+    /// The entity is spawning.
+    Spawn(&'a EntityId<R>),
+    /// The entity wants to change its position.
+    Movement(&'a dyn Entity<R>),
+}
 
 /// An event to move an entity from its position to a new one.
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
@@ -255,7 +261,10 @@ impl<R: BattleRules + 'static> Event<R> for MoveEntity<R> {
             .entity(&self.id)
             .ok_or_else(|| WeaselError::EntityNotFound(self.id.clone()))?;
         // Check position.
-        if !battle.space().check_move(Some(entity), &self.position) {
+        if !battle
+            .space()
+            .check_move(PositionClaim::Movement(entity), &self.position)
+        {
             return Err(WeaselError::PositionError(
                 Some(entity.position().clone()),
                 self.position.clone(),
@@ -273,7 +282,7 @@ impl<R: BattleRules + 'static> Event<R> for MoveEntity<R> {
             .unwrap_or_else(|| panic!("constraint violated: entity {:?} not found", self.id));
         // Take the new position.
         battle.state.space.move_entity(
-            Some(entity),
+            PositionClaim::Movement(entity),
             &self.position,
             &mut battle.metrics.write_handle(),
         );

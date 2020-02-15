@@ -5,9 +5,9 @@ use weasel::creature::CreateCreature;
 use weasel::entity::{Entities, Entity, EntityId};
 use weasel::event::{EventQueue, EventTrigger};
 use weasel::metric::WriteMetrics;
-use weasel::server::Server;
 use weasel::round::Rounds;
-use weasel::space::{AlterSpace, MoveEntity, ResetSpace, SpaceRules};
+use weasel::server::Server;
+use weasel::space::{AlterSpace, MoveEntity, PositionClaim, ResetSpace, SpaceRules};
 use weasel::WeaselError;
 use weasel::{battle_rules, rules::empty::*};
 
@@ -32,23 +32,23 @@ impl SpaceRules<CustomRules> for CustomSpaceRules {
         HashSet::new()
     }
 
-    fn check_move(
+    fn check_move<'a>(
         &self,
         model: &Self::SpaceModel,
-        _entity: Option<&dyn Entity<CustomRules>>,
+        _claim: PositionClaim<'a, CustomRules>,
         position: &Self::Position,
     ) -> bool {
         !model.contains(position)
     }
 
-    fn move_entity(
+    fn move_entity<'a>(
         &self,
         model: &mut Self::SpaceModel,
-        entity: Option<&dyn Entity<CustomRules>>,
+        claim: PositionClaim<'a, CustomRules>,
         position: &Self::Position,
         _metrics: &mut WriteMetrics<CustomRules>,
     ) {
-        if let Some(entity) = entity {
+        if let PositionClaim::Movement(entity) = claim {
             model.remove(entity.position());
         }
         model.insert(*position);

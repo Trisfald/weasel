@@ -9,7 +9,7 @@ use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
 use crate::metric::system::*;
 use crate::round::RoundState;
-use crate::space::Position;
+use crate::space::{Position, PositionClaim};
 use crate::team::{EntityAddition, TeamId, TeamRules};
 use crate::util::Id;
 #[cfg(feature = "serialization")]
@@ -284,7 +284,10 @@ impl<R: BattleRules + 'static> Event<R> for CreateCreature<R> {
             return Err(WeaselError::DuplicatedCreature(self.id.clone()));
         }
         // Check position.
-        if !battle.space().check_move(None, &self.position) {
+        if !battle.space().check_move(
+            PositionClaim::Spawn(&EntityId::Creature(self.id.clone())),
+            &self.position,
+        ) {
             return Err(WeaselError::PositionError(None, self.position.clone()));
         }
         Ok(())
@@ -314,10 +317,11 @@ impl<R: BattleRules + 'static> Event<R> for CreateCreature<R> {
             abilities,
         };
         // Take the position.
-        battle
-            .state
-            .space
-            .move_entity(None, &self.position, &mut battle.metrics.write_handle());
+        battle.state.space.move_entity(
+            PositionClaim::Spawn(&EntityId::Creature(self.id.clone())),
+            &self.position,
+            &mut battle.metrics.write_handle(),
+        );
         // Notify the rounds module.
         battle.state.rounds.on_actor_added(
             &creature,
