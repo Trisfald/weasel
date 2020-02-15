@@ -66,13 +66,13 @@ where
     }
 }
 
+#[cfg(feature = "serialization")]
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::event::{DummyEvent, EventTrigger};
     use crate::{battle_rules, rules::empty::*};
 
-    #[cfg(feature = "serialization")]
     #[test]
     fn empty_user_event_packer() {
         battle_rules! {}
