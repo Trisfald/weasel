@@ -6,6 +6,7 @@ use weasel::entity::{Entities, Entity, EntityId};
 use weasel::event::{EventQueue, EventTrigger};
 use weasel::metric::WriteMetrics;
 use weasel::server::Server;
+use weasel::round::Rounds;
 use weasel::space::{AlterSpace, MoveEntity, ResetSpace, SpaceRules};
 use weasel::WeaselError;
 use weasel::{battle_rules, rules::empty::*};
@@ -69,6 +70,7 @@ impl SpaceRules<CustomRules> for CustomSpaceRules {
     fn alter_space(
         &self,
         _entities: &Entities<CustomRules>,
+        _rounds: &Rounds<CustomRules>,
         model: &mut Self::SpaceModel,
         alteration: &Self::SpaceAlteration,
         _event_queue: &mut Option<EventQueue<CustomRules>>,

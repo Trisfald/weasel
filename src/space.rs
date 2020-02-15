@@ -5,6 +5,7 @@ use crate::entity::{Entities, Entity, EntityId};
 use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
 use crate::metric::WriteMetrics;
+use crate::round::Rounds;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
 use std::any::Any;
@@ -145,6 +146,7 @@ pub trait SpaceRules<R: BattleRules> {
     fn alter_space(
         &self,
         _entities: &Entities<R>,
+        _rounds: &Rounds<R>,
         _model: &mut Self::SpaceModel,
         _alteration: &Self::SpaceAlteration,
         _event_queue: &mut Option<EventQueue<R>>,
@@ -496,6 +498,7 @@ impl<R: BattleRules + 'static> Event<R> for AlterSpace<R> {
         // Apply the alteration.
         rules.alter_space(
             &battle.state.entities,
+            &battle.state.rounds,
             &mut battle.state.space.model,
             &self.alteration,
             event_queue,
