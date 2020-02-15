@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - `RemoveTeam` event.
 - An example showing how to use event sinks.
-- Example to demonstrate how to crate user defined events and metrics.
+- Example to demonstrate how to create user defined events and metrics.
 - `RegenerateStatistics` event.
 - `RegenerateAbilities` event.
 - `EntityId` now implements `Copy`.

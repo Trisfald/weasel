@@ -46,7 +46,7 @@ Games are carried forward by creating `events`.
 There are many kind of events, see the documentation to know more.
 
 Through a `server` or a `client` you'll be able to access the full state of the battle,
-including the full timeline of events.
+including the entire timeline of events.
 
 ## Contributing
 
