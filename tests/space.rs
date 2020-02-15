@@ -2,11 +2,11 @@ use std::collections::HashSet;
 use weasel::battle::BattleRules;
 use weasel::battle_rules_with_space;
 use weasel::creature::CreateCreature;
-use weasel::entity::{Entity, EntityId};
+use weasel::entity::{Entities, Entity, EntityId};
 use weasel::event::{EventQueue, EventTrigger};
 use weasel::metric::WriteMetrics;
 use weasel::server::Server;
-use weasel::space::{MoveEntity, ResetSpace, SpaceRules};
+use weasel::space::{AlterSpace, MoveEntity, ResetSpace, SpaceRules};
 use weasel::WeaselError;
 use weasel::{battle_rules, rules::empty::*};
 
@@ -25,6 +25,7 @@ impl SpaceRules<CustomRules> for CustomSpaceRules {
     type Position = u32;
     type SpaceSeed = ();
     type SpaceModel = HashSet<Self::Position>;
+    type SpaceAlteration = Self::Position;
 
     fn generate_model(&self, _: &Option<Self::SpaceSeed>) -> Self::SpaceModel {
         HashSet::new()
@@ -64,6 +65,18 @@ impl SpaceRules<CustomRules> for CustomSpaceRules {
         new_model.insert(POSITION_T);
         entity.set_position(POSITION_T);
     }
+
+    fn alter_space(
+        &self,
+        _entities: &Entities<CustomRules>,
+        model: &mut Self::SpaceModel,
+        alteration: &Self::SpaceAlteration,
+        _event_queue: &mut Option<EventQueue<CustomRules>>,
+        _metrics: &mut WriteMetrics<CustomRules>,
+    ) {
+        // Make the position inside 'alteration' inaccessible.
+        model.insert(*alteration);
+    }
 }
 
 battle_rules_with_space! { CustomSpaceRules }
@@ -71,7 +84,7 @@ battle_rules_with_space! { CustomSpaceRules }
 fn init_custom_game() -> Server<CustomRules> {
     let mut server = util::server(CustomRules::new());
     util::team(&mut server, TEAM_1_ID);
-    // Create a first creature in position 0.
+    // Create a first creature in position 1.
     util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, POSITION_1);
     assert!(server
         .battle()
@@ -84,7 +97,7 @@ fn init_custom_game() -> Server<CustomRules> {
 #[test]
 fn position_verified() {
     let mut server = init_custom_game();
-    // Try to create a second creature again in position 0.
+    // Try to create a second creature again in position 1.
     assert_eq!(
         CreateCreature::trigger(&mut server, CREATURE_2_ID, TEAM_1_ID, POSITION_1)
             .fire()
@@ -102,7 +115,7 @@ fn position_verified() {
 #[test]
 fn move_entity() {
     let mut server = init_custom_game();
-    // Move the creature into invalid position.
+    // Move the creature into an invalid position.
     assert_eq!(
         MoveEntity::trigger(&mut server, ENTITY_1_ID, POSITION_1)
             .fire()
@@ -155,4 +168,23 @@ fn reset_space() {
         POSITION_T
     );
     assert_eq!(server.battle().space().model().len(), 1);
+}
+
+#[test]
+fn alter_space() {
+    // Create a scenario.
+    let mut server = init_custom_game();
+    // Alter the space model, invalidating position 2.
+    assert_eq!(
+        AlterSpace::trigger(&mut server, POSITION_2).fire().err(),
+        None
+    );
+    // Check that the creature can't move into position 2 anymore.
+    assert_eq!(
+        MoveEntity::trigger(&mut server, ENTITY_1_ID, POSITION_2)
+            .fire()
+            .err()
+            .map(|e| e.unfold()),
+        Some(WeaselError::PositionError(Some(POSITION_1), POSITION_2))
+    );
 }

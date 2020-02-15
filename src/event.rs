@@ -64,6 +64,8 @@ pub enum EventKind {
     RegenerateStatistics,
     /// Regenerate the abilities of an actor.
     RegenerateAbilities,
+    /// Modify the spatial model.
+    AlterSpace,
     /// A user defined event with an unique id.
     UserEvent(UserEventId),
 }

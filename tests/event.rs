@@ -18,7 +18,7 @@ use weasel::round::{EndRound, ResetRounds, StartRound};
 use weasel::rules::ability::SimpleAbility;
 #[cfg(feature = "serialization")]
 use weasel::serde::FlatEvent;
-use weasel::space::{MoveEntity, ResetSpace};
+use weasel::space::{AlterSpace, MoveEntity, ResetSpace};
 use weasel::team::{
     ConcludeObjectives, Conclusion, CreateTeam, Relation, RemoveTeam, ResetObjectives, SetRelations,
 };
@@ -363,6 +363,7 @@ macro_rules! events_vec {
         events.push(RemoveTeam::trigger(&mut (), TEAM_1_ID).event());
         events.push(RegenerateStatistics::trigger(&mut (), ENTITY_1_ID.clone()).event());
         events.push(RegenerateAbilities::trigger(&mut (), ENTITY_1_ID.clone()).event());
+        events.push(AlterSpace::trigger(&mut (), ()).event());
         events
     }};
 }

@@ -1,8 +1,7 @@
 //! Module for the spatial dimension.
 
-use crate::battle::Battle;
-use crate::battle::BattleRules;
-use crate::entity::{Entity, EntityId};
+use crate::battle::{Battle, BattleRules};
+use crate::entity::{Entities, Entity, EntityId};
 use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
 use crate::metric::WriteMetrics;
@@ -78,6 +77,13 @@ pub trait SpaceRules<R: BattleRules> {
     /// See [SpaceSeed](type.SpaceSeed.html).
     type SpaceSeed: Clone + Debug + Serialize + for<'a> Deserialize<'a>;
 
+    #[cfg(not(feature = "serialization"))]
+    /// See [SpaceAlteration](type.SpaceAlteration.html).
+    type SpaceAlteration: Clone + Debug;
+    #[cfg(feature = "serialization")]
+    /// See [SpaceAlteration](type.SpaceAlteration.html).
+    type SpaceAlteration: Clone + Debug + Serialize + for<'a> Deserialize<'a>;
+
     /// See [SpaceModel](type.SpaceModel.html).
     type SpaceModel;
 
@@ -115,7 +121,7 @@ pub trait SpaceRules<R: BattleRules> {
     ) {
     }
 
-    /// Translate an entity from one space model to another one.
+    /// Translates an entity from one space model to another one.
     ///
     /// This method must apply the necessary changes to the entity's position and to the new model
     /// so that positions consistency is preserved.
@@ -126,6 +132,21 @@ pub trait SpaceRules<R: BattleRules> {
         _model: &Self::SpaceModel,
         _new_model: &mut Self::SpaceModel,
         _entity: &mut dyn Entity<R>,
+        _event_queue: &mut Option<EventQueue<R>>,
+        _metrics: &mut WriteMetrics<R>,
+    ) {
+    }
+
+    /// Changes the current space model, starting from the information contained in `alteration`.
+    ///
+    /// Consequences of this change should be applied by registering events inside `event_queue`.
+    ///
+    /// The provided implementation does nothing.
+    fn alter_space(
+        &self,
+        _entities: &Entities<R>,
+        _model: &mut Self::SpaceModel,
+        _alteration: &Self::SpaceAlteration,
         _event_queue: &mut Option<EventQueue<R>>,
         _metrics: &mut WriteMetrics<R>,
     ) {
@@ -150,6 +171,13 @@ pub type SpaceSeed<R> = <<R as BattleRules>::SR as SpaceRules<R>>::SpaceSeed;
 /// space and all environment hazards.\
 /// An example of space model is a matrix containing the position of all pieces in a game of chess.
 pub type SpaceModel<R> = <<R as BattleRules>::SR as SpaceRules<R>>::SpaceModel;
+
+/// Represents an alteration to the space model.
+///
+/// It is used to evolve the battle's current space model. This alteration should only contain
+/// the direct changes to the model. All side effects deriving from such change have to be
+/// implemented in the space rules `alter_space` method.
+pub type SpaceAlteration<R> = <<R as BattleRules>::SR as SpaceRules<R>>::SpaceAlteration;
 
 /// An event to move an entity from its position to a new one.
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
@@ -406,6 +434,111 @@ where
     fn event(&self) -> Box<dyn Event<R>> {
         Box::new(ResetSpace {
             seed: self.seed.clone(),
+        })
+    }
+}
+
+/// Event to alter the space model.
+///
+/// Alterations to the space model might have consequences on entities' or on other
+/// aspects of the battle.
+#[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
+pub struct AlterSpace<R: BattleRules> {
+    #[cfg_attr(
+        feature = "serialization",
+        serde(bound(
+            serialize = " SpaceAlteration<R>: Serialize",
+            deserialize = " SpaceAlteration<R>: Deserialize<'de>"
+        ))
+    )]
+    alteration: SpaceAlteration<R>,
+}
+
+impl<R: BattleRules> AlterSpace<R> {
+    /// Returns a trigger for this event.
+    pub fn trigger<P: EventProcessor<R>>(
+        processor: &mut P,
+        alteration: SpaceAlteration<R>,
+    ) -> AlterSpaceTrigger<R, P> {
+        AlterSpaceTrigger {
+            processor,
+            alteration,
+        }
+    }
+
+    /// Returns the alteration to be applied to the space model.
+    pub fn alteration(&self) -> &SpaceAlteration<R> {
+        &self.alteration
+    }
+}
+
+impl<R: BattleRules> Debug for AlterSpace<R> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "AlterSpace {{ alteration: {:?} }}", self.alteration)
+    }
+}
+
+impl<R: BattleRules> Clone for AlterSpace<R> {
+    fn clone(&self) -> Self {
+        AlterSpace {
+            alteration: self.alteration.clone(),
+        }
+    }
+}
+
+impl<R: BattleRules + 'static> Event<R> for AlterSpace<R> {
+    fn verify(&self, _battle: &Battle<R>) -> WeaselResult<(), R> {
+        Ok(())
+    }
+
+    fn apply(&self, battle: &mut Battle<R>, event_queue: &mut Option<EventQueue<R>>) {
+        let rules = &battle.state.space.rules;
+        // Apply the alteration.
+        rules.alter_space(
+            &battle.state.entities,
+            &mut battle.state.space.model,
+            &self.alteration,
+            event_queue,
+            &mut battle.metrics.write_handle(),
+        );
+    }
+
+    fn kind(&self) -> EventKind {
+        EventKind::AlterSpace
+    }
+
+    fn box_clone(&self) -> Box<dyn Event<R>> {
+        Box::new(self.clone())
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+/// Trigger to build and fire a `AlterSpace` event.
+pub struct AlterSpaceTrigger<'a, R, P>
+where
+    R: BattleRules,
+    P: EventProcessor<R>,
+{
+    processor: &'a mut P,
+    alteration: SpaceAlteration<R>,
+}
+
+impl<'a, R, P> EventTrigger<'a, R, P> for AlterSpaceTrigger<'a, R, P>
+where
+    R: BattleRules + 'static,
+    P: EventProcessor<R>,
+{
+    fn processor(&'a mut self) -> &'a mut P {
+        self.processor
+    }
+
+    /// Returns a `AlterSpace` event.
+    fn event(&self) -> Box<dyn Event<R>> {
+        Box::new(AlterSpace {
+            alteration: self.alteration.clone(),
         })
     }
 }
