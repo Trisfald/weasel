@@ -72,6 +72,7 @@ impl<R: BattleRules> SpaceRules<R> for EmptySpaceRules {
     type Position = ();
     type SpaceSeed = ();
     type SpaceModel = ();
+    type SpaceAlteration = ();
 
     fn generate_model(&self, _seed: &Option<Self::SpaceSeed>) -> Self::SpaceModel {}
 }

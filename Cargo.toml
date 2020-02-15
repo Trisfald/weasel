@@ -50,3 +50,6 @@ required-features = ["serialization"]
 name = "user-event"
 path = "examples/user_event/main.rs"
 required-features = ["serialization"]
+
+[[example]]
+name = "space"
