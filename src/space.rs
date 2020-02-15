@@ -40,7 +40,7 @@ impl<R: BattleRules> Space<R> {
     pub(crate) fn move_entity<'a>(
         &mut self,
         claim: PositionClaim<'a, R>,
-        position: &Position<R>,
+        position: Option<&Position<R>>,
         metrics: &mut WriteMetrics<R>,
     ) {
         self.rules
@@ -107,15 +107,17 @@ pub trait SpaceRules<R: BattleRules> {
 
     /// Moves an entity into a new position.
     ///
-    /// Position's correctness will be validated beforehand with `check_move`.\
-    /// The claim tells in which context the entity is trying to acquire the position.
+    /// Position's correctness will be validated beforehand with `check_move`,
+    /// unless it is `None`.
+    /// An empty position means that the entity is disappearing from the battle.\
+    /// The claim tells in which context the entity is trying to acquire the position.\
     ///
     /// The provided implementation does nothing.
     fn move_entity<'a>(
         &self,
         _model: &mut Self::SpaceModel,
         _claim: PositionClaim<'a, R>,
-        _position: &Self::Position,
+        _position: Option<&Self::Position>,
         _metrics: &mut WriteMetrics<R>,
     ) {
     }
@@ -179,7 +181,7 @@ pub type SpaceModel<R> = <<R as BattleRules>::SR as SpaceRules<R>>::SpaceModel;
 /// implemented in the space rules `alter_space` method.
 pub type SpaceAlteration<R> = <<R as BattleRules>::SR as SpaceRules<R>>::SpaceAlteration;
 
-/// Represents a claim to a given position coming from an entity.
+/// Represents an entity's claim to a given position.
 pub enum PositionClaim<'a, R: BattleRules> {
     /// The entity is spawning.
     Spawn(&'a EntityId<R>),
@@ -283,7 +285,7 @@ impl<R: BattleRules + 'static> Event<R> for MoveEntity<R> {
         // Take the new position.
         battle.state.space.move_entity(
             PositionClaim::Movement(entity),
-            &self.position,
+            Some(&self.position),
             &mut battle.metrics.write_handle(),
         );
         // Update the entity.

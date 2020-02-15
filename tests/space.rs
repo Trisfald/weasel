@@ -45,13 +45,15 @@ impl SpaceRules<CustomRules> for CustomSpaceRules {
         &self,
         model: &mut Self::SpaceModel,
         claim: PositionClaim<'a, CustomRules>,
-        position: &Self::Position,
+        position: Option<&Self::Position>,
         _metrics: &mut WriteMetrics<CustomRules>,
     ) {
-        if let PositionClaim::Movement(entity) = claim {
-            model.remove(entity.position());
+        if let Some(position) = position {
+            if let PositionClaim::Movement(entity) = claim {
+                model.remove(entity.position());
+            }
+            model.insert(*position);
         }
-        model.insert(*position);
     }
 
     fn translate_entity(

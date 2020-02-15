@@ -319,7 +319,7 @@ impl<R: BattleRules + 'static> Event<R> for CreateCreature<R> {
         // Take the position.
         battle.state.space.move_entity(
             PositionClaim::Spawn(&EntityId::Creature(self.id.clone())),
-            &self.position,
+            Some(&self.position),
             &mut battle.metrics.write_handle(),
         );
         // Notify the rounds module.
@@ -562,6 +562,9 @@ where
 }
 
 /// Event to remove a creature from the battle.
+///
+/// If the creature is the current actor, its round will be terminated.\
+/// The creature will be removed from the corresponding team and its position will be freed.
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct RemoveCreature<R: BattleRules> {
     #[cfg_attr(
@@ -640,11 +643,17 @@ impl<R: BattleRules + 'static> Event<R> for RemoveCreature<R> {
             }
         }
         // Remove the creature.
-        battle
+        let creature = battle
             .state
             .entities
             .remove_creature(&self.id)
             .unwrap_or_else(|err| panic!("constraint violated: {:?}", err));
+        // Free the position.
+        battle.state.space.move_entity(
+            PositionClaim::Movement(&creature as &dyn Entity<R>),
+            None,
+            &mut battle.metrics.write_handle(),
+        );
     }
 
     fn kind(&self) -> EventKind {

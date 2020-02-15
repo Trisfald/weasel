@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use weasel::ability::AbilityId;
 use weasel::actor::{ActorRules, RegenerateAbilities};
 use weasel::battle::BattleRules;
@@ -12,10 +13,12 @@ use weasel::metric::{system::*, WriteMetrics};
 use weasel::round::RoundState;
 use weasel::rules::empty::{EmptyAbility, EmptyStat};
 use weasel::rules::{ability::SimpleAbility, statistic::SimpleStatistic};
+use weasel::space::{PositionClaim, SpaceRules};
 use weasel::user::UserMetricId;
-use weasel::WeaselError;
-use weasel::{battle_rules, rules::empty::*};
-use weasel::{battle_rules_with_actor, battle_rules_with_character};
+use weasel::{
+    battle_rules, battle_rules_with_actor, battle_rules_with_character, battle_rules_with_space,
+    rules::empty::*, WeaselError,
+};
 
 static TEAM_1_ID: u32 = 1;
 static TEAM_5_ID: u32 = 5;
@@ -377,12 +380,55 @@ fn user_metrics() {
 
 #[test]
 fn remove_creature() {
-    battle_rules! {}
+    #[derive(Default)]
+    struct CustomSpaceRules {}
+
+    impl SpaceRules<CustomRules> for CustomSpaceRules {
+        type Position = u32;
+        type SpaceSeed = ();
+        type SpaceModel = HashSet<Self::Position>;
+        type SpaceAlteration = ();
+
+        fn generate_model(&self, _: &Option<Self::SpaceSeed>) -> Self::SpaceModel {
+            HashSet::new()
+        }
+
+        fn check_move<'a>(
+            &self,
+            model: &Self::SpaceModel,
+            _claim: PositionClaim<'a, CustomRules>,
+            position: &Self::Position,
+        ) -> bool {
+            !model.contains(position)
+        }
+
+        fn move_entity<'a>(
+            &self,
+            model: &mut Self::SpaceModel,
+            claim: PositionClaim<'a, CustomRules>,
+            position: Option<&Self::Position>,
+            _metrics: &mut WriteMetrics<CustomRules>,
+        ) {
+            if let Some(position) = position {
+                if let PositionClaim::Movement(entity) = claim {
+                    model.remove(entity.position());
+                }
+                model.insert(*position);
+            } else {
+                if let PositionClaim::Movement(entity) = claim {
+                    model.remove(entity.position());
+                }
+            }
+        }
+    }
+
+    battle_rules_with_space! { CustomSpaceRules }
+    static POSITION_1: u32 = 1;
     static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
     // Create a battle with one creature.
     let mut server = util::server(CustomRules::new());
     util::team(&mut server, TEAM_1_ID);
-    util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, ());
+    util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, POSITION_1);
     // Remove creature should fail if the creature doesn't exist.
     assert_eq!(
         RemoveCreature::trigger(&mut server, CREATURE_5_ID)
@@ -407,7 +453,7 @@ fn remove_creature() {
         .creatures()
         .any(|e| *e == CREATURE_1_ID));
     // Create another creature and start a round.
-    util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, ());
+    util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, POSITION_1);
     util::start_round(&mut server, &ENTITY_1_ID);
     // Remove the creature.
     assert_eq!(
@@ -425,6 +471,8 @@ fn remove_creature() {
         .creatures()
         .any(|e| *e == CREATURE_1_ID));
     assert_eq!(*server.battle().rounds().state(), RoundState::<_>::Ready);
+    // Position must have been freed.
+    assert!(!server.battle().space().model().contains(&POSITION_1));
 }
 
 #[test]
