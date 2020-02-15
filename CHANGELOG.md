@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2020-02-16
 ### Added
 - `AlterSpace` event.
 - Example showing different ways to manipulate the space model.
@@ -14,8 +15,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SpaceRules`'s `check_move` and `move_entity` now take as argument a `PositionClaim` instead of an `Option<&dyn Entity<R>>`.
 - `SpaceRules`'s `move_entity` is used also to move entities out of the space model.
 - `RemoveCreature` frees the entity's position.
-
-### Fixed
 
 ## [0.2.0] - 2020-02-15
 ### Added
