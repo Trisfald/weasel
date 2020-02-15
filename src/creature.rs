@@ -626,6 +626,8 @@ impl<R: BattleRules + 'static> Event<R> for RemoveCreature<R> {
             if current_actor_id == creature.entity_id() {
                 // Invoke `RoundRules` callback.
                 battle.state.rounds.on_end(
+                    &battle.state.entities,
+                    &battle.state.space,
                     creature as &dyn Actor<_>,
                     &mut battle.entropy,
                     &mut battle.metrics.write_handle(),

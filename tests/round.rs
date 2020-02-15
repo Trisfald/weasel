@@ -2,12 +2,13 @@
 use serde::{Deserialize, Serialize};
 use weasel::actor::Actor;
 use weasel::battle::{Battle, BattleRules};
-use weasel::entity::EntityId;
+use weasel::entity::{Entities, EntityId};
 use weasel::entropy::Entropy;
 use weasel::event::EventTrigger;
 use weasel::metric::{system::*, WriteMetrics};
 use weasel::round::{EndRound, ResetRounds, RoundState, RoundsRules, StartRound};
 use weasel::server::Server;
+use weasel::space::Space;
 use weasel::WeaselError;
 use weasel::{battle_rules, battle_rules_with_rounds, rules::empty::*};
 
@@ -53,6 +54,8 @@ impl RoundsRules<CustomRules> for CustomRoundsRules {
 
     fn on_start(
         &self,
+        _entities: &Entities<CustomRules>,
+        _space: &Space<CustomRules>,
         model: &mut Self::RoundsModel,
         actor: &dyn Actor<CustomRules>,
         _entropy: &mut Entropy<CustomRules>,
@@ -64,6 +67,8 @@ impl RoundsRules<CustomRules> for CustomRoundsRules {
 
     fn on_end(
         &self,
+        _entities: &Entities<CustomRules>,
+        _space: &Space<CustomRules>,
         model: &mut Self::RoundsModel,
         _: &dyn Actor<CustomRules>,
         _entropy: &mut Entropy<CustomRules>,

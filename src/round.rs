@@ -2,11 +2,12 @@
 
 use crate::actor::{Actor, ActorRules};
 use crate::battle::{Battle, BattleRules, Checkpoint};
-use crate::entity::EntityId;
+use crate::entity::{Entities, EntityId};
 use crate::entropy::Entropy;
 use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventRights, EventTrigger};
 use crate::metric::{system::*, WriteMetrics};
+use crate::space::Space;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
 use std::any::Any;
@@ -79,11 +80,14 @@ impl<R: BattleRules> Rounds<R> {
     /// Invoked when a round ends.
     pub(crate) fn on_end(
         &mut self,
+        entities: &Entities<R>,
+        space: &Space<R>,
         actor: &dyn Actor<R>,
         entropy: &mut Entropy<R>,
         metrics: &mut WriteMetrics<R>,
     ) {
-        self.rules.on_end(&mut self.model, actor, entropy, metrics);
+        self.rules
+            .on_end(entities, space, &mut self.model, actor, entropy, metrics);
     }
 
     /// Regenerates this rounds' model starting from the given seed.
@@ -138,6 +142,8 @@ pub trait RoundsRules<R: BattleRules> {
     /// The provided implementation does nothing.
     fn on_start(
         &self,
+        _entities: &Entities<R>,
+        _space: &Space<R>,
         _model: &mut Self::RoundsModel,
         _actor: &dyn Actor<R>,
         _entropy: &mut Entropy<R>,
@@ -150,6 +156,8 @@ pub trait RoundsRules<R: BattleRules> {
     /// The provided implementation does nothing.
     fn on_end(
         &self,
+        _entities: &Entities<R>,
+        _space: &Space<R>,
         _model: &mut Self::RoundsModel,
         _actor: &dyn Actor<R>,
         _entropy: &mut Entropy<R>,
@@ -262,6 +270,8 @@ impl<R: BattleRules + 'static> Event<R> for StartRound<R> {
             .unwrap_or_else(|err| panic!("constraint violated: {:?}", err));
         // Invoke `RoundRules` callback.
         battle.state.rounds.rules.on_start(
+            &battle.state.entities,
+            &battle.state.space,
             &mut battle.state.rounds.model,
             actor,
             &mut battle.entropy,
@@ -381,10 +391,13 @@ impl<R: BattleRules + 'static> Event<R> for EndRound<R> {
             .actor_rules()
             .on_round_end(actor, event_queue, &mut battle.entropy, metrics);
         // Invoke `RoundRules` callback.
-        battle
-            .state
-            .rounds
-            .on_end(actor, &mut battle.entropy, metrics);
+        battle.state.rounds.on_end(
+            &battle.state.entities,
+            &battle.state.space,
+            actor,
+            &mut battle.entropy,
+            metrics,
+        );
         // Check teams' objectives.
         Battle::check_objectives(
             &battle.state,
