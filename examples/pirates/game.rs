@@ -2,12 +2,14 @@ use crate::rules::PiratesRules;
 use crate::rules::*;
 use rand::Rng;
 use std::fs::{self, File};
+use std::time::SystemTime;
 use std::{env, io::Read};
 use weasel::ability::ActivateAbility;
 use weasel::battle::{Battle, BattleState, EndBattle};
 use weasel::character::{AlterStatistics, Character};
 use weasel::creature::{CreateCreature, CreatureId, RemoveCreature};
 use weasel::entity::EntityId;
+use weasel::entropy::ResetEntropy;
 use weasel::event::{EventKind, EventQueue, EventReceiver, EventTrigger, EventWrapper};
 use weasel::round::{EndRound, StartRound};
 use weasel::serde::FlatVersionedEvent;
@@ -35,6 +37,14 @@ impl Game {
             .build();
         // Create a server to orchestrate the game.
         let mut server = Server::builder(battle).build();
+        // Reset entropy with a 'random enough' seed.
+        let time = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap();
+        ResetEntropy::trigger(&mut server)
+            .seed(time.as_secs())
+            .fire()
+            .unwrap();
         // Create a team for the player.
         // Changes to the battle are always performed through events. To fire an event
         // just create a trigger object from the event itself, then call fire() on it.
