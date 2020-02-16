@@ -339,6 +339,8 @@ impl<V, TI, EI, CI, PI, AI, MI, E> WeaselError<V, TI, EI, CI, PI, AI, MI, E> {
                     }
                     if new_errors.is_empty() {
                         Ok(())
+                    } else if new_errors.len() == 1 {
+                        Err(new_errors.pop().unwrap())
                     } else {
                         Err(WeaselError::MultiError(new_errors))
                     }
@@ -393,35 +395,32 @@ mod tests {
         battle_rules! {}
         let mut processor = ();
         let trigger = DummyEvent::trigger(&mut processor);
+        let filter_fn = |err: &WeaselErrorType<_>| {
+            if let WeaselError::EmptyEventProcessor = err {
+                false
+            } else {
+                true
+            }
+        };
         // Test a direct filtering.
-        let error: WeaselErrorType<CustomRules> =
+        let error_to_filter: WeaselErrorType<CustomRules> =
             WeaselError::InvalidEvent(trigger.event(), Box::new(WeaselError::EmptyEventProcessor));
-        assert_eq!(
-            error
-                .clone()
-                .filter(|err| {
-                    if let WeaselError::EmptyEventProcessor = err {
-                        false
-                    } else {
-                        true
-                    }
-                })
-                .err(),
-            None
-        );
+        assert_eq!(error_to_filter.clone().filter(filter_fn).err(), None);
         // Test filtering of multierrors.
-        let error: WeaselErrorType<CustomRules> = WeaselError::MultiError(vec![error]);
+        let error: WeaselErrorType<CustomRules> =
+            WeaselError::MultiError(vec![error_to_filter.clone()]);
+        assert_eq!(error.filter(filter_fn).err(), None);
+        // Filter only the right errors.
+        let error: WeaselErrorType<CustomRules> =
+            WeaselError::InvalidEvent(trigger.event(), Box::new(WeaselError::RoundInProgress));
+        let error: WeaselErrorType<CustomRules> =
+            WeaselError::MultiError(vec![error_to_filter, error]);
         assert_eq!(
-            error
-                .filter(|err| {
-                    if let WeaselError::EmptyEventProcessor = err {
-                        false
-                    } else {
-                        true
-                    }
-                })
-                .err(),
-            None
+            error.filter(filter_fn).err(),
+            Some(WeaselError::InvalidEvent(
+                trigger.event(),
+                Box::new(WeaselError::RoundInProgress)
+            ))
         );
     }
 }

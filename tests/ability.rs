@@ -1,22 +1,23 @@
 use weasel::ability::ActivateAbility;
 use weasel::actor::{Action, ActorRules};
-use weasel::battle::{BattleRules, BattleState};
-use weasel::battle_rules_with_actor;
+use weasel::battle::{Battle, BattleRules, BattleState};
 use weasel::entity::EntityId;
 use weasel::entropy::Entropy;
-use weasel::event::{DummyEvent, EventKind, EventQueue, EventTrigger};
+use weasel::event::{DummyEvent, EventKind, EventQueue, EventServer, EventTrigger};
 use weasel::metric::WriteMetrics;
+use weasel::player::PlayerId;
 use weasel::rules::empty::EmptyAbility;
-use weasel::WeaselError;
-use weasel::{battle_rules, rules::empty::*};
+use weasel::{battle_rules, battle_rules_with_actor, rules::empty::*, Server, WeaselError};
 
 static TEAM_1_ID: u32 = 1;
+static TEAM_2_ID: u32 = 2;
 static CREATURE_1_ID: u32 = 1;
 static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
 static CREATURE_ERR_ID: u32 = 5;
 static ENTITY_ERR_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_ERR_ID);
 static ABILITY_ID: u32 = 1;
 static ABILITY_ERR_ID: u32 = 5;
+static PLAYER_1_ID: PlayerId = 1;
 
 #[derive(Default)]
 pub struct CustomActorRules {}
@@ -131,4 +132,32 @@ fn ability_activation() {
     assert_eq!(events[events.len() - 1].kind(), EventKind::DummyEvent);
     assert_eq!(events[events.len() - 2].origin(), Some(3));
     assert_eq!(events[events.len() - 1].origin(), Some(3));
+}
+
+#[test]
+fn ability_rights() {
+    // Create a server with a creature. Require authentication.
+    let mut server = Server::builder(Battle::builder(CustomRules::new()).build())
+        .enforce_authentication()
+        .build();
+    util::team(&mut server, TEAM_1_ID);
+    util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, ());
+    // Create another team.
+    util::team(&mut server, TEAM_2_ID);
+    // Give to the player rights to the team without any creature.
+    assert_eq!(server.rights_mut().add(PLAYER_1_ID, &TEAM_2_ID).err(), None);
+    // Ability activation should be rejected.
+    util::start_round(&mut server, &ENTITY_1_ID);
+    // Fail when creature does not know the ability.
+    let event = ActivateAbility::trigger(&mut server, ENTITY_1_ID, ABILITY_ID)
+        .activation(2)
+        .prototype()
+        .client_prototype(0, Some(PLAYER_1_ID));
+    assert_eq!(
+        server.process_client(event).err().map(|e| e.unfold()),
+        Some(WeaselError::AuthenticationError(
+            Some(PLAYER_1_ID),
+            TEAM_1_ID
+        ))
+    );
 }
