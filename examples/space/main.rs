@@ -24,7 +24,7 @@ fn main() {
         .fire()
         .unwrap();
     // Display the space model.
-    println!("Battlefield:\n{}", server.battle().space().model());        
+    println!("Battlefield:\n{}", server.battle().space().model());
     // Spawn three creatures.
     println!("Spawning three creatures...");
     CreateTeam::trigger(&mut server, TEAM_ID).fire().unwrap();

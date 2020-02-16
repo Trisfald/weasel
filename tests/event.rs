@@ -274,6 +274,14 @@ fn user_event() {
             .user_u64(UserMetricId::<CustomRules>::default()),
         Some(1)
     );
+    // Verify if Debug works for a boxed user event.
+    let event = MyEvent::trigger(&mut server, data.clone()).event();
+    assert!(
+        format!("{:?}", event).contains(&format!("{:?}", data)),
+        "{:?} does not contain {:?}",
+        event,
+        data
+    );
 }
 
 #[cfg(feature = "serialization")]
