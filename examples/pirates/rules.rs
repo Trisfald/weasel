@@ -71,7 +71,7 @@ impl TeamRules<PiratesRules> for PiratesTeamRules {
 pub struct PiratesCharacterRules {}
 
 impl CharacterRules<PiratesRules> for PiratesCharacterRules {
-    // We want to an integer as creature id.
+    // We want an integer as creature id.
     type CreatureId = u8;
     // Use statistics with integer as id and as value.
     type Statistic = SimpleStatistic<u8, i16>;
@@ -95,7 +95,7 @@ impl CharacterRules<PiratesRules> for PiratesCharacterRules {
         Box::new(v.into_iter())
     }
 
-    // Method to alter the statistics of ships. In this case we want to decreate hull and crew.
+    // Method to alter the statistics of ships. In this case we want to decrease hull and crew.
     fn alter(
         &self,
         character: &mut dyn Character<PiratesRules>,
@@ -131,7 +131,7 @@ impl ActorRules<PiratesRules> for PiratesActorRules {
     type Ability = SimpleAbility<String, ()>;
     // No need for a seed. All ships have the same abilities.
     type AbilitiesSeed = ();
-    // To activate an ability we will need to know who is target.
+    // To activate an ability we will need to know who is the target.
     type Activation = EntityId<PiratesRules>;
     // Abilities can't be altered in our game.
     type AbilitiesAlteration = ();
