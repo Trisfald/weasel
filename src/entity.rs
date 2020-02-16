@@ -216,6 +216,14 @@ impl<R: BattleRules> Entities<R> {
         }
     }
 
+    /// Returns an iterator over characters.
+    pub fn characters(&self) -> impl Iterator<Item = &dyn Character<R>> {
+        self.creatures
+            .values()
+            .filter(|e| e.entity_id().is_character())
+            .map(|e| e as &dyn Character<R>)
+    }
+
     /// Returns the character with the given id.
     pub fn character(&self, id: &EntityId<R>) -> Option<&dyn Character<R>> {
         match id {
@@ -228,6 +236,14 @@ impl<R: BattleRules> Entities<R> {
         match id {
             EntityId::Creature(id) => self.creature_mut(id).map(|e| e as &mut dyn Character<R>),
         }
+    }
+
+    /// Returns an iterator over actors.
+    pub fn actors(&self) -> impl Iterator<Item = &dyn Actor<R>> {
+        self.creatures
+            .values()
+            .filter(|e| e.entity_id().is_actor())
+            .map(|e| e as &dyn Actor<R>)
     }
 
     /// Returns the character with the given id.
