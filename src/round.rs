@@ -77,6 +77,17 @@ impl<R: BattleRules> Rounds<R> {
             .on_actor_added(&mut self.model, actor, entropy, metrics);
     }
 
+    /// Called when an actor is removed from the battle.
+    pub(crate) fn on_actor_removed(
+        &mut self,
+        actor: &dyn Actor<R>,
+        entropy: &mut Entropy<R>,
+        metrics: &mut WriteMetrics<R>,
+    ) {
+        self.rules
+            .on_actor_removed(&mut self.model, actor, entropy, metrics);
+    }
+
     /// Invoked when a round ends.
     pub(crate) fn on_end(
         &mut self,
@@ -169,6 +180,18 @@ pub trait RoundsRules<R: BattleRules> {
     ///
     /// The provided implementation does nothing.
     fn on_actor_added(
+        &self,
+        _model: &mut Self::RoundsModel,
+        _actor: &dyn Actor<R>,
+        _entropy: &mut Entropy<R>,
+        _metrics: &mut WriteMetrics<R>,
+    ) {
+    }
+
+    /// Invoked when an actor is removed from the battle.
+    ///
+    /// The provided implementation does nothing.
+    fn on_actor_removed(
         &self,
         _model: &mut Self::RoundsModel,
         _actor: &dyn Actor<R>,

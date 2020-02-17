@@ -650,6 +650,12 @@ impl<R: BattleRules + 'static> Event<R> for RemoveCreature<R> {
             .entities
             .remove_creature(&self.id)
             .unwrap_or_else(|err| panic!("constraint violated: {:?}", err));
+        // Notify the rounds module.
+        battle.state.rounds.on_actor_removed(
+            &creature,
+            &mut battle.entropy,
+            &mut battle.metrics.write_handle(),
+        );
         // Free the position.
         battle.state.space.move_entity(
             PositionClaim::Movement(&creature as &dyn Entity<R>),
