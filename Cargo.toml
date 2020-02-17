@@ -53,3 +53,7 @@ required-features = ["serialization"]
 
 [[example]]
 name = "space"
+
+[[example]]
+name = "initiative"
+required-features = ["random"]

@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 use weasel::ability::AbilityId;
-use weasel::actor::{ActorRules, RegenerateAbilities};
+use weasel::actor::{Actor, ActorRules, RegenerateAbilities};
 use weasel::battle::BattleRules;
 use weasel::character::{
     AlterStatistics, Character, CharacterRules, RegenerateStatistics, StatisticId,
@@ -10,14 +10,14 @@ use weasel::entity::{EntityId, Transmutation};
 use weasel::entropy::Entropy;
 use weasel::event::EventTrigger;
 use weasel::metric::{system::*, WriteMetrics};
-use weasel::round::RoundState;
+use weasel::round::{RoundState, RoundsRules};
 use weasel::rules::empty::{EmptyAbility, EmptyStat};
 use weasel::rules::{ability::SimpleAbility, statistic::SimpleStatistic};
 use weasel::space::{PositionClaim, SpaceRules};
 use weasel::user::UserMetricId;
 use weasel::{
-    battle_rules, battle_rules_with_actor, battle_rules_with_character, battle_rules_with_space,
-    rules::empty::*, WeaselError,
+    battle_rules, battle_rules_with_actor, battle_rules_with_character, rules::empty::*,
+    WeaselError,
 };
 
 static TEAM_1_ID: u32 = 1;
@@ -381,6 +381,30 @@ fn user_metrics() {
 #[test]
 fn remove_creature() {
     #[derive(Default)]
+    pub struct CustomRoundsRules {}
+
+    impl RoundsRules<CustomRules> for CustomRoundsRules {
+        type RoundsSeed = ();
+        // Collection to keep track of how many times on_actor_removed is called
+        // and with what entity_id.
+        type RoundsModel = Vec<EntityId<CustomRules>>;
+
+        fn generate_model(&self, _: &Option<Self::RoundsSeed>) -> Self::RoundsModel {
+            Vec::new()
+        }
+
+        fn on_actor_removed(
+            &self,
+            model: &mut Self::RoundsModel,
+            actor: &dyn Actor<CustomRules>,
+            _: &mut Entropy<CustomRules>,
+            _: &mut WriteMetrics<CustomRules>,
+        ) {
+            model.push(actor.entity_id().clone());
+        }
+    }
+
+    #[derive(Default)]
     struct CustomSpaceRules {}
 
     impl SpaceRules<CustomRules> for CustomSpaceRules {
@@ -422,7 +446,16 @@ fn remove_creature() {
         }
     }
 
-    battle_rules_with_space! { CustomSpaceRules }
+    battle_rules! {
+        EmptyTeamRules,
+        EmptyCharacterRules,
+        EmptyActorRules,
+        EmptyFightRules,
+        EmptyUserRules,
+        CustomSpaceRules,
+        CustomRoundsRules,
+        EmptyEntropyRules
+    }
     static POSITION_1: u32 = 1;
     static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
     // Create a battle with one creature.
@@ -473,6 +506,14 @@ fn remove_creature() {
     assert_eq!(*server.battle().rounds().state(), RoundState::<_>::Ready);
     // Position must have been freed.
     assert!(!server.battle().space().model().contains(&POSITION_1));
+    // Creature with id 1 must have been removed twice from the round model.
+    assert_eq!(
+        server.battle().rounds().model(),
+        &vec![
+            EntityId::Creature(CREATURE_1_ID),
+            EntityId::Creature(CREATURE_1_ID)
+        ]
+    );
 }
 
 #[test]

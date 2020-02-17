@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Order of rounds and initiative example.
+- Methods to retrieve an iterator over actors or characters.
+- `on_actor_removed` method in `RoundsRules`.
+
 ## [0.3.0] - 2020-02-16
 ### Added
 - `AlterSpace` event.
