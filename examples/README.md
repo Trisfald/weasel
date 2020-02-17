@@ -17,3 +17,7 @@ Small example showing how to implement user defined events and metrics.
 ## [Space](space/)
 
 Example program showing the different ways to manage the space dimension in weasel.
+
+## [Initiative](initiative/)
+
+A simple implementation of `RoundRules` to decide the order of rounds based on a creature's statistic.
