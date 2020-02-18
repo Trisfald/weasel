@@ -165,6 +165,23 @@ pub enum EntityAddition<'a, R: BattleRules> {
 pub type TeamId<R> = <<R as BattleRules>::TR as TeamRules<R>>::Id;
 
 /// Event to create a new team.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::event::EventTrigger;
+/// use weasel::team::CreateTeam;
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let team_id = 1;
+/// CreateTeam::trigger(&mut server, team_id).fire().unwrap();
+/// assert_eq!(server.battle().entities().teams().count(), 1);
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct CreateTeam<R: BattleRules> {
     #[cfg_attr(
@@ -451,6 +468,32 @@ impl<R: BattleRules> Hash for RelationshipPair<R> {
 
 /// Event to set diplomatic relations between teams.
 /// Relations are symmetric.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::event::EventTrigger;
+/// use weasel::team::{CreateTeam, Relation, SetRelations};
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let team_blue_id = 1;
+/// let team_red_id = 2;
+/// CreateTeam::trigger(&mut server, team_blue_id).fire().unwrap();
+/// CreateTeam::trigger(&mut server, team_red_id).fire().unwrap();
+///
+/// SetRelations::trigger(&mut server, &[(team_blue_id, team_red_id, Relation::Ally)])
+///     .fire()
+///     .unwrap();
+/// assert_eq!(
+///     server.battle().entities().relation(&team_blue_id, &team_red_id),
+///     Some(Relation::Ally)
+/// );
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct SetRelations<R: BattleRules> {
     /// Vector containing tuples of two teams and a relation.
@@ -580,6 +623,30 @@ pub enum Conclusion {
 }
 
 /// Event to set the `Conclusion` of a team.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::event::EventTrigger;
+/// use weasel::team::{CreateTeam, ConcludeObjectives, Conclusion};
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let team_id = 1;
+/// CreateTeam::trigger(&mut server, team_id).fire().unwrap();
+///
+/// ConcludeObjectives::trigger(&mut server, team_id, Conclusion::Victory)
+///     .fire()
+///     .unwrap();
+/// assert_eq!(
+///     server.battle().entities().team(&team_id).unwrap().conclusion(),
+///     Some(Conclusion::Victory)
+/// );
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct ConcludeObjectives<R: BattleRules> {
     #[cfg_attr(
@@ -691,6 +758,31 @@ where
 
 /// Event to reset a team's objectives.
 /// Team's `Conclusion` is resetted as well since the objectives changed.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::event::EventTrigger;
+/// use weasel::team::{CreateTeam, ConcludeObjectives, Conclusion, ResetObjectives};
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let team_id = 1;
+/// CreateTeam::trigger(&mut server, team_id).fire().unwrap();
+/// ConcludeObjectives::trigger(&mut server, team_id, Conclusion::Victory)
+///     .fire()
+///     .unwrap();
+///
+/// ResetObjectives::trigger(&mut server, team_id).fire().unwrap();
+/// assert_eq!(
+///     server.battle().entities().team(&team_id).unwrap().conclusion(),
+///     None
+/// );
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct ResetObjectives<R: BattleRules> {
     #[cfg_attr(
@@ -832,6 +924,25 @@ where
 
 /// Event to remove a team from a battle.
 /// Teams can be removed only if they are empty.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::event::EventTrigger;
+/// use weasel::team::{CreateTeam, RemoveTeam};
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let team_id = 1;
+/// CreateTeam::trigger(&mut server, team_id).fire().unwrap();
+///
+/// RemoveTeam::trigger(&mut server, team_id).fire().unwrap();
+/// assert_eq!(server.battle().entities().teams().count(), 0);
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct RemoveTeam<R: BattleRules> {
     #[cfg_attr(

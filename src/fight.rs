@@ -47,6 +47,26 @@ pub trait FightRules<R: BattleRules> {
 pub type Impact<R> = <<R as BattleRules>::FR as FightRules<R>>::Impact;
 
 /// An event to apply an impact on the game world.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::event::{EventTrigger, EventKind};
+/// use weasel::fight::ApplyImpact;
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let impact = ();
+/// ApplyImpact::trigger(&mut server, impact).fire().unwrap();
+/// assert_eq!(
+///     server.battle().history().events()[0].kind(),
+///     EventKind::ApplyImpact
+/// );
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct ApplyImpact<R: BattleRules> {
     #[cfg_attr(

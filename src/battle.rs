@@ -389,7 +389,22 @@ impl<R: BattleRules> BattleBuilder<R> {
     }
 }
 
-/// Event to end the battle.
+/// Event to end the battle. After the battle has ended new events can't be processed.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattlePhase, BattleRules, EndBattle};
+/// use weasel::event::{EventTrigger, EventKind};
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// EndBattle::trigger(&mut server).fire().unwrap();
+/// assert_eq!(server.battle().phase(), BattlePhase::Ended);
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct EndBattle<R> {
     #[cfg_attr(feature = "serialization", serde(skip))]

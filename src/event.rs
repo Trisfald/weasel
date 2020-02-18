@@ -444,8 +444,8 @@ impl<R: BattleRules> EventProcessor<R> for EventQueue<R> {
 ///
 /// # Examples
 /// ```
-/// use weasel::event::{EventTrigger, DummyEvent, EventKind};
 /// use weasel::battle::{Battle, BattleRules};
+/// use weasel::event::{EventTrigger, DummyEvent, EventKind};
 /// use weasel::{Server, battle_rules, rules::empty::*};
 ///
 /// battle_rules! {}
@@ -453,7 +453,7 @@ impl<R: BattleRules> EventProcessor<R> for EventQueue<R> {
 /// let battle = Battle::builder(CustomRules::new()).build();
 /// let mut server = Server::builder(battle).build();
 ///
-/// DummyEvent::<CustomRules>::trigger(&mut server).fire().unwrap();
+/// DummyEvent::trigger(&mut server).fire().unwrap();
 /// assert_eq!(
 ///     server.battle().history().events()[0].kind(),
 ///     EventKind::DummyEvent
@@ -599,15 +599,15 @@ impl DefaultOutput for () {
 ///
 /// # Examples
 /// ```
-/// use weasel::event::{EventTrigger, DummyEvent, EventKind, Prioritized, EventQueue};
 /// use weasel::battle::{EndBattle, BattleRules};
+/// use weasel::event::{EventTrigger, DummyEvent, EventKind, Prioritized, EventQueue};
 /// use weasel::{battle_rules, rules::empty::*};
 ///
 /// battle_rules! {}
 ///
 /// let mut queue = EventQueue::<CustomRules>::new();
-/// EndBattle::<CustomRules>::trigger(&mut queue).fire();
-/// DummyEvent::<CustomRules>::trigger(&mut Prioritized::new(&mut queue)).fire();
+/// EndBattle::trigger(&mut queue).fire();
+/// DummyEvent::trigger(&mut Prioritized::new(&mut queue)).fire();
 /// assert_eq!(queue[0].kind(), EventKind::DummyEvent);
 /// assert_eq!(queue[1].kind(), EventKind::EndBattle);
 /// ```
@@ -637,8 +637,8 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::event::{EventTrigger, DummyEvent, Conditional};
 /// use weasel::battle::{Battle, BattleState, BattleRules};
+/// use weasel::event::{EventTrigger, DummyEvent, Conditional};
 /// use weasel::{Server, WeaselError, battle_rules, rules::empty::*};
 ///
 /// battle_rules! {}

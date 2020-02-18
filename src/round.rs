@@ -213,6 +213,38 @@ pub type RoundsSeed<R> = <<R as BattleRules>::RR as RoundsRules<R>>::RoundsSeed;
 pub type RoundsModel<R> = <<R as BattleRules>::RR as RoundsRules<R>>::RoundsModel;
 
 /// Event to make an actor start a new round.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::creature::CreateCreature;
+/// use weasel::entity::EntityId;
+/// use weasel::event::EventTrigger;
+/// use weasel::round::{RoundState, StartRound};
+/// use weasel::team::CreateTeam;
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let team_id = 1;
+/// CreateTeam::trigger(&mut server, team_id).fire().unwrap();
+/// let creature_id = 1;
+/// let position = ();
+/// CreateCreature::trigger(&mut server, creature_id, team_id, position)
+///     .fire()
+///     .unwrap();
+///
+/// StartRound::trigger(&mut server, EntityId::Creature(creature_id))
+///     .fire()
+///     .unwrap();
+/// assert_eq!(
+///     *server.battle().rounds().state(),
+///     RoundState::Started(EntityId::Creature(creature_id))
+/// );
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct StartRound<R: BattleRules> {
     #[cfg_attr(
@@ -357,6 +389,36 @@ where
 }
 
 /// Event to end the current round.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::creature::CreateCreature;
+/// use weasel::entity::EntityId;
+/// use weasel::event::EventTrigger;
+/// use weasel::round::{EndRound, RoundState, StartRound};
+/// use weasel::team::CreateTeam;
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let team_id = 1;
+/// CreateTeam::trigger(&mut server, team_id).fire().unwrap();
+/// let creature_id = 1;
+/// let position = ();
+/// CreateCreature::trigger(&mut server, creature_id, team_id, position)
+///     .fire()
+///     .unwrap();
+/// StartRound::trigger(&mut server, EntityId::Creature(creature_id))
+///     .fire()
+///     .unwrap();
+///
+/// EndRound::trigger(&mut server).fire().unwrap();
+/// assert_eq!(*server.battle().rounds().state(), RoundState::Ready);
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct EndRound<R> {
     #[cfg_attr(feature = "serialization", serde(skip))]
@@ -490,6 +552,25 @@ where
 /// Event to reset the rounds model.
 ///
 /// This event can be fired only if no round is in progress.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::event::{EventTrigger, EventKind};
+/// use weasel::round::ResetRounds;
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// ResetRounds::trigger(&mut server).fire().unwrap();
+/// assert_eq!(
+///     server.battle().history().events()[0].kind(),
+///     EventKind::ResetRounds
+/// );
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct ResetRounds<R: BattleRules> {
     #[cfg_attr(

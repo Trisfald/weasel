@@ -32,6 +32,41 @@ pub type Activation<R> = <<R as BattleRules>::AR as ActorRules<R>>::Activation;
 pub type AbilitiesAlteration<R> = <<R as BattleRules>::AR as ActorRules<R>>::AbilitiesAlteration;
 
 /// Event to make an actor activate an ability.
+///
+/// # Examples
+/// ```
+/// use weasel::ability::ActivateAbility;
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::creature::CreateCreature;
+/// use weasel::entity::EntityId;
+/// use weasel::event::EventTrigger;
+/// use weasel::round::StartRound;
+/// use weasel::team::CreateTeam;
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let team_id = 1;
+/// CreateTeam::trigger(&mut server, team_id).fire().unwrap();
+/// let creature_id = 1;
+/// let position = ();
+/// CreateCreature::trigger(&mut server, creature_id, team_id, position)
+///     .fire()
+///     .unwrap();
+/// StartRound::trigger(&mut server, EntityId::Creature(creature_id))
+///     .fire()
+///     .unwrap();
+///
+/// let ability_id = 99;
+/// let result =
+///     ActivateAbility::trigger(&mut server, EntityId::Creature(creature_id), ability_id).fire();
+/// // We get an error because the creature doesn't know this ability.
+/// // The set of abilities known by creatures must defined in 'ActorRules'.
+/// assert!(result.is_err());
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct ActivateAbility<R: BattleRules> {
     #[cfg_attr(
