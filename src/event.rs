@@ -441,6 +441,24 @@ impl<R: BattleRules> EventProcessor<R> for EventQueue<R> {
 }
 
 /// An event that does nothing.
+///
+/// # Examples
+/// ```
+/// use weasel::event::{EventTrigger, DummyEvent, EventKind};
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// DummyEvent::<CustomRules>::trigger(&mut server).fire().unwrap();
+/// assert_eq!(
+///     server.battle().history().events()[0].kind(),
+///     EventKind::DummyEvent
+/// );
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct DummyEvent<R> {
     #[cfg_attr(feature = "serialization", serde(skip))]
@@ -582,7 +600,6 @@ impl DefaultOutput for () {
 /// # Examples
 /// ```
 /// use weasel::event::{EventTrigger, DummyEvent, EventKind, Prioritized, EventQueue};
-/// use weasel::error::{WeaselErrorType, WeaselError};
 /// use weasel::battle::{EndBattle, BattleRules};
 /// use weasel::{battle_rules, rules::empty::*};
 ///
@@ -620,10 +637,9 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::event::{EventTrigger, DummyEvent, EventKind, Conditional, EventQueue};
-/// use weasel::error::{WeaselErrorType, WeaselError};
+/// use weasel::event::{EventTrigger, DummyEvent, Conditional};
 /// use weasel::battle::{Battle, BattleState, BattleRules};
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{Server, WeaselError, battle_rules, rules::empty::*};
 ///
 /// battle_rules! {}
 ///

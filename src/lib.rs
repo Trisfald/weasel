@@ -1,4 +1,5 @@
 #![deny(missing_docs)]
+#![doc(test(attr(warn(warnings))))]
 
 //!
 //! weasel is a customizable battle system for turn-based games.
