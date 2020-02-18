@@ -578,6 +578,22 @@ impl DefaultOutput for () {
 
 /// Decorator for `EventQueue` processor. It appends new events at the front of the queue, instead
 /// of pushing them at the back.
+///
+/// # Examples
+/// ```
+/// use weasel::event::{EventTrigger, DummyEvent, EventKind, Prioritized, EventQueue};
+/// use weasel::error::{WeaselErrorType, WeaselError};
+/// use weasel::battle::{EndBattle, BattleRules};
+/// use weasel::{battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let mut queue = EventQueue::<CustomRules>::new();
+/// EndBattle::<CustomRules>::trigger(&mut queue).fire();
+/// DummyEvent::<CustomRules>::trigger(&mut Prioritized::new(&mut queue)).fire();
+/// assert_eq!(queue[0].kind(), EventKind::DummyEvent);
+/// assert_eq!(queue[1].kind(), EventKind::EndBattle);
+/// ```
 pub struct Prioritized<'a, R: BattleRules> {
     event_queue: &'a mut EventQueue<R>,
 }
@@ -601,6 +617,34 @@ where
 }
 
 /// Decorator for event triggers to add a condition on the generated event prototype.
+///
+/// # Examples
+/// ```
+/// use weasel::event::{EventTrigger, DummyEvent, EventKind, Conditional, EventQueue};
+/// use weasel::error::{WeaselErrorType, WeaselError};
+/// use weasel::battle::{Battle, BattleState, BattleRules};
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let result = Conditional::new(
+///     DummyEvent::trigger(&mut server),
+///     std::rc::Rc::new(|state: &BattleState<CustomRules>| {
+///         state
+///             .entities()
+///             .teams()
+///             .count() == 42
+///     }),
+/// )
+/// .fire();
+/// assert_eq!(
+///     result.err().map(|e| e.unfold()),
+///     Some(WeaselError::ConditionUnsatisfied)
+/// );
+/// ```
 pub struct Conditional<'a, R, T, P>
 where
     R: BattleRules,
@@ -886,15 +930,6 @@ mod tests {
         let reset_entropy = ResetEntropy::<CustomRules>::trigger(&mut ()).event();
         assert_eq!(&dummy, &dummy_copy);
         assert_ne!(&dummy, &reset_entropy);
-    }
-
-    #[test]
-    fn prioritized() {
-        let mut queue = EventQueue::<CustomRules>::new();
-        DummyEvent::<CustomRules>::trigger(&mut queue).fire();
-        ResetEntropy::<CustomRules>::trigger(&mut Prioritized::new(&mut queue)).fire();
-        assert_eq!(queue[0].kind(), EventKind::ResetEntropy);
-        assert_eq!(queue[1].kind(), EventKind::DummyEvent);
     }
 
     #[test]
