@@ -148,8 +148,8 @@ pub struct FlatVersionedEvent<R: BattleRules> {
 impl<R: BattleRules + 'static> From<VersionedEventWrapper<R>> for FlatVersionedEvent<R> {
     fn from(event: VersionedEventWrapper<R>) -> Self {
         FlatVersionedEvent {
-            id: event.wrapper().id,
-            origin: event.wrapper().origin,
+            id: event.wrapper().id(),
+            origin: event.wrapper().origin(),
             event: FlatEvent::flattened(event.wrapper.event),
             version: event.version,
         }

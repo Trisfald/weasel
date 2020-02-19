@@ -130,7 +130,7 @@ pub struct EventWrapper<R: BattleRules> {
     /// Id of the event that generated this one.
     origin: Option<EventId>,
     /// The actual event wrapped inside this struct.
-    event: Box<dyn Event<R>>,
+    pub(crate) event: Box<dyn Event<R>>,
 }
 
 impl<R: BattleRules> Clone for EventWrapper<R> {
@@ -181,8 +181,8 @@ impl<R: BattleRules> Deref for EventWrapper<R> {
 
 /// Decorates an `EventWrapper` with the battle rules version.
 pub struct VersionedEventWrapper<R: BattleRules> {
-    wrapper: EventWrapper<R>,
-    version: Version<R>,
+    pub(crate) wrapper: EventWrapper<R>,
+    pub(crate) version: Version<R>,
 }
 
 impl<R: BattleRules> Clone for VersionedEventWrapper<R> {
@@ -304,9 +304,9 @@ pub struct ClientEventPrototype<R: BattleRules> {
     /// Id of the event that generated this one.
     origin: Option<EventId>,
     /// The actual event wrapped inside this struct.
-    event: Box<dyn Event<R>>,
+    pub(crate) event: Box<dyn Event<R>>,
     /// Version of `BattleRules` that generated this event.
-    version: Version<R>,
+    pub(crate) version: Version<R>,
     /// Id of the player who fired this event.
     player: Option<PlayerId>,
 }
