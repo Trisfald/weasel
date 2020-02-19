@@ -86,7 +86,7 @@ impl<R: BattleRules + 'static> Server<R> {
         if let Some(event_queue) = event_queue {
             for mut prototype in event_queue {
                 // Set origin id in derived event.
-                prototype.origin = Some(event.id);
+                prototype.set_origin(Some(event.id()));
                 let result = self.process(prototype);
                 if let Err(error) = result {
                     errors.push(error);
