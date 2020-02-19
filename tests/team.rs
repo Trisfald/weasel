@@ -185,6 +185,31 @@ fn diplomacy() {
     let mut vec = entities.enemies_id(&TEAM_3_ID).collect::<Vec<_>>();
     vec.sort_unstable();
     assert_eq!(vec, vec![TEAM_1_ID, TEAM_2_ID]);
+}
+
+#[test]
+fn diplomacy_update() {
+    battle_rules! {}
+    // Create a battle with three teams.
+    let mut server = util::server(CustomRules::new());
+    // Create team one.
+    util::team(&mut server, TEAM_1_ID);
+    // Create team two allied with one.
+    assert_eq!(
+        CreateTeam::trigger(&mut server, TEAM_2_ID)
+            .relations(&[(TEAM_1_ID, Relation::Ally)])
+            .fire()
+            .err(),
+        None
+    );
+    // Create team three enemy with team one.
+    assert_eq!(
+        CreateTeam::trigger(&mut server, TEAM_3_ID)
+            .relations(&[(TEAM_1_ID, Relation::Enemy)])
+            .fire()
+            .err(),
+        None
+    );    
     // Set team three ally with team two and team one enemy with team two.
     // Check that pre-conditions are checked.
     assert_eq!(
@@ -268,7 +293,7 @@ fn diplomacy() {
     assert_eq!(
         entities.enemies_id(&TEAM_3_ID).collect::<Vec<_>>(),
         vec![TEAM_1_ID]
-    );
+    );    
 }
 
 #[test]

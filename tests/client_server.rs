@@ -187,10 +187,7 @@ fn send_events() {
     let server = Rc::new(RefCell::new(util::server(CustomRules::new())));
     let server_sink = TestServerSink::new(SERVER_1_ID, server.clone());
     // Create a client.
-    let client = Rc::new(RefCell::new(util::client(
-        CustomRules::new(),
-        server_sink.clone(),
-    )));
+    let client = Rc::new(RefCell::new(util::client(CustomRules::new(), server_sink)));
     // Connect the client to the server.
     let mut client_sink = TestClientSink::new(CLIENT_1_ID, client.clone());
     add_sink!(server, client_sink);
@@ -307,7 +304,7 @@ fn integrity_checks() {
     let new_server_sink = TestServerSink::new(SERVER_1_ID, server.clone());
     client
         .borrow_mut()
-        .set_server_sink(Box::new(new_server_sink.clone()));
+        .set_server_sink(Box::new(new_server_sink));
     assert_eq!(server_sink.sink.borrow().disconnections, 1);
     // Fire another event in the client.
     assert_eq!(
@@ -333,7 +330,7 @@ fn check_version() {
     // Create a client with older rules.
     let mut rules = CustomRules::new();
     rules.version = VERSION_OLD;
-    let client = Rc::new(RefCell::new(util::client(rules, server_sink.clone())));
+    let client = Rc::new(RefCell::new(util::client(rules, server_sink)));
     // Connect the client to the server.
     let mut client_sink = TestClientSink::new(CLIENT_1_ID, client.clone());
     add_sink_from!(server, client_sink, 0);
@@ -361,10 +358,7 @@ fn add_client_sink() {
     }
     assert_eq!(events!(server).len(), 4);
     // Create client.
-    let client = Rc::new(RefCell::new(util::client(
-        CustomRules::new(),
-        server_sink.clone(),
-    )));
+    let client = Rc::new(RefCell::new(util::client(CustomRules::new(), server_sink)));
     let mut client_sink = TestClientSink::new(CLIENT_1_ID, client.clone());
     // Add client sink with invalid range.
     let range = Range { start: 5, end: 7 };
@@ -475,10 +469,7 @@ fn rights() {
         .client_sinks_mut()
         .remove_sink(CLIENT_1_ID);
     let server_sink = TestServerSink::new(SERVER_1_ID, server.clone());
-    let client = Rc::new(RefCell::new(util::client(
-        CustomRules::new(),
-        server_sink.clone(),
-    )));
+    let client = Rc::new(RefCell::new(util::client(CustomRules::new(), server_sink)));
     // Connect the client to the server.
     let mut client_sink = TestClientSink::new(CLIENT_1_ID, client.clone());
     add_sink_from!(server, client_sink, 0);
@@ -554,7 +545,7 @@ fn client_server_serde() {
     // Create a client.
     let client = Rc::new(RefCell::new(util::client(
         CustomRules::new(),
-        server_sink.clone(),
+        server_sink,
     )));
     // Connect the client to the server.
     let mut client_sink = TestClientSink::new(CLIENT_1_ID, client.clone());
@@ -596,7 +587,7 @@ fn client_server_serde() {
     let history_json = helper::history_as_json(server.borrow().battle());
     let client = Rc::new(RefCell::new(util::client(
         CustomRules::new(),
-        server_sink.clone(),
+        server_sink,
     )));
     // Connect the client to the server.
     let mut client_sink = TestClientSink::new(CLIENT_1_ID, client.clone());

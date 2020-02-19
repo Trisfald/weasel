@@ -112,7 +112,7 @@ mod tests {
     #[cfg(feature = "random")]
     #[test]
     fn uniform_distribution() {
-        let seed = 1204678643940597513;
+        let seed = 1_204_678_643_940_597_513;
         let rule = UniformDistribution::default();
         for _ in 0..2 {
             let mut model = rule.generate_model(&Some(seed));

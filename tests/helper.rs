@@ -23,7 +23,7 @@ where
 
 #[cfg(feature = "serialization")]
 /// Loads a history stored as json into an event receiver.
-pub fn load_json_history<'a, R, T>(receiver: &'a mut T, json: String)
+pub fn load_json_history<R, T>(receiver: &mut T, json: String)
 where
     R: BattleRules + 'static,
     T: EventReceiver<R>,

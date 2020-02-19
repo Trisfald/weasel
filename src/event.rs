@@ -1007,7 +1007,7 @@ mod tests {
         assert_eq!(multi.add(Box::new(Sink { id: 1, ok: false })).err(), None);
         assert_eq!(multi.sinks.len(), 2);
         assert_eq!(
-            multi.send(1, once(event.clone())).err(),
+            multi.send(1, once(event)).err(),
             Some(WeaselError::EventSinkError("broken".to_string()))
         );
         assert_eq!(multi.sinks.len(), 1);
@@ -1064,6 +1064,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::let_unit_value)]
     fn decorators_stack() {
         let mut processor = ();
         let event = Conditional::new(

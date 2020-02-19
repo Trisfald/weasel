@@ -501,18 +501,15 @@ mod tests {
         _: &BattleState<CustomRules>,
         event_queue: &mut Option<EventQueue<CustomRules>>,
     ) {
-        match event.kind() {
-            // Each time a team is created, check the team id and fire a dummy event.
-            EventKind::CreateTeam => {
-                let create_team: &CreateTeam<CustomRules> =
-                    match event.as_any().downcast_ref::<CreateTeam<CustomRules>>() {
-                        Some(b) => b,
-                        None => panic!("incorrect cast!"),
-                    };
-                assert_eq!(*create_team.id(), 1);
-                dummy(event_queue);
-            }
-            _ => {} // Do nothing.
+        // Each time a team is created, check the team id and fire a dummy event.
+        if let EventKind::CreateTeam = event.kind() {
+            let create_team: &CreateTeam<CustomRules> =
+                match event.as_any().downcast_ref::<CreateTeam<CustomRules>>() {
+                    Some(b) => b,
+                    None => panic!("incorrect cast!"),
+                };
+            assert_eq!(*create_team.id(), 1);
+            dummy(event_queue);
         }
     }
 

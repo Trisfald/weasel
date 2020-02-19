@@ -248,7 +248,7 @@ mod tests {
             _high: Self::EntropyOutput,
         ) -> Self::EntropyOutput {
             let model = *model;
-            let result: Self::EntropyOutput = model.into();
+            let result: Self::EntropyOutput = model;
             result
         }
     }

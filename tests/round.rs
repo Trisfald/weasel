@@ -62,7 +62,7 @@ impl RoundsRules<CustomRules> for CustomRoundsRules {
         _metrics: &mut WriteMetrics<CustomRules>,
     ) {
         model.starts += 1;
-        model.last = Some(actor.entity_id().clone());
+        model.last = Some(*actor.entity_id());
     }
 
     fn on_end(
