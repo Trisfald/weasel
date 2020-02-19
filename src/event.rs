@@ -126,11 +126,11 @@ impl<R: BattleRules> PartialEq<Box<dyn Event<R>>> for Box<dyn Event<R>> {
 /// A wrapper to decorate verified events with additional data.
 pub struct EventWrapper<R: BattleRules> {
     /// Event Id is assigned only after events has been verified for consistency.
-    pub(crate) id: EventId,
+    id: EventId,
     /// Id of the event that generated this one.
-    pub(crate) origin: Option<EventId>,
+    origin: Option<EventId>,
     /// The actual event wrapped inside this struct.
-    pub(crate) event: Box<dyn Event<R>>,
+    event: Box<dyn Event<R>>,
 }
 
 impl<R: BattleRules> Clone for EventWrapper<R> {
@@ -181,8 +181,8 @@ impl<R: BattleRules> Deref for EventWrapper<R> {
 
 /// Decorates an `EventWrapper` with the battle rules version.
 pub struct VersionedEventWrapper<R: BattleRules> {
-    pub(crate) wrapper: EventWrapper<R>,
-    pub(crate) version: Version<R>,
+    wrapper: EventWrapper<R>,
+    version: Version<R>,
 }
 
 impl<R: BattleRules> Clone for VersionedEventWrapper<R> {
@@ -223,11 +223,11 @@ pub type Condition<R> = std::rc::Rc<dyn Fn(&BattleState<R>) -> bool>;
 /// A prototype for tentative events that are not yet verified.
 pub struct EventPrototype<R: BattleRules> {
     /// Id of the event that generated this one.
-    pub(crate) origin: Option<EventId>,
+    origin: Option<EventId>,
     /// The actual event wrapped inside this struct.
-    pub(crate) event: Box<dyn Event<R>>,
+    event: Box<dyn Event<R>>,
     /// Condition that must be satisfied for this prototype to be valid.
-    pub(crate) condition: Option<Condition<R>>,
+    condition: Option<Condition<R>>,
 }
 
 impl<R: BattleRules> EventPrototype<R> {
@@ -249,6 +249,11 @@ impl<R: BattleRules> EventPrototype<R> {
         self.origin
     }
 
+    /// Sets the origin of this prototype.
+    pub fn set_origin(&mut self, origin: Option<EventId>) {
+        self.origin = origin;
+    }
+
     /// Returns the event.
     #[allow(clippy::borrowed_box)]
     pub fn event(&self) -> &Box<dyn Event<R>> {
@@ -258,6 +263,11 @@ impl<R: BattleRules> EventPrototype<R> {
     /// Returns the prototype's acceptance condition.
     pub fn condition(&self) -> &Option<Condition<R>> {
         &self.condition
+    }
+
+    /// Sets the acceptance condition of this prototype.
+    pub fn set_condition(&mut self, condition: Option<Condition<R>>) {
+        self.condition = condition;
     }
 
     /// Consume this event prototype and returns a `ClientEventPrototype` instance of it.
@@ -294,9 +304,9 @@ pub struct ClientEventPrototype<R: BattleRules> {
     /// Id of the event that generated this one.
     origin: Option<EventId>,
     /// The actual event wrapped inside this struct.
-    pub(crate) event: Box<dyn Event<R>>,
+    event: Box<dyn Event<R>>,
     /// Version of `BattleRules` that generated this event.
-    pub(crate) version: Version<R>,
+    version: Version<R>,
     /// Id of the player who fired this event.
     player: Option<PlayerId>,
 }
@@ -706,7 +716,7 @@ where
 
     fn prototype(&self) -> EventPrototype<R> {
         let mut prototype = self.trigger.prototype();
-        prototype.condition = Some(self.condition.clone());
+        prototype.set_condition(Some(self.condition.clone()));
         prototype
     }
 }
@@ -930,6 +940,74 @@ fn normalize_range<R: BattleRules>(
     Ok(range)
 }
 
+/// Decorator for event triggers to manually set the origin of this event.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::event::{EventTrigger, DummyEvent, Originated};
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// Originated::new(DummyEvent::trigger(&mut server), 42)
+///     .fire()
+///     .unwrap();
+/// assert_eq!(server.battle().history().events()[0].origin(), Some(42));
+/// ```
+pub struct Originated<'a, R, T, P>
+where
+    R: BattleRules,
+    T: EventTrigger<'a, R, P>,
+    P: 'a + EventProcessor<R>,
+{
+    trigger: T,
+    origin: EventId,
+    _phantom: PhantomData<&'a P>,
+    _phantom_: PhantomData<R>,
+}
+
+impl<'a, R, T, P> Originated<'a, R, T, P>
+where
+    R: BattleRules,
+    T: EventTrigger<'a, R, P>,
+    P: 'a + EventProcessor<R>,
+{
+    /// Creates a new decorator to change an event's origin.
+    pub fn new(trigger: T, origin: EventId) -> Originated<'a, R, T, P> {
+        Originated {
+            trigger,
+            origin,
+            _phantom: PhantomData,
+            _phantom_: PhantomData,
+        }
+    }
+}
+
+impl<'a, R, T, P> EventTrigger<'a, R, P> for Originated<'a, R, T, P>
+where
+    R: BattleRules,
+    T: EventTrigger<'a, R, P>,
+    P: 'a + EventProcessor<R>,
+{
+    fn processor(&'a mut self) -> &'a mut P {
+        self.trigger.processor()
+    }
+
+    fn event(&self) -> Box<dyn Event<R>> {
+        self.trigger.event()
+    }
+
+    fn prototype(&self) -> EventPrototype<R> {
+        let mut prototype = self.trigger.prototype();
+        prototype.set_origin(Some(self.origin));
+        prototype
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1013,56 +1091,6 @@ mod tests {
         assert_eq!(multi.sinks.len(), 1);
     }
 
-    /// Test decorator for event triggers.
-    struct ChangeOrigin<'a, R, T, P>
-    where
-        R: BattleRules,
-        T: EventTrigger<'a, R, P>,
-        P: 'a + EventProcessor<R>,
-    {
-        trigger: T,
-        origin: EventId,
-        _phantom: PhantomData<&'a P>,
-        _phantom_: PhantomData<R>,
-    }
-
-    impl<'a, R, T, P> ChangeOrigin<'a, R, T, P>
-    where
-        R: BattleRules,
-        T: EventTrigger<'a, R, P>,
-        P: 'a + EventProcessor<R>,
-    {
-        pub fn new(trigger: T, origin: EventId) -> ChangeOrigin<'a, R, T, P> {
-            ChangeOrigin {
-                trigger,
-                origin,
-                _phantom: PhantomData,
-                _phantom_: PhantomData,
-            }
-        }
-    }
-
-    impl<'a, R, T, P> EventTrigger<'a, R, P> for ChangeOrigin<'a, R, T, P>
-    where
-        R: BattleRules,
-        T: EventTrigger<'a, R, P>,
-        P: 'a + EventProcessor<R>,
-    {
-        fn processor(&'a mut self) -> &'a mut P {
-            self.trigger.processor()
-        }
-
-        fn event(&self) -> Box<dyn Event<R>> {
-            self.trigger.event()
-        }
-
-        fn prototype(&self) -> EventPrototype<R> {
-            let mut prototype = self.trigger.prototype();
-            prototype.origin = Some(self.origin);
-            prototype
-        }
-    }
-
     #[test]
     #[allow(clippy::let_unit_value)]
     fn decorators_stack() {
@@ -1071,7 +1099,7 @@ mod tests {
             DummyEvent::trigger(&mut processor),
             std::rc::Rc::new(|_: &BattleState<CustomRules>| true),
         );
-        let event = ChangeOrigin::new(event, 0);
+        let event = Originated::new(event, 0);
         let prototype = event.prototype();
         assert!(prototype.condition.is_some());
         assert!(prototype.origin.is_some());

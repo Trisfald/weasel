@@ -25,16 +25,16 @@ impl<R: BattleRules> History<R> {
 
     /// Stores a new event in the history logs.
     pub(crate) fn archive(&mut self, event: &EventWrapper<R>) {
-        assert_eq!(event.id as usize, self.events.len());
+        assert_eq!(event.id() as usize, self.events.len());
         self.events.push(event.clone());
     }
 
     /// Verifies if an event has an id compatible with the current timeline.
     /// Timeline only accepts monotonically increasing ids with no gaps.
     pub(crate) fn verify_event(&self, event: &EventWrapper<R>) -> WeaselResult<(), R> {
-        if event.id as usize != self.events.len() {
+        if event.id() as usize != self.events.len() {
             return Err(WeaselError::NonContiguousEventId(
-                event.id,
+                event.id(),
                 self.events.len().try_into().unwrap(),
             ));
         }
@@ -68,11 +68,7 @@ mod tests {
         battle_rules! {}
         let mut history = History::<CustomRules>::new();
         let mut try_archive = |id| -> WeaselResult<(), _> {
-            let event = EventWrapper {
-                id,
-                origin: None,
-                event: DummyEvent::trigger(&mut ()).event(),
-            };
+            let event = EventWrapper::new(id, None, DummyEvent::trigger(&mut ()).event());
             history.verify_event(&event)?;
             history.archive(&event);
             Ok(())

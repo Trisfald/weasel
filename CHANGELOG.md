@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Doc tests for all events and few other structs.
+- `Originated` decorator to manually set the origin of an event.
 
 ## [0.3.1] - 2020-02-17
 ### Added
