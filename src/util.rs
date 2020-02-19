@@ -54,7 +54,7 @@ pub(crate) mod tests {
     }
 
     /// Dummy event.
-    pub(crate) fn dummy<'a, R, P>(processor: &'a mut P)
+    pub(crate) fn dummy<R, P>(processor: &mut P)
     where
         R: BattleRules + 'static,
         P: EventProcessor<R>,

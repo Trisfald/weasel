@@ -97,6 +97,25 @@ pub type EntropyModel<R> = <<R as BattleRules>::ER as EntropyRules>::EntropyMode
 pub type EntropyOutput<R> = <<R as BattleRules>::ER as EntropyRules>::EntropyOutput;
 
 /// Event to reset the entropy model.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::entropy::ResetEntropy;
+/// use weasel::event::{EventTrigger, EventKind};
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// ResetEntropy::trigger(&mut server).fire().unwrap();
+/// assert_eq!(
+///     server.battle().history().events()[0].kind(),
+///     EventKind::ResetEntropy
+/// );
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct ResetEntropy<R: BattleRules> {
     #[cfg_attr(
@@ -229,7 +248,7 @@ mod tests {
             _high: Self::EntropyOutput,
         ) -> Self::EntropyOutput {
             let model = *model;
-            let result: Self::EntropyOutput = model.into();
+            let result: Self::EntropyOutput = model;
             result
         }
     }

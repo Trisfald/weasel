@@ -105,6 +105,39 @@ pub trait Character<R: BattleRules>: Entity<R> {
 }
 
 /// An event to alter the statistics of a character.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::character::AlterStatistics;
+/// use weasel::creature::CreateCreature;
+/// use weasel::entity::EntityId;
+/// use weasel::event::{EventTrigger, EventKind};
+/// use weasel::team::CreateTeam;
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let team_id = 1;
+/// CreateTeam::trigger(&mut server, team_id).fire().unwrap();
+/// let creature_id = 1;
+/// let position = ();
+/// CreateCreature::trigger(&mut server, creature_id, team_id, position)
+///     .fire()
+///     .unwrap();
+///
+/// let alteration = ();
+/// AlterStatistics::trigger(&mut server, EntityId::Creature(creature_id), alteration)
+///     .fire()
+///     .unwrap();
+/// assert_eq!(
+///     server.battle().history().events().iter().last().unwrap().kind(),
+///     EventKind::AlterStatistics
+/// );
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct AlterStatistics<R: BattleRules> {
     #[cfg_attr(
@@ -248,6 +281,38 @@ where
 /// - Statistics that the character didn't have before will be added.
 /// - Current character's statistics that are not present in the new set will be removed
 ///   from the character.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::character::RegenerateStatistics;
+/// use weasel::creature::CreateCreature;
+/// use weasel::entity::EntityId;
+/// use weasel::event::{EventTrigger, EventKind};
+/// use weasel::team::CreateTeam;
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let team_id = 1;
+/// CreateTeam::trigger(&mut server, team_id).fire().unwrap();
+/// let creature_id = 1;
+/// let position = ();
+/// CreateCreature::trigger(&mut server, creature_id, team_id, position)
+///     .fire()
+///     .unwrap();
+///
+/// RegenerateStatistics::trigger(&mut server, EntityId::Creature(creature_id))
+///     .fire()
+///     .unwrap();
+/// assert_eq!(
+///     server.battle().history().events().iter().last().unwrap().kind(),
+///     EventKind::RegenerateStatistics
+/// );
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct RegenerateStatistics<R: BattleRules> {
     #[cfg_attr(

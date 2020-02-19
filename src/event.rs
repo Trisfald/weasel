@@ -441,6 +441,24 @@ impl<R: BattleRules> EventProcessor<R> for EventQueue<R> {
 }
 
 /// An event that does nothing.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::event::{EventTrigger, DummyEvent, EventKind};
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// DummyEvent::trigger(&mut server).fire().unwrap();
+/// assert_eq!(
+///     server.battle().history().events()[0].kind(),
+///     EventKind::DummyEvent
+/// );
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct DummyEvent<R> {
     #[cfg_attr(feature = "serialization", serde(skip))]
@@ -578,6 +596,21 @@ impl DefaultOutput for () {
 
 /// Decorator for `EventQueue` processor. It appends new events at the front of the queue, instead
 /// of pushing them at the back.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{EndBattle, BattleRules};
+/// use weasel::event::{EventTrigger, DummyEvent, EventKind, Prioritized, EventQueue};
+/// use weasel::{battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let mut queue = EventQueue::<CustomRules>::new();
+/// EndBattle::trigger(&mut queue).fire();
+/// DummyEvent::trigger(&mut Prioritized::new(&mut queue)).fire();
+/// assert_eq!(queue[0].kind(), EventKind::DummyEvent);
+/// assert_eq!(queue[1].kind(), EventKind::EndBattle);
+/// ```
 pub struct Prioritized<'a, R: BattleRules> {
     event_queue: &'a mut EventQueue<R>,
 }
@@ -601,6 +634,33 @@ where
 }
 
 /// Decorator for event triggers to add a condition on the generated event prototype.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleState, BattleRules};
+/// use weasel::event::{EventTrigger, DummyEvent, Conditional};
+/// use weasel::{Server, WeaselError, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let result = Conditional::new(
+///     DummyEvent::trigger(&mut server),
+///     std::rc::Rc::new(|state: &BattleState<CustomRules>| {
+///         state
+///             .entities()
+///             .teams()
+///             .count() == 42
+///     }),
+/// )
+/// .fire();
+/// assert_eq!(
+///     result.err().map(|e| e.unfold()),
+///     Some(WeaselError::ConditionUnsatisfied)
+/// );
+/// ```
 pub struct Conditional<'a, R, T, P>
 where
     R: BattleRules,
@@ -889,15 +949,6 @@ mod tests {
     }
 
     #[test]
-    fn prioritized() {
-        let mut queue = EventQueue::<CustomRules>::new();
-        DummyEvent::<CustomRules>::trigger(&mut queue).fire();
-        ResetEntropy::<CustomRules>::trigger(&mut Prioritized::new(&mut queue)).fire();
-        assert_eq!(queue[0].kind(), EventKind::ResetEntropy);
-        assert_eq!(queue[1].kind(), EventKind::DummyEvent);
-    }
-
-    #[test]
     fn multi_client_sink() {
         struct Sink {
             id: EventSinkId,
@@ -956,7 +1007,7 @@ mod tests {
         assert_eq!(multi.add(Box::new(Sink { id: 1, ok: false })).err(), None);
         assert_eq!(multi.sinks.len(), 2);
         assert_eq!(
-            multi.send(1, once(event.clone())).err(),
+            multi.send(1, once(event)).err(),
             Some(WeaselError::EventSinkError("broken".to_string()))
         );
         assert_eq!(multi.sinks.len(), 1);
@@ -1013,6 +1064,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::let_unit_value)]
     fn decorators_stack() {
         let mut processor = ();
         let event = Conditional::new(

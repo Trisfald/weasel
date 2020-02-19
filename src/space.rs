@@ -27,7 +27,7 @@ impl<R: BattleRules> Space<R> {
         }
     }
 
-    /// See [check_move](SpaceRules::check_move).
+    /// See [check_move](trait.SpaceRules.html#method.check_move).
     pub(crate) fn check_move<'a>(
         &self,
         claim: PositionClaim<'a, R>,
@@ -36,7 +36,7 @@ impl<R: BattleRules> Space<R> {
         self.rules.check_move(&self.model, claim, position)
     }
 
-    /// See [move_entity](SpaceRules::move_entity).
+    /// See [move_entity](trait.SpaceRules.html#method.move_entity).
     pub(crate) fn move_entity<'a>(
         &mut self,
         claim: PositionClaim<'a, R>,
@@ -190,6 +190,38 @@ pub enum PositionClaim<'a, R: BattleRules> {
 }
 
 /// An event to move an entity from its position to a new one.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::creature::CreateCreature;
+/// use weasel::entity::EntityId;
+/// use weasel::event::{EventTrigger, EventKind};
+/// use weasel::space::MoveEntity;
+/// use weasel::team::CreateTeam;
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let team_id = 1;
+/// CreateTeam::trigger(&mut server, team_id).fire().unwrap();
+/// let creature_id = 1;
+/// let position = ();
+/// CreateCreature::trigger(&mut server, creature_id, team_id, position)
+///     .fire()
+///     .unwrap();
+///
+/// MoveEntity::trigger(&mut server, EntityId::Creature(creature_id), position)
+///     .fire()
+///     .unwrap();
+/// assert_eq!(
+///     server.battle().history().events().iter().last().unwrap().kind(),
+///     EventKind::MoveEntity
+/// );
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct MoveEntity<R: BattleRules> {
     #[cfg_attr(
@@ -335,6 +367,25 @@ where
 }
 
 /// Event to reset the space model.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::event::{EventTrigger, EventKind};
+/// use weasel::space::ResetSpace;
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// ResetSpace::trigger(&mut server).fire().unwrap();
+/// assert_eq!(
+///     server.battle().history().events()[0].kind(),
+///     EventKind::ResetSpace
+/// );
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct ResetSpace<R: BattleRules> {
     #[cfg_attr(
@@ -453,8 +504,28 @@ where
 
 /// Event to alter the space model.
 ///
-/// Alterations to the space model might have consequences on entities' or on other
-/// aspects of the battle.
+/// Alterations to the space model might have consequences on entities or on other
+/// aspects of the battle, as defined in [alter_space](trait.SpaceRules.html#method.alter_space).
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::event::{EventTrigger, EventKind};
+/// use weasel::space::AlterSpace;
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let alteration = ();
+/// AlterSpace::trigger(&mut server, alteration).fire().unwrap();
+/// assert_eq!(
+///     server.battle().history().events()[0].kind(),
+///     EventKind::AlterSpace
+/// );
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct AlterSpace<R: BattleRules> {
     #[cfg_attr(

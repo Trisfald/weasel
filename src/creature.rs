@@ -132,6 +132,30 @@ impl<R: BattleRules> Actor<R> for Creature<R> {
 }
 
 /// Event to create a new creature.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::creature::CreateCreature;
+/// use weasel::event::EventTrigger;
+/// use weasel::team::CreateTeam;
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let team_id = 1;
+/// CreateTeam::trigger(&mut server, team_id).fire().unwrap();
+///
+/// let creature_id = 1;
+/// let position = ();
+/// CreateCreature::trigger(&mut server, creature_id, team_id, position)
+///     .fire()
+///     .unwrap();
+/// assert_eq!(server.battle().entities().creatures().count(), 1);
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct CreateCreature<R: BattleRules> {
     #[cfg_attr(
@@ -414,7 +438,43 @@ where
     }
 }
 
-/// Event to switch a creature from its current team to another.
+/// Event to move a creature from its current team to another one.
+///
+/// # Examples
+/// ```
+/// use weasel::actor::Actor;
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::creature::{ConvertCreature, CreateCreature};
+/// use weasel::event::EventTrigger;
+/// use weasel::team::CreateTeam;
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let team_blue_id = 1;
+/// let team_red_id = 2;
+/// CreateTeam::trigger(&mut server, team_blue_id).fire().unwrap();
+/// CreateTeam::trigger(&mut server, team_red_id).fire().unwrap();
+/// let creature_id = 1;
+/// let position = ();
+/// CreateCreature::trigger(&mut server, creature_id, team_blue_id, position)
+///     .fire()
+///     .unwrap();
+///
+/// ConvertCreature::trigger(&mut server, creature_id, team_red_id).fire().unwrap();
+/// assert_eq!(
+///     *server
+///         .battle()
+///         .entities()
+///         .creature(&creature_id)
+///         .unwrap()
+///         .team_id(),
+///     team_red_id
+/// );
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct ConvertCreature<R: BattleRules> {
     #[cfg_attr(
@@ -565,6 +625,31 @@ where
 ///
 /// If the creature is the current actor, its round will be terminated.\
 /// The creature will be removed from the corresponding team and its position will be freed.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::creature::{CreateCreature, RemoveCreature};
+/// use weasel::event::EventTrigger;
+/// use weasel::team::CreateTeam;
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let team_id = 1;
+/// CreateTeam::trigger(&mut server, team_id).fire().unwrap();
+/// let creature_id = 1;
+/// let position = ();
+/// CreateCreature::trigger(&mut server, creature_id, team_id, position)
+///     .fire()
+///     .unwrap();
+///
+/// RemoveCreature::trigger(&mut server, creature_id).fire().unwrap();
+/// assert_eq!(server.battle().entities().creatures().count(), 0);
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct RemoveCreature<R: BattleRules> {
     #[cfg_attr(

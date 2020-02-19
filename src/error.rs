@@ -374,6 +374,7 @@ mod tests {
     use crate::{battle_rules, rules::empty::*};
 
     #[test]
+    #[allow(clippy::let_unit_value)]
     fn unfold() {
         battle_rules! {}
         let mut processor = ();
@@ -391,10 +392,11 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::let_unit_value)]
     fn filter() {
         battle_rules! {}
         let mut processor = ();
-        let trigger = DummyEvent::trigger(&mut processor);
+        let trigger = DummyEvent::trigger(&mut (processor));
         let filter_fn = |err: &WeaselErrorType<_>| {
             if let WeaselError::EmptyEventProcessor = err {
                 false

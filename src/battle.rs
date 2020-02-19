@@ -389,7 +389,22 @@ impl<R: BattleRules> BattleBuilder<R> {
     }
 }
 
-/// Event to end the battle.
+/// Event to end the battle. After the battle has ended new events can't be processed.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattlePhase, BattleRules, EndBattle};
+/// use weasel::event::{EventTrigger, EventKind};
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// EndBattle::trigger(&mut server).fire().unwrap();
+/// assert_eq!(server.battle().phase(), BattlePhase::Ended);
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct EndBattle<R> {
     #[cfg_attr(feature = "serialization", serde(skip))]
@@ -486,18 +501,15 @@ mod tests {
         _: &BattleState<CustomRules>,
         event_queue: &mut Option<EventQueue<CustomRules>>,
     ) {
-        match event.kind() {
-            // Each time a team is created, check the team id and fire a dummy event.
-            EventKind::CreateTeam => {
-                let create_team: &CreateTeam<CustomRules> =
-                    match event.as_any().downcast_ref::<CreateTeam<CustomRules>>() {
-                        Some(b) => b,
-                        None => panic!("incorrect cast!"),
-                    };
-                assert_eq!(*create_team.id(), 1);
-                dummy(event_queue);
-            }
-            _ => {} // Do nothing.
+        // Each time a team is created, check the team id and fire a dummy event.
+        if let EventKind::CreateTeam = event.kind() {
+            let create_team: &CreateTeam<CustomRules> =
+                match event.as_any().downcast_ref::<CreateTeam<CustomRules>>() {
+                    Some(b) => b,
+                    None => panic!("incorrect cast!"),
+                };
+            assert_eq!(*create_team.id(), 1);
+            dummy(event_queue);
         }
     }
 

@@ -169,6 +169,39 @@ impl<'a, R: BattleRules> Action<'a, R> {
 }
 
 /// An event to alter the abilities of an actor.
+///
+/// # Examples
+/// ```
+/// use weasel::actor::AlterAbilities;
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::creature::CreateCreature;
+/// use weasel::entity::EntityId;
+/// use weasel::event::{EventTrigger, EventKind};
+/// use weasel::team::CreateTeam;
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let team_id = 1;
+/// CreateTeam::trigger(&mut server, team_id).fire().unwrap();
+/// let creature_id = 1;
+/// let position = ();
+/// CreateCreature::trigger(&mut server, creature_id, team_id, position)
+///     .fire()
+///     .unwrap();
+///
+/// let alteration = ();
+/// AlterAbilities::trigger(&mut server, EntityId::Creature(creature_id), alteration)
+///     .fire()
+///     .unwrap();
+/// assert_eq!(
+///     server.battle().history().events().iter().last().unwrap().kind(),
+///     EventKind::AlterAbilities
+/// );
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct AlterAbilities<R: BattleRules> {
     #[cfg_attr(
@@ -304,6 +337,38 @@ where
 /// - Abilities that the actor didn't have before will be added.
 /// - Current actor's abilities that are not present in the new set will be removed
 ///   from the actor.
+///
+/// # Examples
+/// ```
+/// use weasel::actor::RegenerateAbilities;
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::creature::CreateCreature;
+/// use weasel::entity::EntityId;
+/// use weasel::event::{EventTrigger, EventKind};
+/// use weasel::team::CreateTeam;
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let team_id = 1;
+/// CreateTeam::trigger(&mut server, team_id).fire().unwrap();
+/// let creature_id = 1;
+/// let position = ();
+/// CreateCreature::trigger(&mut server, creature_id, team_id, position)
+///     .fire()
+///     .unwrap();
+///
+/// RegenerateAbilities::trigger(&mut server, EntityId::Creature(creature_id))
+///     .fire()
+///     .unwrap();
+/// assert_eq!(
+///     server.battle().history().events().iter().last().unwrap().kind(),
+///     EventKind::RegenerateAbilities
+/// );
+/// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct RegenerateAbilities<R: BattleRules> {
     #[cfg_attr(

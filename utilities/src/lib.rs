@@ -25,7 +25,7 @@ where
 }
 
 /// Creates a team with default arguments.
-pub fn team<'a, R, P>(processor: &'a mut P, id: TeamId<R>)
+pub fn team<R, P>(processor: &mut P, id: TeamId<R>)
 where
     R: BattleRules + 'static,
     P: EventProcessor<R>,
@@ -64,7 +64,7 @@ where
 }
 
 /// Ends the round.
-pub fn end_round<'a, R, P>(processor: &'a mut P)
+pub fn end_round<R, P>(processor: &mut P)
 where
     R: BattleRules + 'static,
     P: EventProcessor<R>,
@@ -73,7 +73,7 @@ where
 }
 
 /// Dummy event.
-pub fn dummy<'a, R, P>(processor: &'a mut P)
+pub fn dummy<R, P>(processor: &mut P)
 where
     R: BattleRules + 'static,
     P: EventProcessor<R>,

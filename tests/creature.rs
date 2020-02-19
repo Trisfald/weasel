@@ -438,10 +438,8 @@ fn remove_creature() {
                     model.remove(entity.position());
                 }
                 model.insert(*position);
-            } else {
-                if let PositionClaim::Movement(entity) = claim {
-                    model.remove(entity.position());
-                }
+            } else if let PositionClaim::Movement(entity) = claim {
+                model.remove(entity.position());
             }
         }
     }

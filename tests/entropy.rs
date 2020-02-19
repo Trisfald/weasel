@@ -13,7 +13,7 @@ use weasel::{battle_rules, rules::empty::*};
 #[cfg(feature = "serialization")]
 mod helper;
 
-static SEED: u64 = 1204678643940597513;
+static SEED: u64 = 1_204_678_643_940_597_513;
 static TEAM_1_ID: u32 = 1;
 static CREATURE_1_ID: u32 = 1;
 static STAT_ID: u32 = 1;
