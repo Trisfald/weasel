@@ -940,7 +940,7 @@ fn normalize_range<R: BattleRules>(
     Ok(range)
 }
 
-/// Decorator for event triggers to manually set the origin of this event.
+/// Decorator for event triggers to manually set the origin of an event.
 ///
 /// # Examples
 /// ```
