@@ -209,7 +209,7 @@ fn diplomacy_update() {
             .fire()
             .err(),
         None
-    );    
+    );
     // Set team three ally with team two and team one enemy with team two.
     // Check that pre-conditions are checked.
     assert_eq!(
@@ -293,7 +293,7 @@ fn diplomacy_update() {
     assert_eq!(
         entities.enemies_id(&TEAM_3_ID).collect::<Vec<_>>(),
         vec![TEAM_1_ID]
-    );    
+    );
 }
 
 #[test]

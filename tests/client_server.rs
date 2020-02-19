@@ -543,10 +543,7 @@ fn client_server_serde() {
     let server = Rc::new(RefCell::new(util::server(CustomRules::new())));
     let server_sink = TestServerSink::new(SERVER_1_ID, server.clone());
     // Create a client.
-    let client = Rc::new(RefCell::new(util::client(
-        CustomRules::new(),
-        server_sink,
-    )));
+    let client = Rc::new(RefCell::new(util::client(CustomRules::new(), server_sink)));
     // Connect the client to the server.
     let mut client_sink = TestClientSink::new(CLIENT_1_ID, client.clone());
     add_sink!(server, client_sink);
@@ -585,10 +582,7 @@ fn client_server_serde() {
     helper::load_json_history(&mut *server.borrow_mut(), history_json);
     // Start a new client and load history.
     let history_json = helper::history_as_json(server.borrow().battle());
-    let client = Rc::new(RefCell::new(util::client(
-        CustomRules::new(),
-        server_sink,
-    )));
+    let client = Rc::new(RefCell::new(util::client(CustomRules::new(), server_sink)));
     // Connect the client to the server.
     let mut client_sink = TestClientSink::new(CLIENT_1_ID, client.clone());
     helper::load_json_history(&mut *client.borrow_mut(), history_json);
