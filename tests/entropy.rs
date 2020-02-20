@@ -1,4 +1,4 @@
-use weasel::actor::ActorRules;
+use weasel::actor::{Actor, ActorRules};
 use weasel::battle::{Battle, BattleRules};
 use weasel::character::{Character, CharacterRules};
 use weasel::entropy::{Entropy, ResetEntropy};

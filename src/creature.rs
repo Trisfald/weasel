@@ -15,7 +15,6 @@ use crate::util::Id;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
 use std::any::Any;
-use std::collections::hash_map::Values;
 use std::collections::HashMap;
 use std::fmt::{Debug, Formatter, Result};
 
@@ -45,16 +44,6 @@ pub struct Creature<R: BattleRules> {
 }
 
 impl<R: BattleRules> Creature<R> {
-    /// Returns an iterator over abilities.
-    pub fn abilities(&self) -> Values<AbilityId<R>, Ability<R>> {
-        self.abilities.values()
-    }
-
-    /// Returns the ability with the given id.
-    pub fn ability(&self, id: &AbilityId<R>) -> Option<&Ability<R>> {
-        self.abilities.get(id)
-    }
-
     pub(crate) fn set_team_id(&mut self, id: TeamId<R>) {
         self.team_id = id;
     }
