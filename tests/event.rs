@@ -14,6 +14,7 @@ use weasel::event::{
 };
 use weasel::fight::ApplyImpact;
 use weasel::metric::WriteMetrics;
+use weasel::object::{CreateObject, RemoveObject};
 use weasel::round::{EndRound, ResetRounds, StartRound};
 use weasel::rules::ability::SimpleAbility;
 #[cfg(feature = "serialization")]
@@ -345,33 +346,36 @@ macro_rules! events_vec {
         battle_rules! {}
         static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
         static ABILITY_1_ID: u32 = 1;
+        static OBJECT_1_ID: u32 = 1;
         // Collect all events into a vector.
         let mut events: Vec<Box<dyn Event<CustomRules>>> = Vec::new();
         events.push(DummyEvent::trigger(&mut ()).event());
-        events.push(StartRound::trigger(&mut (), ENTITY_1_ID).event());
-        events.push(EndRound::trigger(&mut ()).event());
         events.push(CreateTeam::trigger(&mut (), TEAM_1_ID).event());
         events.push(CreateCreature::trigger(&mut (), TEAM_1_ID, CREATURE_1_ID, ()).event());
-        events.push(ActivateAbility::trigger(&mut (), ENTITY_1_ID, ABILITY_1_ID).event());
-        events.push(ResetEntropy::trigger(&mut ()).event());
+        events.push(CreateObject::trigger(&mut (), OBJECT_1_ID, ()).event());
         events.push(MoveEntity::trigger(&mut (), ENTITY_1_ID, ()).event());
+        events.push(StartRound::trigger(&mut (), ENTITY_1_ID).event());
+        events.push(EndRound::trigger(&mut ()).event());
+        events.push(ActivateAbility::trigger(&mut (), ENTITY_1_ID, ABILITY_1_ID).event());
         events.push(ApplyImpact::trigger(&mut (), ()).event());
         events.push(AlterStatistics::trigger(&mut (), ENTITY_1_ID, ()).event());
         events.push(AlterAbilities::trigger(&mut (), ENTITY_1_ID, ()).event());
+        events.push(RegenerateStatistics::trigger(&mut (), ENTITY_1_ID.clone()).event());
+        events.push(RegenerateAbilities::trigger(&mut (), ENTITY_1_ID.clone()).event());
+        events.push(ConvertCreature::trigger(&mut (), CREATURE_1_ID, TEAM_1_ID).event());
         events.push(
             SetRelations::trigger(&mut (), &[(TEAM_1_ID, TEAM_1_ID, Relation::Ally)]).event(),
         );
-        events.push(ConvertCreature::trigger(&mut (), CREATURE_1_ID, TEAM_1_ID).event());
-        events.push(EndBattle::trigger(&mut ()).event());
         events.push(ConcludeObjectives::trigger(&mut (), TEAM_1_ID, Conclusion::Victory).event());
+        events.push(RemoveCreature::trigger(&mut (), CREATURE_1_ID).event());
+        events.push(RemoveObject::trigger(&mut (), OBJECT_1_ID).event());
+        events.push(RemoveTeam::trigger(&mut (), TEAM_1_ID).event());
+        events.push(AlterSpace::trigger(&mut (), ()).event());
+        events.push(ResetEntropy::trigger(&mut ()).event());
         events.push(ResetObjectives::trigger(&mut (), TEAM_1_ID).event());
         events.push(ResetRounds::trigger(&mut ()).event());
         events.push(ResetSpace::trigger(&mut ()).event());
-        events.push(RemoveCreature::trigger(&mut (), CREATURE_1_ID).event());
-        events.push(RemoveTeam::trigger(&mut (), TEAM_1_ID).event());
-        events.push(RegenerateStatistics::trigger(&mut (), ENTITY_1_ID.clone()).event());
-        events.push(RegenerateAbilities::trigger(&mut (), ENTITY_1_ID.clone()).event());
-        events.push(AlterSpace::trigger(&mut (), ()).event());
+        events.push(EndBattle::trigger(&mut ()).event());
         events
     }};
 }

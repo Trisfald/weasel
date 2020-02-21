@@ -11,7 +11,7 @@ use crate::metric::system::*;
 use crate::round::RoundState;
 use crate::space::{Position, PositionClaim};
 use crate::team::{EntityAddition, TeamId, TeamRules};
-use crate::util::Id;
+use crate::util::{collect_from_iter, Id};
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
 use std::any::Any;
@@ -53,8 +53,11 @@ impl<R: BattleRules> Id for Creature<R> {
     type Id = CreatureId<R>;
 
     fn id(&self) -> &CreatureId<R> {
-        let EntityId::Creature(id) = &self.id;
-        id
+        if let EntityId::Creature(id) = &self.id {
+            id
+        } else {
+            panic!("constraint violated: creature's id has a wrong type")
+        }
     }
 }
 
@@ -217,24 +220,6 @@ impl<R: BattleRules> Clone for CreateCreature<R> {
 }
 
 impl<R: BattleRules> CreateCreature<R> {
-    /// Collects an iterator into an hashmap.
-    /// Subsequent values with same key are ignored.
-    fn collect_from_iter<I>(
-        it: I,
-    ) -> HashMap<<<I as Iterator>::Item as Id>::Id, <I as Iterator>::Item>
-    where
-        I: Iterator,
-        <I as Iterator>::Item: Id,
-    {
-        let mut map = HashMap::new();
-        for e in it {
-            if !map.contains_key(e.id()) {
-                map.insert(e.id().clone(), e);
-            }
-        }
-        map
-    }
-
     /// Returns a trigger for this event.
     pub fn trigger<'a, P: EventProcessor<R>>(
         processor: &'a mut P,
@@ -313,14 +298,14 @@ impl<R: BattleRules + 'static> Event<R> for CreateCreature<R> {
             &mut battle.entropy,
             &mut battle.metrics.write_handle(),
         );
-        let statistics = CreateCreature::<R>::collect_from_iter(it);
+        let statistics = collect_from_iter(it);
         // Abilities' generation is influenced by the given abilities_seed, if present.
         let it = battle.rules.actor_rules().generate_abilities(
             &self.abilities_seed,
             &mut battle.entropy,
             &mut battle.metrics.write_handle(),
         );
-        let abilities = CreateCreature::<R>::collect_from_iter(it);
+        let abilities = collect_from_iter(it);
         // Create the creature.
         let creature = Creature {
             id: EntityId::Creature(self.id.clone()),
@@ -341,7 +326,7 @@ impl<R: BattleRules + 'static> Event<R> for CreateCreature<R> {
             &mut battle.entropy,
             &mut battle.metrics.write_handle(),
         );
-        // Add the creature to the actors.
+        // Add the creature to the entities.
         battle
             .state
             .entities
@@ -793,6 +778,7 @@ mod tests {
 
     impl<R: BattleRules> CharacterRules<R> for CustomCharacterRules {
         type CreatureId = u32;
+        type ObjectId = ();
         type Statistic = SimpleStatistic<u32, u32>;
         type StatisticsSeed = ();
         type StatisticsAlteration = ();

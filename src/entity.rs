@@ -6,6 +6,7 @@ use crate::character::Character;
 use crate::creature::{Creature, CreatureId, RemoveCreature};
 use crate::error::{WeaselError, WeaselResult};
 use crate::event::{EventProcessor, EventTrigger};
+use crate::object::{Object, ObjectId, RemoveObject};
 use crate::space::Position;
 use crate::team::{Conclusion, Relation, RelationshipPair, Team, TeamId};
 use crate::util::Id;
@@ -40,6 +41,15 @@ pub enum EntityId<R: BattleRules> {
         ))
     )]
     Creature(CreatureId<R>),
+    /// Inanimate object.
+    #[cfg_attr(
+        feature = "serialization",
+        serde(bound(
+            serialize = "ObjectId<R>: Serialize",
+            deserialize = "ObjectId<R>: Deserialize<'de>"
+        ))
+    )]
+    Object(ObjectId<R>),
 }
 
 impl<R: BattleRules> EntityId<R> {
@@ -47,6 +57,7 @@ impl<R: BattleRules> EntityId<R> {
     pub(crate) fn is_character(&self) -> bool {
         match self {
             EntityId::Creature(_) => true,
+            EntityId::Object(_) => true,
         }
     }
 
@@ -54,15 +65,27 @@ impl<R: BattleRules> EntityId<R> {
     pub(crate) fn is_actor(&self) -> bool {
         match self {
             EntityId::Creature(_) => true,
+            EntityId::Object(_) => false,
         }
     }
 
     /// Extracts a creature id out of this entity id.
     ///
-    /// Returns an error if the entity id's type is not creature.
+    /// Returns an error if the entity id's type is not `Creature`.
     pub fn creature(&self) -> WeaselResult<CreatureId<R>, R> {
         match self {
             EntityId::Creature(id) => Ok(id.clone()),
+            EntityId::Object(_) => Err(WeaselError::NotACreature(self.clone())),
+        }
+    }
+
+    /// Extracts an object id out of this entity id.
+    ///
+    /// Returns an error if the entity id's type is not `Object`.
+    pub fn object(&self) -> WeaselResult<ObjectId<R>, R> {
+        match self {
+            EntityId::Creature(_) => Err(WeaselError::NotAnObject(self.clone())),
+            EntityId::Object(id) => Ok(id.clone()),
         }
     }
 }
@@ -71,19 +94,27 @@ impl<R: BattleRules> Debug for EntityId<R> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match self {
             EntityId::Creature(id) => write!(f, "EntityId::Creature {{ {:?} }}", id),
+            EntityId::Object(id) => write!(f, "EntityId::Object {{ {:?} }}", id),
         }
     }
 }
 
-impl<R: BattleRules> Copy for EntityId<R> where CreatureId<R>: Copy {}
+impl<R: BattleRules> Copy for EntityId<R>
+where
+    CreatureId<R>: Copy,
+    ObjectId<R>: Copy,
+{
+}
 
 impl<R: BattleRules> Display for EntityId<R>
 where
     CreatureId<R>: Display,
+    ObjectId<R>: Display,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match self {
             EntityId::Creature(id) => write!(f, "Creature ({})", id),
+            EntityId::Object(id) => write!(f, "Object ({})", id),
         }
     }
 }
@@ -92,6 +123,7 @@ impl<R: BattleRules> Clone for EntityId<R> {
     fn clone(&self) -> Self {
         match self {
             EntityId::Creature(id) => EntityId::Creature(id.clone()),
+            EntityId::Object(id) => EntityId::Object(id.clone()),
         }
     }
 }
@@ -101,6 +133,11 @@ impl<R: BattleRules> PartialEq<EntityId<R>> for EntityId<R> {
         match self {
             EntityId::Creature(id) => match other {
                 EntityId::Creature(other_id) => id == other_id,
+                _ => false,
+            },
+            EntityId::Object(id) => match other {
+                EntityId::Object(other_id) => id == other_id,
+                _ => false,
             },
         }
     }
@@ -126,6 +163,9 @@ pub(crate) fn transmute_entity<R, P>(
             EntityId::Creature(id) => {
                 RemoveCreature::trigger(processor, id.clone()).fire();
             }
+            EntityId::Object(id) => {
+                RemoveObject::trigger(processor, id.clone()).fire();
+            }
         },
     }
 }
@@ -134,6 +174,7 @@ pub(crate) fn transmute_entity<R, P>(
 pub struct Entities<R: BattleRules> {
     teams: HashMap<TeamId<R>, Team<R>>,
     creatures: HashMap<CreatureId<R>, Creature<R>>,
+    objects: HashMap<ObjectId<R>, Object<R>>,
     relations: HashMap<RelationshipPair<R>, Relation>,
 }
 
@@ -142,6 +183,7 @@ impl<R: BattleRules> Entities<R> {
         Entities {
             teams: HashMap::new(),
             creatures: HashMap::new(),
+            objects: HashMap::new(),
             relations: HashMap::new(),
         }
     }
@@ -159,6 +201,21 @@ impl<R: BattleRules> Entities<R> {
     /// Returns a mutable reference to the creature with the given id.
     pub(crate) fn creature_mut(&mut self, id: &CreatureId<R>) -> Option<&mut Creature<R>> {
         self.creatures.get_mut(id)
+    }
+
+    /// Returns an iterator over objects.
+    pub fn objects(&self) -> impl Iterator<Item = &Object<R>> {
+        self.objects.values()
+    }
+
+    /// Returns the object with the given id.
+    pub fn object(&self, id: &ObjectId<R>) -> Option<&Object<R>> {
+        self.objects.get(id)
+    }
+
+    /// Returns a mutable reference to the object with the given id.
+    pub(crate) fn object_mut(&mut self, id: &ObjectId<R>) -> Option<&mut Object<R>> {
+        self.objects.get_mut(id)
     }
 
     /// Returns the team with the given id.
@@ -192,6 +249,11 @@ impl<R: BattleRules> Entities<R> {
         Ok(())
     }
 
+    pub(crate) fn add_object(&mut self, object: Object<R>) {
+        // Insert the object.
+        self.objects.insert(object.id().clone(), object);
+    }
+
     /// Returns an iterator over entities.
     pub fn entities(&self) -> impl Iterator<Item = &dyn Entity<R>> {
         self.creatures.values().map(|e| e as &dyn Entity<R>)
@@ -206,6 +268,7 @@ impl<R: BattleRules> Entities<R> {
     pub fn entity(&self, id: &EntityId<R>) -> Option<&dyn Entity<R>> {
         match id {
             EntityId::Creature(id) => self.creature(id).map(|e| e as &dyn Entity<R>),
+            EntityId::Object(id) => self.object(id).map(|e| e as &dyn Entity<R>),
         }
     }
 
@@ -213,6 +276,7 @@ impl<R: BattleRules> Entities<R> {
     pub(crate) fn entity_mut(&mut self, id: &EntityId<R>) -> Option<&mut dyn Entity<R>> {
         match id {
             EntityId::Creature(id) => self.creature_mut(id).map(|e| e as &mut dyn Entity<R>),
+            EntityId::Object(id) => self.object_mut(id).map(|e| e as &mut dyn Entity<R>),
         }
     }
 
@@ -228,6 +292,7 @@ impl<R: BattleRules> Entities<R> {
     pub fn character(&self, id: &EntityId<R>) -> Option<&dyn Character<R>> {
         match id {
             EntityId::Creature(id) => self.creature(id).map(|e| e as &dyn Character<R>),
+            EntityId::Object(id) => self.object(id).map(|e| e as &dyn Character<R>),
         }
     }
 
@@ -235,6 +300,7 @@ impl<R: BattleRules> Entities<R> {
     pub(crate) fn character_mut(&mut self, id: &EntityId<R>) -> Option<&mut dyn Character<R>> {
         match id {
             EntityId::Creature(id) => self.creature_mut(id).map(|e| e as &mut dyn Character<R>),
+            EntityId::Object(id) => self.object_mut(id).map(|e| e as &mut dyn Character<R>),
         }
     }
 
@@ -250,6 +316,7 @@ impl<R: BattleRules> Entities<R> {
     pub fn actor(&self, id: &EntityId<R>) -> Option<&dyn Actor<R>> {
         match id {
             EntityId::Creature(id) => self.creature(id).map(|e| e as &dyn Actor<R>),
+            EntityId::Object(_) => None,
         }
     }
 
@@ -257,6 +324,7 @@ impl<R: BattleRules> Entities<R> {
     pub(crate) fn actor_mut(&mut self, id: &EntityId<R>) -> Option<&mut dyn Actor<R>> {
         match id {
             EntityId::Creature(id) => self.creature_mut(id).map(|e| e as &mut dyn Actor<R>),
+            EntityId::Object(_) => None,
         }
     }
 
@@ -383,6 +451,18 @@ impl<R: BattleRules> Entities<R> {
         Ok(())
     }
 
+    /// Removes an object from the battle. The object must exist.
+    ///
+    /// Returns the removed object.
+    pub(crate) fn remove_object(&mut self, id: &ObjectId<R>) -> WeaselResult<Object<R>, R> {
+        // Extract the object.
+        let object = self
+            .objects
+            .remove(id)
+            .ok_or_else(|| WeaselError::ObjectNotFound(id.clone()))?;
+        Ok(object)
+    }
+
     /// Removes a team from the battle. The team must exist and be empty.
     ///
     /// Returns the removed team.
@@ -420,6 +500,18 @@ mod tests {
         assert_ne!(
             EntityId::<CustomRules>::Creature(5),
             EntityId::<CustomRules>::Creature(6)
+        );
+        assert_eq!(
+            EntityId::<CustomRules>::Object(5),
+            EntityId::<CustomRules>::Object(5)
+        );
+        assert_ne!(
+            EntityId::<CustomRules>::Object(5),
+            EntityId::<CustomRules>::Object(6)
+        );
+        assert_ne!(
+            EntityId::<CustomRules>::Creature(5),
+            EntityId::<CustomRules>::Object(5)
         );
     }
 }

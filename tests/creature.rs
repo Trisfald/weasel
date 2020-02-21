@@ -73,6 +73,7 @@ fn statistics_generated() {
 
     impl<R: BattleRules + 'static> CharacterRules<R> for CustomCharacterRules {
         type CreatureId = u32;
+        type ObjectId = ();
         type Statistic = EmptyStat;
         type StatisticsSeed = u32;
         type StatisticsAlteration = ();
@@ -113,6 +114,7 @@ fn regenerate_statistics() {
 
     impl<R: BattleRules + 'static> CharacterRules<R> for CustomCharacterRules {
         type CreatureId = u32;
+        type ObjectId = ();
         type Statistic = SimpleStatistic<u32, u32>;
         // Vec with pair (id, value).
         type StatisticsSeed = Vec<(u32, u32)>;
@@ -341,6 +343,7 @@ fn user_metrics() {
         UserMetricId<R>: Default,
     {
         type CreatureId = u32;
+        type ObjectId = ();
         type Statistic = SimpleStatistic<u32, u64>;
         type StatisticsSeed = u64;
         type StatisticsAlteration = ();
@@ -521,6 +524,7 @@ fn remove_creature_on_alter() {
 
     impl<R: BattleRules + 'static> CharacterRules<R> for CustomCharacterRules {
         type CreatureId = u32;
+        type ObjectId = ();
         type Statistic = EmptyStat;
         type StatisticsSeed = ();
         type StatisticsAlteration = ();

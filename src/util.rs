@@ -2,6 +2,7 @@
 
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
 
@@ -18,12 +19,31 @@ pub trait Id {
     fn id(&self) -> &Self::Id;
 }
 
+/// Collects an iterator into an hashmap.
+/// Subsequent values with same key are ignored.
+pub(crate) fn collect_from_iter<I>(
+    it: I,
+) -> HashMap<<<I as Iterator>::Item as Id>::Id, <I as Iterator>::Item>
+where
+    I: Iterator,
+    <I as Iterator>::Item: Id,
+{
+    let mut map = HashMap::new();
+    for e in it {
+        if !map.contains_key(e.id()) {
+            map.insert(e.id().clone(), e);
+        }
+    }
+    map
+}
+
 /// Creates a server from the given battlerules.
 #[cfg(test)]
 pub(crate) mod tests {
     use crate::battle::{Battle, BattleRules};
     use crate::creature::{CreateCreature, CreatureId};
     use crate::event::{DefaultOutput, DummyEvent, EventProcessor, EventTrigger};
+    use crate::object::{CreateObject, ObjectId};
     use crate::server::Server;
     use crate::space::Position;
     use crate::team::{CreateTeam, TeamId};
@@ -47,6 +67,20 @@ pub(crate) mod tests {
     ) {
         assert_eq!(
             CreateCreature::trigger(server, creature_id, team_id, position)
+                .fire()
+                .err(),
+            None
+        );
+    }
+
+    /// Creates an object with default arguments.
+    pub(crate) fn object<'a, R: BattleRules + 'static>(
+        server: &'a mut Server<R>,
+        object_id: ObjectId<R>,
+        position: Position<R>,
+    ) {
+        assert_eq!(
+            CreateObject::trigger(server, object_id, position)
                 .fire()
                 .err(),
             None

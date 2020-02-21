@@ -22,6 +22,13 @@ pub trait CharacterRules<R: BattleRules> {
     /// See [CreatureId](../creature/type.CreatureId.html).
     type CreatureId: Hash + Eq + Clone + Debug + Serialize + for<'a> Deserialize<'a>;
 
+    #[cfg(not(feature = "serialization"))]
+    /// See [ObjectId](../object/type.ObjectId.html).
+    type ObjectId: Hash + Eq + Clone + Debug;
+    #[cfg(feature = "serialization")]
+    /// See [ObjectId](../object/type.ObjectId.html).
+    type ObjectId: Hash + Eq + Clone + Debug + Serialize + for<'a> Deserialize<'a>;
+
     /// See [Statistic](type.Statistic.html).
     type Statistic: Id + 'static;
 

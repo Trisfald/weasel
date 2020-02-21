@@ -35,6 +35,8 @@ pub struct CustomCharacterRules {}
 impl CharacterRules<CustomRules> for CustomCharacterRules {
     // Just use an integer as creature id.
     type CreatureId = u8;
+    // Same for objects.
+    type ObjectId = u8;
     // Use statistics with integers as both id and value.
     type Statistic = SimpleStatistic<u8, u16>;
     // The seed will contain the value of speed.

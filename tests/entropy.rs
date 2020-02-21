@@ -30,6 +30,7 @@ pub struct CustomCharacterRules {}
 
 impl CharacterRules<CustomRules> for CustomCharacterRules {
     type CreatureId = u32;
+    type ObjectId = ();
     type Statistic = SimpleStatistic<u32, i32>;
     type StatisticsSeed = ();
     type StatisticsAlteration = ();

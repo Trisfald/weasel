@@ -117,6 +117,7 @@ pub mod event;
 pub mod fight;
 pub mod history;
 pub mod metric;
+pub mod object;
 pub mod player;
 pub mod round;
 pub mod rules;

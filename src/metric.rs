@@ -209,6 +209,8 @@ pub mod system {
     pub static ROUNDS_STARTED: SystemMetricId = 0;
     /// Number of creatures created.
     pub static CREATURES_CREATED: SystemMetricId = 1;
+    /// Number of objects created.
+    pub static OBJECTS_CREATED: SystemMetricId = 1;
     /// Number of teams created.
     pub static TEAMS_CREATED: SystemMetricId = 2;
 }

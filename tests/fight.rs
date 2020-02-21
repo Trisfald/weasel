@@ -26,6 +26,7 @@ pub struct CustomCharacterRules {}
 
 impl CharacterRules<CustomRules> for CustomCharacterRules {
     type CreatureId = u32;
+    type ObjectId = ();
     type Statistic = SimpleStatistic<String, i32>;
     type StatisticsSeed = ();
     type StatisticsAlteration = i32;
