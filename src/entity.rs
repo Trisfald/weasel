@@ -53,16 +53,16 @@ pub enum EntityId<R: BattleRules> {
 }
 
 impl<R: BattleRules> EntityId<R> {
-    /// Returns this entity id refers to an object that satisfies the `Character` trait.
-    pub(crate) fn is_character(&self) -> bool {
+    /// Returns whether this entity id refers to an object that satisfies the `Character` trait.
+    pub fn is_character(&self) -> bool {
         match self {
             EntityId::Creature(_) => true,
             EntityId::Object(_) => true,
         }
     }
 
-    /// Returns this entity id refers to an object that satisfies the `Actor` trait.
-    pub(crate) fn is_actor(&self) -> bool {
+    /// Returns whether this entity id refers to an object that satisfies the `Actor` trait.
+    pub fn is_actor(&self) -> bool {
         match self {
             EntityId::Creature(_) => true,
             EntityId::Object(_) => false,
@@ -193,13 +193,18 @@ impl<R: BattleRules> Entities<R> {
         self.creatures.values()
     }
 
+    /// Returns a mutable iterator over creatures.
+    pub fn creatures_mut(&mut self) -> impl Iterator<Item = &mut Creature<R>> {
+        self.creatures.values_mut()
+    }
+
     /// Returns the creature with the given id.
     pub fn creature(&self, id: &CreatureId<R>) -> Option<&Creature<R>> {
         self.creatures.get(id)
     }
 
     /// Returns a mutable reference to the creature with the given id.
-    pub(crate) fn creature_mut(&mut self, id: &CreatureId<R>) -> Option<&mut Creature<R>> {
+    pub fn creature_mut(&mut self, id: &CreatureId<R>) -> Option<&mut Creature<R>> {
         self.creatures.get_mut(id)
     }
 
@@ -208,14 +213,29 @@ impl<R: BattleRules> Entities<R> {
         self.objects.values()
     }
 
+    /// Returns a mutable iterator over objects.
+    pub fn objects_mut(&mut self) -> impl Iterator<Item = &mut Object<R>> {
+        self.objects.values_mut()
+    }
+
     /// Returns the object with the given id.
     pub fn object(&self, id: &ObjectId<R>) -> Option<&Object<R>> {
         self.objects.get(id)
     }
 
     /// Returns a mutable reference to the object with the given id.
-    pub(crate) fn object_mut(&mut self, id: &ObjectId<R>) -> Option<&mut Object<R>> {
+    pub fn object_mut(&mut self, id: &ObjectId<R>) -> Option<&mut Object<R>> {
         self.objects.get_mut(id)
+    }
+
+    /// Returns an iterator over teams.
+    pub fn teams(&self) -> impl Iterator<Item = &Team<R>> {
+        self.teams.values()
+    }
+
+    /// Returns a mutable iterator over teams.
+    pub fn teams_mut(&mut self) -> impl Iterator<Item = &mut Team<R>> {
+        self.teams.values_mut()
     }
 
     /// Returns the team with the given id.
@@ -224,13 +244,8 @@ impl<R: BattleRules> Entities<R> {
     }
 
     /// Returns a mutable reference to the team with the given id.
-    pub(crate) fn team_mut(&mut self, id: &TeamId<R>) -> Option<&mut Team<R>> {
+    pub fn team_mut(&mut self, id: &TeamId<R>) -> Option<&mut Team<R>> {
         self.teams.get_mut(id)
-    }
-
-    /// Returns an iterator over teams.
-    pub fn teams(&self) -> impl Iterator<Item = &Team<R>> {
-        self.teams.values()
     }
 
     pub(crate) fn add_team(&mut self, team: Team<R>) {
@@ -256,12 +271,18 @@ impl<R: BattleRules> Entities<R> {
 
     /// Returns an iterator over entities.
     pub fn entities(&self) -> impl Iterator<Item = &dyn Entity<R>> {
-        self.creatures.values().map(|e| e as &dyn Entity<R>)
+        self.creatures
+            .values()
+            .map(|e| e as &dyn Entity<R>)
+            .chain(self.objects.values().map(|e| e as &dyn Entity<R>))
     }
 
     /// Returns a mutable iterator over entities.
     pub fn entities_mut(&mut self) -> impl Iterator<Item = &mut dyn Entity<R>> {
-        self.creatures.values_mut().map(|e| e as &mut dyn Entity<R>)
+        self.creatures
+            .values_mut()
+            .map(|e| e as &mut dyn Entity<R>)
+            .chain(self.objects.values_mut().map(|e| e as &mut dyn Entity<R>))
     }
 
     /// Returns the entity with the given id.
@@ -273,7 +294,7 @@ impl<R: BattleRules> Entities<R> {
     }
 
     /// Returns a mutable reference to the entity with the given id.
-    pub(crate) fn entity_mut(&mut self, id: &EntityId<R>) -> Option<&mut dyn Entity<R>> {
+    pub fn entity_mut(&mut self, id: &EntityId<R>) -> Option<&mut dyn Entity<R>> {
         match id {
             EntityId::Creature(id) => self.creature_mut(id).map(|e| e as &mut dyn Entity<R>),
             EntityId::Object(id) => self.object_mut(id).map(|e| e as &mut dyn Entity<R>),
@@ -282,10 +303,21 @@ impl<R: BattleRules> Entities<R> {
 
     /// Returns an iterator over characters.
     pub fn characters(&self) -> impl Iterator<Item = &dyn Character<R>> {
-        self.creatures
-            .values()
-            .filter(|e| e.entity_id().is_character())
+        self.creatures()
             .map(|e| e as &dyn Character<R>)
+            .chain(self.objects().map(|e| e as &dyn Character<R>))
+    }
+
+    /// Returns a mutable iterator over characters.
+    pub fn characters_mut(&mut self) -> impl Iterator<Item = &mut dyn Character<R>> {
+        self.creatures
+            .values_mut()
+            .map(|e| e as &mut dyn Character<R>)
+            .chain(
+                self.objects
+                    .values_mut()
+                    .map(|e| e as &mut dyn Character<R>),
+            )
     }
 
     /// Returns the character with the given id.
@@ -297,7 +329,7 @@ impl<R: BattleRules> Entities<R> {
     }
 
     /// Returns a mutable reference to the character with the given id.
-    pub(crate) fn character_mut(&mut self, id: &EntityId<R>) -> Option<&mut dyn Character<R>> {
+    pub fn character_mut(&mut self, id: &EntityId<R>) -> Option<&mut dyn Character<R>> {
         match id {
             EntityId::Creature(id) => self.creature_mut(id).map(|e| e as &mut dyn Character<R>),
             EntityId::Object(id) => self.object_mut(id).map(|e| e as &mut dyn Character<R>),
@@ -306,10 +338,12 @@ impl<R: BattleRules> Entities<R> {
 
     /// Returns an iterator over actors.
     pub fn actors(&self) -> impl Iterator<Item = &dyn Actor<R>> {
-        self.creatures
-            .values()
-            .filter(|e| e.entity_id().is_actor())
-            .map(|e| e as &dyn Actor<R>)
+        self.creatures().map(|e| e as &dyn Actor<R>)
+    }
+
+    /// Returns a mutable iterator over actors.
+    pub fn actors_mut(&mut self) -> impl Iterator<Item = &mut dyn Actor<R>> {
+        self.creatures_mut().map(|e| e as &mut dyn Actor<R>)
     }
 
     /// Returns the character with the given id.
@@ -321,7 +355,7 @@ impl<R: BattleRules> Entities<R> {
     }
 
     /// Returns a mutable reference to the actor with the given id.
-    pub(crate) fn actor_mut(&mut self, id: &EntityId<R>) -> Option<&mut dyn Actor<R>> {
+    pub fn actor_mut(&mut self, id: &EntityId<R>) -> Option<&mut dyn Actor<R>> {
         match id {
             EntityId::Creature(id) => self.creature_mut(id).map(|e| e as &mut dyn Actor<R>),
             EntityId::Object(_) => None,
@@ -486,32 +520,101 @@ impl<R: BattleRules> Entities<R> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::battle::BattleRules;
+    use crate::entity::EntityId;
+    use crate::util::tests::{creature, object, server, team};
     use crate::{battle_rules, rules::empty::*};
+
+    static TEAM_1_ID: u32 = 1;
+    static TEAM_ERR_ID: u32 = 99;
+    static CREATURE_1_ID: u32 = 1;
+    static CREATURE_2_ID: u32 = 2;
+    static CREATURE_ERR_ID: u32 = 99;
+    static OBJECT_1_ID: u32 = 1;
+    static OBJECT_2_ID: u32 = 2;
+    static OBJECT_ERR_ID: u32 = 99;
+    static ENTITY_C1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
+    static ENTITY_O1_ID: EntityId<CustomRules> = EntityId::Object(OBJECT_1_ID);
+    static ENTITY_ERR_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_ERR_ID);
 
     battle_rules! {}
 
+    /// Creates a scenario with two creatures and two objects.
+    macro_rules! scenario {
+        () => {{
+            // Create the battle.
+            let mut server = server(CustomRules::new());
+            // Create a team.
+            team(&mut server, TEAM_1_ID);
+            // Create two creatures.
+            creature(&mut server, CREATURE_1_ID, TEAM_1_ID, ());
+            creature(&mut server, CREATURE_2_ID, TEAM_1_ID, ());
+            // Create two objects.
+            object(&mut server, OBJECT_1_ID, ());
+            object(&mut server, OBJECT_2_ID, ());
+            server
+        }};
+    }
+
     #[test]
-    fn entity_id_equality() {
-        assert_eq!(
-            EntityId::<CustomRules>::Creature(5),
-            EntityId::<CustomRules>::Creature(5)
-        );
-        assert_ne!(
-            EntityId::<CustomRules>::Creature(5),
-            EntityId::<CustomRules>::Creature(6)
-        );
-        assert_eq!(
-            EntityId::<CustomRules>::Object(5),
-            EntityId::<CustomRules>::Object(5)
-        );
-        assert_ne!(
-            EntityId::<CustomRules>::Object(5),
-            EntityId::<CustomRules>::Object(6)
-        );
-        assert_ne!(
-            EntityId::<CustomRules>::Creature(5),
-            EntityId::<CustomRules>::Object(5)
-        );
+    fn retrieval_concrete() {
+        let mut server = scenario!();
+        // Get a mutable reference to entities.
+        let entities = server.battle.entities_mut();
+        // Creatures.
+        assert_eq!(entities.creatures().count(), 2);
+        assert_eq!(entities.creatures_mut().count(), 2);
+        assert!(entities.creature(&CREATURE_1_ID).is_some());
+        assert!(entities.creature_mut(&CREATURE_1_ID).is_some());
+        assert!(entities.creature(&CREATURE_ERR_ID).is_none());
+        assert!(entities.creature_mut(&CREATURE_ERR_ID).is_none());
+        // Objects.
+        assert_eq!(entities.objects().count(), 2);
+        assert_eq!(entities.objects_mut().count(), 2);
+        assert!(entities.object(&OBJECT_1_ID).is_some());
+        assert!(entities.object_mut(&OBJECT_2_ID).is_some());
+        assert!(entities.object(&OBJECT_ERR_ID).is_none());
+        assert!(entities.object_mut(&OBJECT_ERR_ID).is_none());
+        // Teams.
+        assert_eq!(entities.teams().count(), 1);
+        assert_eq!(entities.teams_mut().count(), 1);
+        assert!(entities.team(&TEAM_1_ID).is_some());
+        assert!(entities.team_mut(&TEAM_1_ID).is_some());
+        assert!(entities.team(&TEAM_ERR_ID).is_none());
+        assert!(entities.team_mut(&TEAM_ERR_ID).is_none());
+    }
+
+    #[test]
+    fn retrieval_trait() {
+        let mut server = scenario!();
+        // Get a mutable reference to entities.
+        let entities = server.battle.entities_mut();
+        // Entities.
+        assert_eq!(entities.entities().count(), 4);
+        assert_eq!(entities.entities_mut().count(), 4);
+        assert!(entities.entity(&ENTITY_C1_ID).is_some());
+        assert!(entities.entity_mut(&ENTITY_C1_ID).is_some());
+        assert!(entities.entity(&ENTITY_O1_ID).is_some());
+        assert!(entities.entity_mut(&ENTITY_O1_ID).is_some());
+        assert!(entities.entity(&ENTITY_ERR_ID).is_none());
+        assert!(entities.entity_mut(&ENTITY_ERR_ID).is_none());
+        // Characters.
+        assert_eq!(entities.characters().count(), 4);
+        assert_eq!(entities.characters_mut().count(), 4);
+        assert!(entities.character(&ENTITY_C1_ID).is_some());
+        assert!(entities.character_mut(&ENTITY_C1_ID).is_some());
+        assert!(entities.character(&ENTITY_O1_ID).is_some());
+        assert!(entities.character_mut(&ENTITY_O1_ID).is_some());
+        assert!(entities.character(&ENTITY_ERR_ID).is_none());
+        assert!(entities.character_mut(&ENTITY_ERR_ID).is_none());
+        // Actors.
+        assert_eq!(entities.actors().count(), 2);
+        assert_eq!(entities.actors_mut().count(), 2);
+        assert!(entities.actor(&ENTITY_C1_ID).is_some());
+        assert!(entities.actor_mut(&ENTITY_C1_ID).is_some());
+        assert!(entities.actor(&ENTITY_O1_ID).is_none());
+        assert!(entities.actor_mut(&ENTITY_O1_ID).is_none());
+        assert!(entities.actor(&ENTITY_ERR_ID).is_none());
+        assert!(entities.actor_mut(&ENTITY_ERR_ID).is_none());
     }
 }

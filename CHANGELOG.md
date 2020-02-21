@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Doc tests for all events and few other structs.
 - `Originated` decorator.
 - Introduced inanimate objects.
+- Improved public API for `Battle` and its submodules.
 
 ### Changed
 - It's now possible to manually set an event's origin.

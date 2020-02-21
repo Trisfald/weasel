@@ -36,6 +36,11 @@ impl<R: BattleRules> Rounds<R> {
         &self.model
     }
 
+    /// Returns a mutable reference to the rounds model.
+    pub fn model_mut(&mut self) -> &mut RoundsModel<R> {
+        &mut self.model
+    }
+
     /// Returns true if the entity with the given id is the current actor.
     /// Entity existence is not verified.
     pub(crate) fn is_acting(&self, entity_id: &EntityId<R>) -> bool {

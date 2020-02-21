@@ -143,9 +143,14 @@ impl<R: BattleRules + 'static> Battle<R> {
         self.state.phase
     }
 
-    /// Returns the entities manager for this battle.
+    /// Returns a reference to the entities manager for this battle.
     pub fn entities(&self) -> &Entities<R> {
         &self.state.entities
+    }
+
+    /// Returns a mutable reference to the entities manager for this battle.
+    pub fn entities_mut(&mut self) -> &mut Entities<R> {
+        &mut self.state.entities
     }
 
     /// Returns the history of this battle.
@@ -158,19 +163,34 @@ impl<R: BattleRules + 'static> Battle<R> {
         &self.rules
     }
 
-    /// Returns this battle's space representation.
+    /// Returns a reference to this battle's space representation.
     pub fn space(&self) -> &Space<R> {
         &self.state.space
     }
 
-    /// Returns the entropy manager for this battle.
+    /// Returns a mutable reference to this battle's space representation.
+    pub fn space_mut(&mut self) -> &mut Space<R> {
+        &mut self.state.space
+    }
+
+    /// Returns a reference to the entropy manager for this battle.
     pub fn entropy(&self) -> &Entropy<R> {
         &self.entropy
     }
 
-    /// Returns the rounds manager for this battle.
+    /// Returns a mutable reference to the entropy manager for this battle.
+    pub fn entropy_mut(&mut self) -> &mut Entropy<R> {
+        &mut self.entropy
+    }
+
+    /// Returns a reference to the rounds manager for this battle.
     pub fn rounds(&self) -> &Rounds<R> {
         &self.state.rounds
+    }
+
+    /// Returns a mutable reference to the rounds manager for this battle.
+    pub fn rounds_mut(&mut self) -> &mut Rounds<R> {
+        &mut self.state.rounds
     }
 
     /// Returns a handle from which metrics can be read.

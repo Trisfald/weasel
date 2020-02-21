@@ -53,6 +53,11 @@ impl<R: BattleRules> Space<R> {
         &self.model
     }
 
+    /// Returns a mutable reference to the space model.
+    pub fn model_mut(&mut self) -> &mut SpaceModel<R> {
+        &mut self.model
+    }
+
     /// Returns this space's rules.
     pub fn rules(&self) -> &R::SR {
         &self.rules
