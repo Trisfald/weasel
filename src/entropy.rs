@@ -41,6 +41,11 @@ impl<R: BattleRules> Entropy<R> {
         &self.model
     }
 
+    /// Returns a mutable reference to the entropy model.
+    pub fn model_mut(&mut self) -> &mut EntropyModel<R> {
+        &mut self.model
+    }
+
     /// Returns the `EntropyRules` in use.
     pub fn rules(&self) -> &R::ER {
         &self.rules

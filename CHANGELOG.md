@@ -8,9 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Doc tests for all events and few other structs.
 - `Originated` decorator.
+- Introduced inanimate objects.
+- Improved public API for `Battle` and its submodules.
 
 ### Changed
 - It's now possible to manually set an event's origin.
+- New associated type `ObjectId` in `CharacterRules`.
 
 ## [0.3.1] - 2020-02-17
 ### Added

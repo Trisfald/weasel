@@ -11,6 +11,7 @@ use crate::event::{
     VersionedEventWrapper,
 };
 use crate::fight::ApplyImpact;
+use crate::object::{CreateObject, RemoveObject};
 use crate::player::PlayerId;
 use crate::round::{EndRound, ResetRounds, StartRound};
 use crate::space::{AlterSpace, MoveEntity, ResetSpace};
@@ -101,28 +102,30 @@ macro_rules! flat_event {
 
 flat_event! {
     DummyEvent, "DummyEvent<R>: Serialize", "DummyEvent<R>: Deserialize<'de>",
-    StartRound, "StartRound<R>: Serialize", "StartRound<R>: Deserialize<'de>",
-    EndRound, "EndRound<R>: Serialize", "EndRound<R>: Deserialize<'de>",
     CreateTeam, "CreateTeam<R>: Serialize", "CreateTeam<R>: Deserialize<'de>",
     CreateCreature, "CreateCreature<R>: Serialize", "CreateCreature<R>: Deserialize<'de>",
-    ActivateAbility, "ActivateAbility<R>: Serialize", "ActivateAbility<R>: Deserialize<'de>",
-    ResetEntropy, "ResetEntropy<R>: Serialize", "ResetEntropy<R>: Deserialize<'de>",
+    CreateObject, "CreateObject<R>: Serialize", "CreateObject<R>: Deserialize<'de>",
     MoveEntity, "MoveEntity<R>: Serialize", "MoveEntity<R>: Deserialize<'de>",
+    StartRound, "StartRound<R>: Serialize", "StartRound<R>: Deserialize<'de>",
+    EndRound, "EndRound<R>: Serialize", "EndRound<R>: Deserialize<'de>",
+    ActivateAbility, "ActivateAbility<R>: Serialize", "ActivateAbility<R>: Deserialize<'de>",
     ApplyImpact, "ApplyImpact<R>: Serialize", "ApplyImpact<R>: Deserialize<'de>",
     AlterStatistics, "AlterStatistics<R>: Serialize", "AlterStatistics<R>: Deserialize<'de>",
     AlterAbilities, "AlterAbilities<R>: Serialize", "AlterAbilities<R>: Deserialize<'de>",
-    SetRelations, "SetRelations<R>: Serialize", "SetRelations<R>: Deserialize<'de>",
+    RegenerateStatistics, "RegenerateStatistics<R>: Serialize", "RegenerateStatistics<R>: Deserialize<'de>",
+    RegenerateAbilities, "RegenerateAbilities<R>: Serialize", "RegenerateAbilities<R>: Deserialize<'de>",
     ConvertCreature, "ConvertCreature<R>: Serialize", "ConvertCreature<R>: Deserialize<'de>",
-    EndBattle, "EndBattle<R>: Serialize", "EndBattle<R>: Deserialize<'de>",
+    SetRelations, "SetRelations<R>: Serialize", "SetRelations<R>: Deserialize<'de>",
     ConcludeObjectives, "ConcludeObjectives<R>: Serialize", "ConcludeObjectives<R>: Deserialize<'de>",
+    RemoveCreature, "RemoveCreature<R>: Serialize", "RemoveCreature<R>: Deserialize<'de>",
+    RemoveObject, "RemoveObject<R>: Serialize", "RemoveObject<R>: Deserialize<'de>",
+    RemoveTeam, "RemoveTeam<R>: Serialize", "RemoveTeam<R>: Deserialize<'de>",
+    AlterSpace, "AlterSpace<R>: Serialize", "AlterSpace<R>: Deserialize<'de>",
+    ResetEntropy, "ResetEntropy<R>: Serialize", "ResetEntropy<R>: Deserialize<'de>",
     ResetObjectives, "ResetObjectives<R>: Serialize", "ResetObjectives<R>: Deserialize<'de>",
     ResetRounds, "ResetRounds<R>: Serialize", "ResetRounds<R>: Deserialize<'de>",
     ResetSpace, "ResetSpace<R>: Serialize", "ResetSpace<R>: Deserialize<'de>",
-    RemoveCreature, "RemoveCreature<R>: Serialize", "RemoveCreature<R>: Deserialize<'de>",
-    RemoveTeam, "RemoveTeam<R>: Serialize", "RemoveTeam<R>: Deserialize<'de>",
-    RegenerateStatistics, "RegenerateStatistics<R>: Serialize", "RegenerateStatistics<R>: Deserialize<'de>",
-    RegenerateAbilities, "RegenerateAbilities<R>: Serialize", "RegenerateAbilities<R>: Deserialize<'de>",
-    AlterSpace, "AlterSpace<R>: Serialize", "AlterSpace<R>: Deserialize<'de>",
+    EndBattle, "EndBattle<R>: Serialize", "EndBattle<R>: Deserialize<'de>",
 }
 
 /// A versioned event wrapper containing a flattened event.

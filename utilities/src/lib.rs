@@ -3,6 +3,7 @@ use weasel::client::Client;
 use weasel::creature::{CreateCreature, CreatureId};
 use weasel::entity::EntityId;
 use weasel::event::{DefaultOutput, DummyEvent, EventProcessor, EventTrigger, ServerSink};
+use weasel::object::{CreateObject, ObjectId};
 use weasel::round::{EndRound, StartRound};
 use weasel::server::Server;
 use weasel::space::Position;
@@ -45,6 +46,20 @@ pub fn creature<'a, R, P>(
 {
     assert_eq!(
         CreateCreature::trigger(processor, creature_id, team_id, position)
+            .fire()
+            .err(),
+        None
+    );
+}
+
+/// Creates an object with default arguments.
+pub fn object<'a, R: BattleRules + 'static>(
+    server: &'a mut Server<R>,
+    object_id: ObjectId<R>,
+    position: Position<R>,
+) {
+    assert_eq!(
+        CreateObject::trigger(server, object_id, position)
             .fire()
             .err(),
         None

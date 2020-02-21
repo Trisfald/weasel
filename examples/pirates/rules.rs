@@ -73,6 +73,8 @@ pub struct PiratesCharacterRules {}
 impl CharacterRules<PiratesRules> for PiratesCharacterRules {
     // We want an integer as creature id.
     type CreatureId = u8;
+    // No inanimate objects in this game.
+    type ObjectId = ();
     // Use statistics with integer as id and as value.
     type Statistic = SimpleStatistic<u8, i16>;
     // No need for a seed. All ships have the same statistics.

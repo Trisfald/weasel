@@ -1,4 +1,4 @@
-use weasel::actor::ActorRules;
+use weasel::actor::{Actor, ActorRules};
 use weasel::battle::{Battle, BattleRules};
 use weasel::character::{Character, CharacterRules};
 use weasel::entropy::{Entropy, ResetEntropy};
@@ -30,6 +30,7 @@ pub struct CustomCharacterRules {}
 
 impl CharacterRules<CustomRules> for CustomCharacterRules {
     type CreatureId = u32;
+    type ObjectId = ();
     type Statistic = SimpleStatistic<u32, i32>;
     type StatisticsSeed = ();
     type StatisticsAlteration = ();

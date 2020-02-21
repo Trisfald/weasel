@@ -48,6 +48,7 @@ pub struct EmptyCharacterRules {}
 
 impl<R: BattleRules> CharacterRules<R> for EmptyCharacterRules {
     type CreatureId = u32;
+    type ObjectId = u32;
     type Statistic = EmptyStat;
     type StatisticsSeed = ();
     type StatisticsAlteration = ();

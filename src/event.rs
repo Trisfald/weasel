@@ -22,50 +22,54 @@ pub type EventId = u32;
 pub enum EventKind {
     /// Dummy event doing nothing.
     DummyEvent,
-    /// Start a new round.
-    StartRound,
-    /// End the current round.
-    EndRound,
     /// Create a new team.
     CreateTeam,
     /// Create a new creature.
     CreateCreature,
-    /// Activate an actor's ability.
-    ActivateAbility,
-    /// Reset the entropy model.
-    ResetEntropy,
+    /// Create a new object.
+    CreateObject,
     /// Move an entity from one position to another.
     MoveEntity,
+    /// Start a new round.
+    StartRound,
+    /// End the current round.
+    EndRound,
+    /// Activate an actor's ability.
+    ActivateAbility,
     /// Apply the consequences of an impact on the world.
     ApplyImpact,
     /// Modify the statistics of a character.
     AlterStatistics,
     /// Modify the abilities of an actor.
     AlterAbilities,
-    /// Set new relations between teams.
-    SetRelations,
+    /// Regenerate the statistics of a character.
+    RegenerateStatistics,
+    /// Regenerate the abilities of an actor.
+    RegenerateAbilities,
     /// Convert a creature from one team to another.
     ConvertCreature,
-    /// End the battle.
-    EndBattle,
+    /// Set new relations between teams.
+    SetRelations,
     /// An event to set a team's objectives outcome.
     ConcludeObjectives,
+    /// Remove a creature from the battle.
+    RemoveCreature,
+    /// Remove an object from the battle.
+    RemoveObject,
+    /// Remove a team from the battle.
+    RemoveTeam,
+    /// Modify the spatial model.
+    AlterSpace,
+    /// Reset the entropy model.
+    ResetEntropy,
     /// Reset the objectives of a team.
     ResetObjectives,
     /// Reset the rounds model.
     ResetRounds,
     /// Reset the space model.
     ResetSpace,
-    /// Remove a creature from the battle.
-    RemoveCreature,
-    /// Remove a team from the battle.
-    RemoveTeam,
-    /// Regenerate the statistics of a character.
-    RegenerateStatistics,
-    /// Regenerate the abilities of an actor.
-    RegenerateAbilities,
-    /// Modify the spatial model.
-    AlterSpace,
+    /// End the battle.
+    EndBattle,
     /// A user defined event with an unique id.
     UserEvent(UserEventId),
 }
