@@ -1,8 +1,8 @@
 //! Collection of utilities.
 
+use indexmap::IndexMap;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
 
@@ -19,16 +19,16 @@ pub trait Id {
     fn id(&self) -> &Self::Id;
 }
 
-/// Collects an iterator into an hashmap.
+/// Collects an iterator into an indexmap.
 /// Subsequent values with same key are ignored.
 pub(crate) fn collect_from_iter<I>(
     it: I,
-) -> HashMap<<<I as Iterator>::Item as Id>::Id, <I as Iterator>::Item>
+) -> IndexMap<<<I as Iterator>::Item as Id>::Id, <I as Iterator>::Item>
 where
     I: Iterator,
     <I as Iterator>::Item: Id,
 {
-    let mut map = HashMap::new();
+    let mut map = IndexMap::new();
     for e in it {
         if !map.contains_key(e.id()) {
             map.insert(e.id().clone(), e);

@@ -10,9 +10,9 @@ use crate::object::{Object, ObjectId, RemoveObject};
 use crate::space::Position;
 use crate::team::{Conclusion, Relation, RelationshipPair, Team, TeamId};
 use crate::util::Id;
+use indexmap::IndexMap;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::fmt::{Debug, Display, Formatter, Result};
 
 /// An entity represents any being existing in the game world.
@@ -172,19 +172,19 @@ pub(crate) fn transmute_entity<R, P>(
 
 /// Data structure to manage ownership of teams and entities.
 pub struct Entities<R: BattleRules> {
-    teams: HashMap<TeamId<R>, Team<R>>,
-    creatures: HashMap<CreatureId<R>, Creature<R>>,
-    objects: HashMap<ObjectId<R>, Object<R>>,
-    relations: HashMap<RelationshipPair<R>, Relation>,
+    teams: IndexMap<TeamId<R>, Team<R>>,
+    creatures: IndexMap<CreatureId<R>, Creature<R>>,
+    objects: IndexMap<ObjectId<R>, Object<R>>,
+    relations: IndexMap<RelationshipPair<R>, Relation>,
 }
 
 impl<R: BattleRules> Entities<R> {
     pub(crate) fn new() -> Entities<R> {
         Entities {
-            teams: HashMap::new(),
-            creatures: HashMap::new(),
-            objects: HashMap::new(),
-            relations: HashMap::new(),
+            teams: IndexMap::new(),
+            creatures: IndexMap::new(),
+            objects: IndexMap::new(),
+            relations: IndexMap::new(),
         }
     }
 
@@ -256,7 +256,7 @@ impl<R: BattleRules> Entities<R> {
         // Update team's creature list.
         let team = self
             .teams
-            .get_mut(&creature.team_id())
+            .get_mut(creature.team_id())
             .ok_or_else(|| WeaselError::TeamNotFound(creature.team_id().clone()))?;
         team.creatures_mut().push(creature.id().clone());
         // Insert the creature.
@@ -465,7 +465,7 @@ impl<R: BattleRules> Entities<R> {
     ) -> WeaselResult<(), R> {
         let creature = self
             .creatures
-            .get_mut(&creature_id)
+            .get_mut(creature_id)
             .ok_or_else(|| WeaselError::CreatureNotFound(creature_id.clone()))?;
         let current_team_id = creature.team_id().clone();
         // Change the original team's creature lists.
@@ -477,7 +477,7 @@ impl<R: BattleRules> Entities<R> {
         // Change the new team's creature lists.
         let new_team = self
             .teams
-            .get_mut(&team_id)
+            .get_mut(team_id)
             .ok_or_else(|| WeaselError::TeamNotFound(team_id.clone()))?;
         new_team.creatures_mut().push(creature_id.clone());
         // Change the creature's team.

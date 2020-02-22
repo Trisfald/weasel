@@ -12,21 +12,21 @@ use crate::round::RoundState;
 use crate::space::{Position, PositionClaim};
 use crate::team::{EntityAddition, TeamId, TeamRules};
 use crate::util::{collect_from_iter, Id};
+use indexmap::IndexMap;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
 use std::any::Any;
-use std::collections::HashMap;
 use std::fmt::{Debug, Formatter, Result};
 
 /// Type to represent the id of creatures.
 pub type CreatureId<R> = <<R as BattleRules>::CR as CharacterRules<R>>::CreatureId;
 
-type Statistics<R> = HashMap<
+type Statistics<R> = IndexMap<
     <<<R as BattleRules>::CR as CharacterRules<R>>::Statistic as Id>::Id,
     <<R as BattleRules>::CR as CharacterRules<R>>::Statistic,
 >;
 
-type Abilities<R> = HashMap<
+type Abilities<R> = IndexMap<
     <<<R as BattleRules>::AR as ActorRules<R>>::Ability as Id>::Id,
     <<R as BattleRules>::AR as ActorRules<R>>::Ability,
 >;
