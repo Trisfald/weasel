@@ -8,16 +8,16 @@ use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
 use crate::metric::system::OBJECTS_CREATED;
 use crate::space::{Position, PositionClaim};
 use crate::util::{collect_from_iter, Id};
+use indexmap::IndexMap;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
 use std::any::Any;
-use std::collections::HashMap;
 use std::fmt::{Debug, Formatter, Result};
 
 /// Type to represent the id of objects.
 pub type ObjectId<R> = <<R as BattleRules>::CR as CharacterRules<R>>::ObjectId;
 
-type Statistics<R> = HashMap<
+type Statistics<R> = IndexMap<
     <<<R as BattleRules>::CR as CharacterRules<R>>::Statistic as Id>::Id,
     <<R as BattleRules>::CR as CharacterRules<R>>::Statistic,
 >;
