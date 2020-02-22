@@ -161,6 +161,14 @@ fn move_object() {
     let mut server = init_custom_game();
     // Create an object.
     util::object(&mut server, OBJECT_1_ID, POSITION_2);
+    // Move the object into an invalid position.
+    assert_eq!(
+        MoveEntity::trigger(&mut server, EntityId::Object(OBJECT_1_ID), POSITION_2)
+            .fire()
+            .err()
+            .map(|e| e.unfold()),
+        Some(WeaselError::PositionError(Some(POSITION_2), POSITION_2))
+    );
     // Move the object into a valid position.
     assert_eq!(
         MoveEntity::trigger(&mut server, EntityId::Object(OBJECT_1_ID), POSITION_T)
