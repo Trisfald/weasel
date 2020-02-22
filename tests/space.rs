@@ -15,6 +15,7 @@ static TEAM_1_ID: u32 = 1;
 static CREATURE_1_ID: u32 = 1;
 static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
 static CREATURE_2_ID: u32 = 2;
+static OBJECT_1_ID: u32 = 1;
 static POSITION_1: u32 = 1;
 static POSITION_2: u32 = 2;
 static POSITION_T: u32 = 99;
@@ -153,6 +154,28 @@ fn move_entity() {
         POSITION_2
     );
     assert_eq!(server.battle().space().model().len(), 1);
+}
+
+#[test]
+fn move_object() {
+    let mut server = init_custom_game();
+    // Create an object.
+    util::object(&mut server, OBJECT_1_ID, POSITION_2);
+    // Move the object into an invalid position.
+    assert_eq!(
+        MoveEntity::trigger(&mut server, EntityId::Object(OBJECT_1_ID), POSITION_2)
+            .fire()
+            .err()
+            .map(|e| e.unfold()),
+        Some(WeaselError::PositionError(Some(POSITION_2), POSITION_2))
+    );
+    // Move the object into a valid position.
+    assert_eq!(
+        MoveEntity::trigger(&mut server, EntityId::Object(OBJECT_1_ID), POSITION_T)
+            .fire()
+            .err(),
+        None
+    );
 }
 
 #[test]

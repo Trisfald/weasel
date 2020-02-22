@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use weasel::ability::ActivateAbility;
 use weasel::battle::BattleRules;
 use weasel::character::{
     AlterStatistics, Character, CharacterRules, RegenerateStatistics, StatisticId,
@@ -47,15 +48,24 @@ fn new_object() {
 }
 
 #[test]
-fn object_not_actor() {
+fn object_cannot_act() {
     battle_rules! {}
     static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Object(OBJECT_1_ID);
+    static ABILITY_1_ID: u32 = 1;
     // Create a battle with one object.
     let mut server = util::server(CustomRules::new());
     util::object(&mut server, OBJECT_1_ID, ());
     // Verify that objects can't start rounds.
     assert_eq!(
         StartRound::trigger(&mut server, ENTITY_1_ID)
+            .fire()
+            .err()
+            .map(|e| e.unfold()),
+        Some(WeaselError::NotAnActor(ENTITY_1_ID))
+    );
+    // Verify that objects can't activate abilities.
+    assert_eq!(
+        ActivateAbility::trigger(&mut server, ENTITY_1_ID, ABILITY_1_ID)
             .fire()
             .err()
             .map(|e| e.unfold()),
