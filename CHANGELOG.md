@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Support for status effects.
+- Renamed `ActorRules`'s `alter` into `alter_abilities` and `CharacterRules`'s `alter` into `alter_statistics`.
+- Example to showcase status effects.
 
 ## [0.5.0] - 2020-02-26
 ### Added

@@ -110,7 +110,7 @@ pub trait ActorRules<R: BattleRules> {
     /// Alters one or more abilities starting from the given alteration object.
     ///
     /// The provided implementation does nothing.
-    fn alter(
+    fn alter_abilities(
         &self,
         _actor: &mut dyn Actor<R>,
         _alteration: &Self::AbilitiesAlteration,
@@ -283,7 +283,7 @@ impl<R: BattleRules + 'static> Event<R> for AlterAbilities<R> {
             .actor_mut(&self.id)
             .unwrap_or_else(|| panic!("constraint violated: actor {:?} not found", self.id));
         // Alter the actor.
-        battle.rules.actor_rules().alter(
+        battle.rules.actor_rules().alter_abilities(
             actor,
             &self.alteration,
             &mut battle.entropy,

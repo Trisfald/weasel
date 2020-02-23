@@ -41,7 +41,7 @@ impl CharacterRules<CustomRules> for CustomCharacterRules {
         Box::new(v.into_iter())
     }
 
-    fn alter(
+    fn alter_statistics(
         &self,
         character: &mut dyn Character<CustomRules>,
         alteration: &Self::StatisticsAlteration,
@@ -88,7 +88,7 @@ impl ActorRules<CustomRules> for CustomActorRules {
         ApplyImpact::trigger(&mut event_queue, action.ability.power() * 2).fire();
     }
 
-    fn alter(
+    fn alter_abilities(
         &self,
         actor: &mut dyn Actor<CustomRules>,
         alteration: &Self::AbilitiesAlteration,
@@ -107,6 +107,8 @@ pub struct CustomFightRules {}
 
 impl FightRules<CustomRules> for CustomFightRules {
     type Impact = i32;
+    type Status = EmptyStatus;
+    type Potency = ();
 
     fn apply_impact(
         &self,

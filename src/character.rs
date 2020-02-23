@@ -6,6 +6,7 @@ use crate::entropy::Entropy;
 use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger, Prioritized};
 use crate::metric::WriteMetrics;
+use crate::status::{Potency, Status, StatusId};
 use crate::util::Id;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
@@ -46,7 +47,7 @@ pub trait CharacterRules<R: BattleRules> {
     /// See [StatisticsAlteration](type.StatisticsAlteration.html).
     type StatisticsAlteration: Clone + Debug + Serialize + for<'a> Deserialize<'a>;
 
-    /// Generates all statistics of a creature.
+    /// Generates all statistics of a character.
     /// Statistics should have unique ids, otherwise only the last entry will be persisted.
     ///
     /// The provided implementation generates an empty set of statistics.
@@ -64,13 +65,29 @@ pub trait CharacterRules<R: BattleRules> {
     /// this alteration.
     ///
     /// The provided implementation does nothing.
-    fn alter(
+    fn alter_statistics(
         &self,
         _character: &mut dyn Character<R>,
         _alteration: &Self::StatisticsAlteration,
         _entropy: &mut Entropy<R>,
         _metrics: &mut WriteMetrics<R>,
     ) -> Option<Transmutation> {
+        None
+    }
+
+    /// Generates a status to be applied to the given character.\
+    /// Returns the new status or nothing if no status should be added. Existing status with
+    /// the same id will be replaced.
+    ///
+    /// The provided implementation returns `None`.
+    fn generate_status(
+        &self,
+        _character: &mut dyn Character<R>,
+        _status_id: &StatusId<R>,
+        _potency: &Potency<R>,
+        _entropy: &mut Entropy<R>,
+        _metrics: &mut WriteMetrics<R>,
+    ) -> Option<Status<R>> {
         None
     }
 }
@@ -223,7 +240,7 @@ impl<R: BattleRules + 'static> Event<R> for AlterStatistics<R> {
             .character_mut(&self.id)
             .unwrap_or_else(|| panic!("constraint violated: character {:?} not found", self.id));
         // Alter the character.
-        let transmutation = battle.rules.character_rules().alter(
+        let transmutation = battle.rules.character_rules().alter_statistics(
             character,
             &self.alteration,
             &mut battle.entropy,

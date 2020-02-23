@@ -145,6 +145,7 @@ pub mod rules;
 pub mod serde;
 pub mod server;
 pub mod space;
+pub mod status;
 pub mod team;
 pub mod user;
 pub mod util;

@@ -291,7 +291,7 @@ fn remove_object_on_alter() {
         type StatisticsSeed = ();
         type StatisticsAlteration = ();
 
-        fn alter(
+        fn alter_statistics(
             &self,
             _character: &mut dyn Character<R>,
             _alteration: &Self::StatisticsAlteration,

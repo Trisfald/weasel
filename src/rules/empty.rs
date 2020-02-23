@@ -32,6 +32,9 @@ impl Id for EmptyStat {
 /// An empty ability that does not contain any data.
 pub type EmptyAbility = EmptyStat;
 
+/// An empty status that does nothing.
+pub type EmptyStatus = EmptyStat;
+
 /// Minimalistic implementation of team rules, doing no-op for everything.
 #[derive(Default)]
 pub struct EmptyTeamRules {}
@@ -95,6 +98,8 @@ pub struct EmptyFightRules {}
 
 impl<R: BattleRules> FightRules<R> for EmptyFightRules {
     type Impact = ();
+    type Status = EmptyStatus;
+    type Potency = ();
 }
 
 /// Minimalistic implementation of user rules, doing no-op for everything.

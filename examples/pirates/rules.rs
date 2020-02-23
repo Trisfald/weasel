@@ -98,7 +98,7 @@ impl CharacterRules<PiratesRules> for PiratesCharacterRules {
     }
 
     // Method to alter the statistics of ships. In this case we want to decrease hull and crew.
-    fn alter(
+    fn alter_statistics(
         &self,
         character: &mut dyn Character<PiratesRules>,
         alteration: &Self::StatisticsAlteration,
@@ -190,6 +190,9 @@ pub struct PiratesFightRules {}
 impl FightRules<PiratesRules> for PiratesFightRules {
     // Our impact type will be a tuple with target id and a statistics alteration.
     type Impact = (EntityId<PiratesRules>, StatisticsAlteration<PiratesRules>);
+    // There are no status effects in this game, so both status and potency are empty.
+    type Status = EmptyStatus;
+    type Potency = ();
 
     fn apply_impact(
         &self,
