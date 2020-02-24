@@ -58,3 +58,6 @@ name = "space"
 [[example]]
 name = "initiative"
 required-features = ["random"]
+
+[[example]]
+name = "undo"
