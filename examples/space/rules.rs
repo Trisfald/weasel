@@ -28,7 +28,7 @@ impl SpaceRules<CustomRules> for CustomSpaceRules {
     type SpaceAlteration = Vec<Square>;
 
     fn generate_model(&self, seed: &Option<Self::SpaceSeed>) -> Self::SpaceModel {
-        Battlefield::from_seed(seed)
+        Battlefield::from_seed(*seed)
     }
 
     fn check_move<'a>(
@@ -51,8 +51,8 @@ impl SpaceRules<CustomRules> for CustomSpaceRules {
         if let Some(position) = position {
             // We simply insert the entity's id into a square of the model.
             match claim {
-                PositionClaim::Spawn(id) => model.insert(position, id),
-                PositionClaim::Movement(entity) => model.insert(position, entity.entity_id()),
+                PositionClaim::Spawn(id) => model.insert(position, *id),
+                PositionClaim::Movement(entity) => model.insert(position, *entity.entity_id()),
             }
         } else {
             // Free the entity position.
@@ -72,7 +72,7 @@ impl SpaceRules<CustomRules> for CustomSpaceRules {
     ) {
         // We are in completely new space.
         // Just take into consideration the x coordinate of an entity's position.
-        new_model.insert(entity.position(), entity.entity_id());
+        new_model.insert(entity.position(), *entity.entity_id());
     }
 
     fn alter_space(
@@ -121,6 +121,7 @@ pub(crate) struct BattlefieldCell {
 }
 
 /// The space model for this game.
+#[allow(clippy::large_enum_variant)]
 pub(crate) enum Battlefield {
     // Battlefield is empty a the start of the game.
     Empty,
@@ -132,7 +133,7 @@ pub(crate) enum Battlefield {
 
 impl Battlefield {
     /// Creates a battlefield from a seed.
-    fn from_seed(seed: &Option<BattlefieldSeed>) -> Battlefield {
+    fn from_seed(seed: Option<BattlefieldSeed>) -> Battlefield {
         if let Some(seed) = seed {
             match seed {
                 BattlefieldSeed::OneDimension => {
@@ -158,12 +159,12 @@ impl Battlefield {
     }
 
     /// Inserts the id of `entity` into `position`.
-    fn insert(&mut self, position: &Square, entity: &EntityId<CustomRules>) {
+    fn insert(&mut self, position: &Square, entity: EntityId<CustomRules>) {
         match self {
             Battlefield::Empty => {}
-            Battlefield::OneDimension(squares) => squares[position.x].entity = Some(entity.clone()),
+            Battlefield::OneDimension(squares) => squares[position.x].entity = Some(entity),
             Battlefield::TwoDimensions(squares) => {
-                squares[position.y][position.x].entity = Some(entity.clone())
+                squares[position.y][position.x].entity = Some(entity)
             }
         }
     }
@@ -205,7 +206,7 @@ impl Display for Battlefield {
                 for col in squares {
                     write!(f, "|")?;
                     if let Some(entity) = col.entity {
-                        print_creature_id(f, &entity)?;
+                        print_creature_id(f, entity)?;
                     } else if col.trap {
                         write!(f, "X")?;
                     } else {
@@ -213,7 +214,7 @@ impl Display for Battlefield {
                     }
                 }
                 write!(f, "|")?;
-                write!(f, "\n")?;
+                writeln!(f)?;
                 Ok(())
             }
             Battlefield::TwoDimensions(squares) => {
@@ -222,7 +223,7 @@ impl Display for Battlefield {
                     for (_, col) in row.iter().enumerate() {
                         write!(f, "|")?;
                         if let Some(entity) = col.entity {
-                            print_creature_id(f, &entity)?;
+                            print_creature_id(f, entity)?;
                         } else if col.trap {
                             write!(f, "X")?;
                         } else {
@@ -230,7 +231,7 @@ impl Display for Battlefield {
                         }
                     }
                     write!(f, "|")?;
-                    write!(f, "\n")?;
+                    writeln!(f)?;
                 }
                 Ok(())
             }
@@ -239,7 +240,7 @@ impl Display for Battlefield {
 }
 
 /// Function to print only the `CreatureId` part of an `EntityId`.
-fn print_creature_id(f: &mut Formatter<'_>, id: &EntityId<CustomRules>) -> Result {
+fn print_creature_id(f: &mut Formatter<'_>, id: EntityId<CustomRules>) -> Result {
     match id {
         EntityId::Creature(id) => write!(f, "{}", id),
         #[allow(unreachable_patterns)]

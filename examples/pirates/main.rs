@@ -9,15 +9,15 @@ fn main() {
     // The loop where the game progresses.
     game_loop();
     // When this point is reached, the game has ended.
-    println!("");
+    println!();
     println!("Goodbye!");
 }
 
 fn print_intro() {
     println!("Welcome to Pirates!");
-    println!("");
+    println!();
     println!("Sink the enemy's ship by shooting your cannons!");
-    println!("");
+    println!();
     print_controls();
 }
 

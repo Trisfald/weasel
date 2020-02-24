@@ -40,7 +40,7 @@ fn main() {
     CreateCreature::trigger(&mut server, CREATURE_3, TEAM_ID, Square { x: 4, y: 3 })
         .fire()
         .unwrap();
-    println!("");
+    println!();
     // Display the space model and the creatures.
     println!("Battlefield:\n{}", server.battle().space().model());
     // Put traps on the squares across the diagonals.
@@ -62,7 +62,7 @@ fn main() {
     .fire()
     .unwrap();
     assert_eq!(server.battle().entities().entities().count(), 2);
-    println!("");
+    println!();
     // Display the space model and the creatures. Some of them died!
     println!("Battlefield:\n{}", server.battle().space().model());
     // Now completely reset the space model, dropping one dimension.
@@ -71,7 +71,7 @@ fn main() {
         .seed(BattlefieldSeed::OneDimension)
         .fire()
         .unwrap();
-    println!("");
+    println!();
     // Display the space model and the creatures. Their positions have been adapted!
     println!("Battlefield:\n{}", server.battle().space().model());
 }
