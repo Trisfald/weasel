@@ -46,6 +46,26 @@
 //! Through a `server` or a `client` you'll be able to access the full state of the battle,
 //! including the entire timeline of events.
 //!
+//! ## Features
+//!
+//! weasel provides many functionalities to ease the development of a turn based game:
+//! 
+//! - Creatures and inanimate objects.
+//! - Statistics and abilities for characters.
+//! - Player managed teams.
+//! - Team objectives and diplomacy.
+//! - Division of the battle into rounds.
+//! - Rules to govern the game subdivided into orthogonal traits.
+//! - Fully serializable battle history.
+//! - Cause-effect relationship between events.
+//! - Server side verification of clients' events.
+//! - Player permissions and authorization.
+//! - Versioning for battle rules.
+//! - User defined events.
+//! - System and user defined metrics.
+//! - Sinks to forward events to an arbitrary destination.
+//! - Small collection of predefined rules.
+//!
 //! ## Define the game's rules via traits
 //!
 //! `BattleRules` is a collection of modules and it lets you define all the *rules* for your game by
