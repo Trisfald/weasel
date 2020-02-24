@@ -16,16 +16,16 @@ fn main() {
     // The loop where the game progresses.
     game_loop();
     // When this point is reached, the game has ended.
-    println!("");
+    println!();
     println!("Goodbye!");
 }
 
 fn print_intro() {
     println!("Undo");
-    println!("");
+    println!();
     println!("Example to demonstrate how to undo/redo player actions with weasel.");
     println!("Move around the soldier on the battlefield.");
-    println!("");
+    println!();
     println!("  Controls:");
     println!("    w - Move up");
     println!("    s - Move down");
