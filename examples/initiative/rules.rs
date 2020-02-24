@@ -144,7 +144,7 @@ impl InitiativeModel {
     fn insert(&mut self, actor: &dyn Actor<CustomRules>) {
         // Insert the actor with an initial score equal to his speed.
         self.actors.push((
-            actor.entity_id().clone(),
+            *actor.entity_id(),
             actor.statistic(&SPEED).unwrap().value().into(),
         ));
         // Sort the actors.
@@ -153,7 +153,7 @@ impl InitiativeModel {
 
     /// Returns the actor with the highest score of initiative.
     pub(crate) fn top(&self) -> EntityId<CustomRules> {
-        self.actors[0].0.clone()
+        self.actors[0].0
     }
 
     /// Sets the initiative score of the given actor to 0.
@@ -189,7 +189,7 @@ impl Display for InitiativeModel {
         // Print a table with all actors and their initiative score.
         writeln!(f, "Actor              Score")?;
         for (actor_id, score) in &self.actors {
-            write!(f, "{}       {}\n", actor_id, score)?;
+            writeln!(f, "{}       {}", actor_id, score)?;
         }
         Ok(())
     }

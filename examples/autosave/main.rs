@@ -23,17 +23,17 @@ fn main() {
     // The loop where the game progresses.
     game_loop();
     // When this point is reached, the game has ended.
-    println!("");
+    println!();
     println!("Goodbye!");
 }
 
 fn print_intro() {
     println!("Autosave");
-    println!("");
+    println!();
     println!("Example to demonstrate how to use an event sink to create autosaves with weasel.");
     println!("Create soldiers and exit whenever you want.");
     println!("Next time you launch the game it will resume from the latest progress!");
-    println!("");
+    println!();
     println!("  Controls:");
     println!("    c - Create a new soldier");
     println!("    q - Quit");
@@ -42,6 +42,7 @@ fn print_intro() {
 fn game_loop() {
     // Create a server.
     let mut server = create_server();
+    println!();
     print_soldiers_count(&server);
     // Main loop.
     loop {
