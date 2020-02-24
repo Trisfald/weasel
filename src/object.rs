@@ -5,8 +5,10 @@ use crate::character::{Character, CharacterRules, Statistic, StatisticId, Statis
 use crate::entity::{Entity, EntityId};
 use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
+use crate::fight::FightRules;
 use crate::metric::system::OBJECTS_CREATED;
 use crate::space::{Position, PositionClaim};
+use crate::status::{LinkedStatus, StatusId};
 use crate::util::{collect_from_iter, Id};
 use indexmap::IndexMap;
 #[cfg(feature = "serialization")]
@@ -22,15 +24,19 @@ type Statistics<R> = IndexMap<
     <<R as BattleRules>::CR as CharacterRules<R>>::Statistic,
 >;
 
+type Statuses<R> =
+    IndexMap<<<<R as BattleRules>::FR as FightRules<R>>::Status as Id>::Id, LinkedStatus<R>>;
+
 /// An object is an inanimate entity.
 ///
 /// Objects possess a position and a set of statistics, but they can't start a round
-/// nor activate abilities.\
+/// nor activate abilities. They can be target of status effects.\
 /// Objects aren't part of any team.
 pub struct Object<R: BattleRules> {
     id: EntityId<R>,
     position: Position<R>,
     statistics: Statistics<R>,
+    statuses: Statuses<R>,
 }
 
 impl<R: BattleRules> Id for Object<R> {
@@ -79,6 +85,26 @@ impl<R: BattleRules> Character<R> for Object<R> {
     fn remove_statistic(&mut self, id: &StatisticId<R>) -> Option<Statistic<R>> {
         self.statistics.remove(id)
     }
+
+    fn statuses<'a>(&'a self) -> Box<dyn Iterator<Item = &'a LinkedStatus<R>> + 'a> {
+        Box::new(self.statuses.values())
+    }
+
+    fn status(&self, id: &StatusId<R>) -> Option<&LinkedStatus<R>> {
+        self.statuses.get(id)
+    }
+
+    fn status_mut(&mut self, id: &StatusId<R>) -> Option<&mut LinkedStatus<R>> {
+        self.statuses.get_mut(id)
+    }   
+
+    fn add_status(&mut self, status: LinkedStatus<R>) -> Option<LinkedStatus<R>> {
+        self.statuses.insert(status.id().clone(), status)
+    }
+
+    fn remove_status(&mut self, id: &StatusId<R>) -> Option<LinkedStatus<R>> {
+        self.statuses.remove(id)
+    }        
 }
 
 /// Event to create a new object.
@@ -213,6 +239,7 @@ impl<R: BattleRules + 'static> Event<R> for CreateObject<R> {
             id: EntityId::Object(self.id.clone()),
             position: self.position.clone(),
             statistics,
+            statuses: IndexMap::new(),
         };
         // Take the position.
         battle.state.space.move_entity(
@@ -423,9 +450,9 @@ where
 mod tests {
     use super::*;
     use crate::battle::BattleRules;
-    use crate::rules::statistic::SimpleStatistic;
+    use crate::rules::{statistic::SimpleStatistic, status::SimpleStatus};
     use crate::util::tests::{object, server};
-    use crate::{battle_rules, battle_rules_with_character, rules::empty::*};
+    use crate::{battle_rules, battle_rules_with_character, battle_rules_with_fight, rules::empty::*};
 
     #[derive(Default)]
     pub struct CustomCharacterRules {}
@@ -445,6 +472,7 @@ mod tests {
         let mut server = server(CustomRules::new());
         object(&mut server, 1, ());
         let object = server.battle.state.entities.object_mut(&1).unwrap();
+        // Run checks.
         assert!(object.statistic(&1).is_none());
         object.add_statistic(SimpleStatistic::new(1, 50));
         assert!(object.statistic(&1).is_some());
@@ -452,5 +480,31 @@ mod tests {
         assert_eq!(object.statistic(&1).unwrap().value(), 25);
         object.remove_statistic(&1);
         assert!(object.statistic(&1).is_none());
+    }
+
+    #[derive(Default)]
+    pub struct CustomFightRules {}
+
+    impl<R: BattleRules> FightRules<R> for CustomFightRules {
+        type Impact = ();
+        type Status = SimpleStatus<u32, u32>;
+        type Potency = ();
+    }    
+
+    #[test]
+    fn mutable_status() {
+        battle_rules_with_fight! { CustomFightRules }
+        // Create a battle.
+        let mut server = server(CustomRules::new());
+        object(&mut server, 1, ());
+        let object = server.battle.state.entities.object_mut(&1).unwrap();
+        // Run checks.
+        assert!(object.status(&1).is_none());
+        object.add_status(LinkedStatus::new(SimpleStatus::new(1, 50, Some(1))));
+        assert!(object.status(&1).is_some());
+        object.status_mut(&1).unwrap().advance();
+        assert!(object.status(&1).unwrap().finished());
+        object.remove_status(&1);
+        assert!(object.status(&1).is_none());
     }
 }

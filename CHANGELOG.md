@@ -7,8 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Support for status effects.
-- Renamed `ActorRules`'s `alter` into `alter_abilities` and `CharacterRules`'s `alter` into `alter_statistics`.
 - Example to showcase status effects.
+
+### Changed
+- Renamed `ActorRules`'s `alter` into `alter_abilities` and `CharacterRules`'s `alter` into `alter_statistics`.
 
 ## [0.5.0] - 2020-02-26
 ### Added

@@ -7,9 +7,11 @@ use crate::character::{Character, CharacterRules, Statistic, StatisticId, Statis
 use crate::entity::{Entity, EntityId};
 use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
+use crate::fight::FightRules;
 use crate::metric::system::*;
 use crate::round::RoundState;
 use crate::space::{Position, PositionClaim};
+use crate::status::{LinkedStatus, StatusId};
 use crate::team::{EntityAddition, TeamId, TeamRules};
 use crate::util::{collect_from_iter, Id};
 use indexmap::IndexMap;
@@ -26,6 +28,9 @@ type Statistics<R> = IndexMap<
     <<R as BattleRules>::CR as CharacterRules<R>>::Statistic,
 >;
 
+type Statuses<R> =
+    IndexMap<<<<R as BattleRules>::FR as FightRules<R>>::Status as Id>::Id, LinkedStatus<R>>;
+
 type Abilities<R> = IndexMap<
     <<<R as BattleRules>::AR as ActorRules<R>>::Ability as Id>::Id,
     <<R as BattleRules>::AR as ActorRules<R>>::Ability,
@@ -33,13 +38,14 @@ type Abilities<R> = IndexMap<
 
 /// A creature is the main acting entity of a battle.
 ///
-/// Creatures can activate abilities during their round, occupy a spatial position and
-/// are characterized by their statistics.
+/// Creatures can activate abilities during their round, occupy a spatial position,
+/// suffer status effects and are characterized by their statistics.
 pub struct Creature<R: BattleRules> {
     id: EntityId<R>,
     team_id: TeamId<R>,
     position: Position<R>,
     statistics: Statistics<R>,
+    statuses: Statuses<R>,
     abilities: Abilities<R>,
 }
 
@@ -95,6 +101,26 @@ impl<R: BattleRules> Character<R> for Creature<R> {
     fn remove_statistic(&mut self, id: &StatisticId<R>) -> Option<Statistic<R>> {
         self.statistics.remove(id)
     }
+
+    fn statuses<'a>(&'a self) -> Box<dyn Iterator<Item = &'a LinkedStatus<R>> + 'a> {
+        Box::new(self.statuses.values())
+    }
+
+    fn status(&self, id: &StatusId<R>) -> Option<&LinkedStatus<R>> {
+        self.statuses.get(id)
+    }
+
+    fn status_mut(&mut self, id: &StatusId<R>) -> Option<&mut LinkedStatus<R>> {
+        self.statuses.get_mut(id)
+    }   
+
+    fn add_status(&mut self, status: LinkedStatus<R>) -> Option<LinkedStatus<R>> {
+        self.statuses.insert(status.id().clone(), status)
+    }
+
+    fn remove_status(&mut self, id: &StatusId<R>) -> Option<LinkedStatus<R>> {
+        self.statuses.remove(id)
+    }        
 }
 
 impl<R: BattleRules> Actor<R> for Creature<R> {
@@ -312,6 +338,7 @@ impl<R: BattleRules + 'static> Event<R> for CreateCreature<R> {
             team_id: self.team_id.clone(),
             position: self.position.clone(),
             statistics,
+            statuses: IndexMap::new(),
             abilities,
         };
         // Take the position.
@@ -771,11 +798,10 @@ where
 mod tests {
     use super::*;
     use crate::battle::BattleRules;
-    use crate::rules::ability::SimpleAbility;
-    use crate::rules::statistic::SimpleStatistic;
+    use crate::rules::{ability::SimpleAbility, statistic::SimpleStatistic, status::SimpleStatus};
     use crate::util::tests::{creature, server, team};
     use crate::{battle_rules, rules::empty::*};
-    use crate::{battle_rules_with_actor, battle_rules_with_character};
+    use crate::{battle_rules_with_actor, battle_rules_with_fight, battle_rules_with_character};
 
     #[derive(Default)]
     pub struct CustomCharacterRules {}
@@ -804,6 +830,33 @@ mod tests {
         creature.remove_statistic(&1);
         assert!(creature.statistic(&1).is_none());
     }
+
+    #[derive(Default)]
+    pub struct CustomFightRules {}
+
+    impl<R: BattleRules> FightRules<R> for CustomFightRules {
+        type Impact = ();
+        type Status = SimpleStatus<u32, u32>;
+        type Potency = ();
+    }    
+
+    #[test]
+    fn mutable_status() {
+        battle_rules_with_fight! { CustomFightRules }
+        // Create a battle.
+        let mut server = server(CustomRules::new());
+        team(&mut server, 1);
+        creature(&mut server, 1, 1, ());
+        let creature = server.battle.state.entities.creature_mut(&1).unwrap();
+        // Run checks.
+        assert!(creature.status(&1).is_none());
+        creature.add_status(LinkedStatus::new(SimpleStatus::new(1, 50, Some(1))));
+        assert!(creature.status(&1).is_some());
+        creature.status_mut(&1).unwrap().set_effect(25);
+        assert_eq!(creature.status(&1).unwrap().effect(), 25);
+        creature.remove_status(&1);
+        assert!(creature.status(&1).is_none());
+    }    
 
     #[derive(Default)]
     pub struct CustomActorRules {}

@@ -6,7 +6,7 @@ use crate::entropy::Entropy;
 use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger, Prioritized};
 use crate::metric::WriteMetrics;
-use crate::status::{Potency, Status, StatusId};
+use crate::status::{Potency, Status, StatusId, LinkedStatus};
 use crate::util::Id;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
@@ -126,6 +126,23 @@ pub trait Character<R: BattleRules>: Entity<R> {
     /// Removes a statistic.
     /// Returns the removed statistic, if present.
     fn remove_statistic(&mut self, id: &StatisticId<R>) -> Option<Statistic<R>>;
+
+    /// Returns an iterator over statuses.
+    fn statuses<'a>(&'a self) -> Box<dyn Iterator<Item = &'a LinkedStatus<R>> + 'a>;
+
+    /// Returns the status with the given id.
+    fn status(&self, id: &StatusId<R>) -> Option<&LinkedStatus<R>>;
+
+    /// Returns a mutable reference to the status with the given id.
+    fn status_mut(&mut self, id: &StatusId<R>) -> Option<&mut LinkedStatus<R>>;    
+
+    /// Adds a new status. Replaces an existing status with the same id.
+    /// Returns the replaced status, if present.
+    fn add_status(&mut self, status: LinkedStatus<R>) -> Option<LinkedStatus<R>>;
+
+    /// Removes a status.
+    /// Returns the removed status, if present.
+    fn remove_status(&mut self, id: &StatusId<R>) -> Option<LinkedStatus<R>>;    
 }
 
 /// An event to alter the statistics of a character.
