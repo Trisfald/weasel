@@ -123,6 +123,7 @@ pub trait ActorRules<R: BattleRules> {
     /// The provided implementation does nothing.
     fn on_round_start(
         &self,
+        _state: &BattleState<R>,
         _actor: &dyn Actor<R>,
         _event_queue: &mut Option<EventQueue<R>>,
         _entropy: &mut Entropy<R>,
@@ -135,6 +136,7 @@ pub trait ActorRules<R: BattleRules> {
     /// The provided implementation does nothing.
     fn on_round_end(
         &self,
+        _state: &BattleState<R>,
         _actor: &dyn Actor<R>,
         _event_queue: &mut Option<EventQueue<R>>,
         _entropy: &mut Entropy<R>,

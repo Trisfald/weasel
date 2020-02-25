@@ -1,5 +1,5 @@
 use weasel::actor::{Actor, ActorRules};
-use weasel::battle::BattleRules;
+use weasel::battle::{BattleRules, BattleState};
 use weasel::battle_rules_with_actor;
 use weasel::entity::EntityId;
 use weasel::entropy::Entropy;
@@ -24,6 +24,7 @@ impl<R: BattleRules + 'static> ActorRules<R> for CustomActorRules {
 
     fn on_round_start(
         &self,
+        _state: &BattleState<R>,
         actor: &dyn Actor<R>,
         mut event_queue: &mut Option<EventQueue<R>>,
         _entropy: &mut Entropy<R>,
@@ -39,6 +40,7 @@ impl<R: BattleRules + 'static> ActorRules<R> for CustomActorRules {
 
     fn on_round_end(
         &self,
+        _state: &BattleState<R>,
         actor: &dyn Actor<R>,
         mut event_queue: &mut Option<EventQueue<R>>,
         _entropy: &mut Entropy<R>,
