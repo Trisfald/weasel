@@ -163,11 +163,11 @@ impl<R: BattleRules + 'static> Event<R> for ActivateAbility<R> {
             // Verify if the creature knowns this ability.
             if let Some(ability) = actor.ability(&self.ability_id) {
                 // Verify if this ability can be activated.
-                if !battle.rules.actor_rules().activable(Action::new(
-                    actor,
-                    ability,
-                    &self.activation,
-                )) {
+                if !battle
+                    .rules
+                    .actor_rules()
+                    .activable(&battle.state, Action::new(actor, ability, &self.activation))
+                {
                     return Err(WeaselError::AbilityNotActivable(
                         self.entity_id.clone(),
                         self.ability_id.clone(),

@@ -38,7 +38,7 @@ impl ActorRules<CustomRules> for CustomActorRules {
         Box::new(v.into_iter())
     }
 
-    fn activable(&self, action: Action<CustomRules>) -> bool {
+    fn activable(&self, _state: &BattleState<CustomRules>, action: Action<CustomRules>) -> bool {
         action.activation.is_some()
     }
 
