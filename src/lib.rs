@@ -49,7 +49,7 @@
 //! ## Features
 //!
 //! weasel provides many functionalities to ease the development of a turn based game:
-//! 
+//!
 //! - Creatures and inanimate objects.
 //! - Statistics and abilities for characters.
 //! - Player managed teams.
