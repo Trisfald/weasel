@@ -270,25 +270,25 @@ impl<R: BattleRules + 'static> Event<R> for CreateCreature<R> {
             .team(&self.team_id)
             .ok_or_else(|| WeaselError::TeamNotFound(self.team_id.clone()))?;
         // Check if the team accepts a new creature.
-        if !battle.rules().team_rules().allow_new_entity(
-            &battle.state,
-            &team,
-            EntityAddition::CreatureSpawn,
-        ) {
-            return Err(WeaselError::NewCreatureUnaccepted(self.team_id.clone()));
-        }
+        battle
+            .rules()
+            .team_rules()
+            .allow_new_entity(&battle.state, &team, EntityAddition::CreatureSpawn)
+            .map_err(|err| {
+                WeaselError::NewCreatureUnaccepted(self.team_id.clone(), Box::new(err))
+            })?;
         // Check id duplication.
         if battle.entities().creature(&self.id).is_some() {
             return Err(WeaselError::DuplicatedCreature(self.id.clone()));
         }
         // Check position.
-        if !battle.space().check_move(
-            PositionClaim::Spawn(&EntityId::Creature(self.id.clone())),
-            &self.position,
-        ) {
-            return Err(WeaselError::PositionError(None, self.position.clone()));
-        }
-        Ok(())
+        battle
+            .space()
+            .check_move(
+                PositionClaim::Spawn(&EntityId::Creature(self.id.clone())),
+                &self.position,
+            )
+            .map_err(|err| WeaselError::PositionError(None, self.position.clone(), Box::new(err)))
     }
 
     fn apply(&self, battle: &mut Battle<R>, _: &mut Option<EventQueue<R>>) {
@@ -532,17 +532,21 @@ impl<R: BattleRules + 'static> Event<R> for ConvertCreature<R> {
                 self.creature_id.clone(),
             ));
         }
-        if !battle.rules().team_rules().allow_new_entity(
-            &battle.state,
-            &team,
-            EntityAddition::CreatureConversion(&creature),
-        ) {
-            return Err(WeaselError::ConvertedCreatureUnaccepted(
-                self.team_id.clone(),
-                self.creature_id.clone(),
-            ));
-        }
-        Ok(())
+        battle
+            .rules()
+            .team_rules()
+            .allow_new_entity(
+                &battle.state,
+                &team,
+                EntityAddition::CreatureConversion(&creature),
+            )
+            .map_err(|err| {
+                WeaselError::ConvertedCreatureUnaccepted(
+                    self.team_id.clone(),
+                    self.creature_id.clone(),
+                    Box::new(err),
+                )
+            })
     }
 
     fn apply(&self, battle: &mut Battle<R>, _event_queue: &mut Option<EventQueue<R>>) {

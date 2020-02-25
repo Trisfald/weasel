@@ -86,8 +86,8 @@ pub trait ActorRules<R: BattleRules> {
     /// The ability is guaranteed to be known by the actor.
     ///
     /// The provided implementation accepts any activation.
-    fn activable(&self, _state: &BattleState<R>, _action: Action<R>) -> bool {
-        true
+    fn activable(&self, _state: &BattleState<R>, _action: Action<R>) -> WeaselResult<(), R> {
+        Ok(())
     }
 
     /// Activate an ability.

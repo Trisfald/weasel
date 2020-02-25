@@ -7,7 +7,9 @@ use weasel::event::{DummyEvent, EventKind, EventQueue, EventServer, EventTrigger
 use weasel::metric::WriteMetrics;
 use weasel::player::PlayerId;
 use weasel::rules::empty::EmptyAbility;
-use weasel::{battle_rules, battle_rules_with_actor, rules::empty::*, Server, WeaselError};
+use weasel::{
+    battle_rules, battle_rules_with_actor, rules::empty::*, Server, WeaselError, WeaselResult,
+};
 
 static TEAM_1_ID: u32 = 1;
 static TEAM_2_ID: u32 = 2;
@@ -38,8 +40,16 @@ impl ActorRules<CustomRules> for CustomActorRules {
         Box::new(v.into_iter())
     }
 
-    fn activable(&self, _state: &BattleState<CustomRules>, action: Action<CustomRules>) -> bool {
-        action.activation.is_some()
+    fn activable(
+        &self,
+        _state: &BattleState<CustomRules>,
+        action: Action<CustomRules>,
+    ) -> WeaselResult<(), CustomRules> {
+        if action.activation.is_some() {
+            Ok(())
+        } else {
+            Err(WeaselError::GenericError)
+        }
     }
 
     fn activate(
@@ -116,7 +126,11 @@ fn ability_activation() {
             .fire()
             .err()
             .map(|e| e.unfold()),
-        Some(WeaselError::AbilityNotActivable(ENTITY_1_ID, ABILITY_ID))
+        Some(WeaselError::AbilityNotActivable(
+            ENTITY_1_ID,
+            ABILITY_ID,
+            Box::new(WeaselError::GenericError)
+        ))
     );
     // Succeed in activating an ability.
     assert_eq!(

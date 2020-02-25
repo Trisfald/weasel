@@ -32,7 +32,7 @@ impl<R: BattleRules> Space<R> {
         &self,
         claim: PositionClaim<'a, R>,
         position: &Position<R>,
-    ) -> bool {
+    ) -> WeaselResult<(), R> {
         self.rules.check_move(&self.model, claim, position)
     }
 
@@ -106,8 +106,8 @@ pub trait SpaceRules<R: BattleRules> {
         _model: &Self::SpaceModel,
         _claim: PositionClaim<'a, R>,
         _position: &Self::Position,
-    ) -> bool {
-        true
+    ) -> WeaselResult<(), R> {
+        Ok(())
     }
 
     /// Moves an entity into a new position.
@@ -300,16 +300,16 @@ impl<R: BattleRules + 'static> Event<R> for MoveEntity<R> {
             .entity(&self.id)
             .ok_or_else(|| WeaselError::EntityNotFound(self.id.clone()))?;
         // Check position.
-        if !battle
+        battle
             .space()
             .check_move(PositionClaim::Movement(entity), &self.position)
-        {
-            return Err(WeaselError::PositionError(
-                Some(entity.position().clone()),
-                self.position.clone(),
-            ));
-        }
-        Ok(())
+            .map_err(|err| {
+                WeaselError::PositionError(
+                    Some(entity.position().clone()),
+                    self.position.clone(),
+                    Box::new(err),
+                )
+            })
     }
 
     fn apply(&self, battle: &mut Battle<R>, _: &mut Option<EventQueue<R>>) {

@@ -8,8 +8,7 @@ use weasel::metric::WriteMetrics;
 use weasel::round::Rounds;
 use weasel::server::Server;
 use weasel::space::{AlterSpace, MoveEntity, PositionClaim, ResetSpace, SpaceRules};
-use weasel::WeaselError;
-use weasel::{battle_rules, rules::empty::*};
+use weasel::{battle_rules, rules::empty::*, WeaselError, WeaselResult};
 
 static TEAM_1_ID: u32 = 1;
 static CREATURE_1_ID: u32 = 1;
@@ -38,8 +37,12 @@ impl SpaceRules<CustomRules> for CustomSpaceRules {
         model: &Self::SpaceModel,
         _claim: PositionClaim<'a, CustomRules>,
         position: &Self::Position,
-    ) -> bool {
-        !model.contains(position)
+    ) -> WeaselResult<(), CustomRules> {
+        if !model.contains(position) {
+            Ok(())
+        } else {
+            Err(WeaselError::GenericError)
+        }
     }
 
     fn move_entity<'a>(
@@ -108,7 +111,11 @@ fn position_verified() {
             .fire()
             .err()
             .map(|e| e.unfold()),
-        Some(WeaselError::PositionError(None, POSITION_1))
+        Some(WeaselError::PositionError(
+            None,
+            POSITION_1,
+            Box::new(WeaselError::GenericError)
+        ))
     );
     assert!(server
         .battle()
@@ -126,7 +133,11 @@ fn move_entity() {
             .fire()
             .err()
             .map(|e| e.unfold()),
-        Some(WeaselError::PositionError(Some(POSITION_1), POSITION_1))
+        Some(WeaselError::PositionError(
+            Some(POSITION_1),
+            POSITION_1,
+            Box::new(WeaselError::GenericError)
+        ))
     );
     assert_eq!(
         *server
@@ -167,7 +178,11 @@ fn move_object() {
             .fire()
             .err()
             .map(|e| e.unfold()),
-        Some(WeaselError::PositionError(Some(POSITION_2), POSITION_2))
+        Some(WeaselError::PositionError(
+            Some(POSITION_2),
+            POSITION_2,
+            Box::new(WeaselError::GenericError)
+        ))
     );
     // Move the object into a valid position.
     assert_eq!(
@@ -212,6 +227,10 @@ fn alter_space() {
             .fire()
             .err()
             .map(|e| e.unfold()),
-        Some(WeaselError::PositionError(Some(POSITION_1), POSITION_2))
+        Some(WeaselError::PositionError(
+            Some(POSITION_1),
+            POSITION_2,
+            Box::new(WeaselError::GenericError)
+        ))
     );
 }
