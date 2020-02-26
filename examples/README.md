@@ -25,3 +25,7 @@ A simple implementation of `RoundsRules` to decide the order of rounds based on 
 ## [Undo](undo/)
 
 Interactive example in which the player moves around a creature and can undo/redo his moves.
+
+## [Passive](passive/)
+
+An example to show how to define simple passive abilities.
