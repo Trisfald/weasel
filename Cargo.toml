@@ -61,3 +61,6 @@ required-features = ["random"]
 
 [[example]]
 name = "undo"
+
+[[example]]
+name = "passive"

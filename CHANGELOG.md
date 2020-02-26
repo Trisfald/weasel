@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Example for undo/redo of events.
 - Added a `GenericError` variant to `WeaselError`.
+- Example to showcase passive abilities.
 
 ### Changed
 - The methods `activable`, `on_round_start` and `on_round_end` now take `BattleState` as argument.
