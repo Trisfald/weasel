@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Example for undo/redo of events.
+- Added a `GenericError` variant to `WeaselError`.
+
+### Changed
 - The methods `activable`, `on_round_start` and `on_round_end` now take `BattleState` as argument.
+- The methods `allow_new_entity`, `activable`, `check_move` now return a `WeaselResult` instead of a bool.
 
 ## [0.4.1] - 2020-02-22
 ### Changed

@@ -9,7 +9,7 @@ use weasel::event::{EventQueue, EventTrigger};
 use weasel::metric::WriteMetrics;
 use weasel::rules::ability::SimpleAbility;
 use weasel::space::{MoveEntity, PositionClaim, SpaceRules};
-use weasel::{battle_rules, rules::empty::*};
+use weasel::{battle_rules, rules::empty::*, WeaselError, WeaselResult};
 
 /// Length of each dimension of the battlefield.
 const BATTLEFIELD_LENGTH: usize = 5;
@@ -59,10 +59,17 @@ impl SpaceRules<CustomRules> for CustomSpaceRules {
         _model: &Self::SpaceModel,
         _claim: PositionClaim<'a, CustomRules>,
         position: &Self::Position,
-    ) -> bool {
+    ) -> WeaselResult<(), CustomRules> {
         // An entity can move into a square if it exists.
         // We don't check if the square is occupied because we know there will be only one entity.
-        position.valid()
+        if position.valid() {
+            Ok(())
+        } else {
+            Err(WeaselError::UserError(format!(
+                "invalid position: {}",
+                position
+            )))
+        }
     }
 
     fn move_entity<'a>(
@@ -94,7 +101,7 @@ pub struct Square {
 impl Square {
     /// Returns another square which represents the same position after taking one step in
     /// the given direction.
-    fn one_step_towards(&self, dir: Direction) -> Square {
+    fn one_step_towards(self, dir: Direction) -> Square {
         match dir {
             Direction::Up => Square {
                 x: self.x,
@@ -115,10 +122,16 @@ impl Square {
         }
     }
 
-    fn valid(&self) -> bool {
+    fn valid(self) -> bool {
         let max = BATTLEFIELD_LENGTH.try_into().unwrap();
         let min = 0;
         self.x < max && self.x >= min && self.y < max && self.y >= min
+    }
+}
+
+impl Display for Square {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "x: {}, y: {}", self.x, self.y)
     }
 }
 
@@ -192,12 +205,24 @@ impl ActorRules<CustomRules> for CustomActorRules {
         Box::new(v.into_iter())
     }
 
-    fn activable(&self, _state: &BattleState<CustomRules>, action: Action<CustomRules>) -> bool {
+    fn activable(
+        &self,
+        _state: &BattleState<CustomRules>,
+        action: Action<CustomRules>,
+    ) -> WeaselResult<(), CustomRules> {
         // The ability can be activated only if the destination exists.
         if let Some(dir) = action.activation {
-            action.actor.position().one_step_towards(*dir).valid()
+            let destination = action.actor.position().one_step_towards(*dir);
+            if destination.valid() {
+                Ok(())
+            } else {
+                Err(WeaselError::UserError(format!(
+                    "invalid destination: {}",
+                    destination
+                )))
+            }
         } else {
-            false
+            Err(WeaselError::UserError("missing activation!".to_string()))
         }
     }
 
