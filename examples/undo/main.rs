@@ -153,17 +153,17 @@ fn undo(
     event_buffer: &mut Vec<VersionedEventWrapper<CustomRules>>,
 ) -> Server<CustomRules> {
     // Retrieve the last event of type ActivateAbility.
-    let last = server
+    let last_activation_index = server
         .battle()
         .history()
         .events()
         .iter()
-        .rev()
-        .find(|e| e.kind() == EventKind::ActivateAbility);
-    match last {
-        Some(last) => {
+        .rposition(|e| e.kind() == EventKind::ActivateAbility);
+    match last_activation_index {
+        Some(last_activation_index) => {
             // We are gonna undo this round.
-            // First save the current history in a buffer, if it's empty.
+            // First save the current history in a buffer, if it's empty. If it's not, it means
+            // we are already undoing a series of events.
             if event_buffer.is_empty() {
                 let mut events = server
                     .battle()
@@ -174,12 +174,20 @@ fn undo(
                     .collect();
                 event_buffer.append(&mut events);
             }
-            // Create a new server and replay history up to the last ActivateAbility before 'last'.
-            // We know the number of events to replay is equal to last.id() - 1 because event id
-            // is equal to the index of the event, and we subtract 1 to avoid replaying the
-            // StartRound event.
+            // Create a completely new server.
             let mut server = create_server();
-            for event in event_buffer.iter().take((last.id() - 1) as usize) {
+            // Replay history up to the last ActivateAbility before 'last', to skip rounds in
+            // which the player did a wrong move.
+            // To nicely wrap the round we should undo also the StartRound event.
+            let previous_start_round_index = &event_buffer[..last_activation_index]
+                .iter()
+                .rposition(|e| e.kind() == EventKind::StartRound);
+            // We replay all events in the buffer up to the start round (excluded).
+            // There will always be a StartRound before an ActivateAbility.
+            for event in event_buffer
+                .iter()
+                .take(previous_start_round_index.unwrap() as usize)
+            {
                 server.receive(event.clone()).unwrap();
             }
             server
@@ -199,16 +207,23 @@ fn redo(
     let history_len = server.battle().history().events().len();
     if event_buffer.len() > history_len {
         // There are some events to redo.
-        // It's enough to replay the missing events. However, since we want to redo an entire
-        // rounds, replay up to the next ActivateAbility + MoveEntity + EndRound.
-        let future_events = &event_buffer[history_len..event_buffer.len()];
+        // It's enough to replay the missing events on top of the existing server.
+        // Let's first find the next ActivateAbility.
+        let future_events = &event_buffer[history_len..];
         let next_activation = future_events
             .iter()
             .position(|e| e.kind() == EventKind::ActivateAbility);
+        // However, since we want to redo an entire rounds, replay up to the EndRound (included).
         if let Some(next_activation) = next_activation {
-            // Last event to be replayed is next_activation + MoveEntity + EndRound.
-            let last = next_activation + 2;
-            for event in &future_events[0..=last] {
+            // Find the EndRound immediately after 'next_activation'.
+            let end_round = &future_events[next_activation..]
+                .iter()
+                .position(|e| e.kind() == EventKind::EndRound)
+                .unwrap();
+            // Add 'next_activation' index to get the index of 'end_round' in 'future_events'.
+            let end_round = end_round + next_activation;
+            // Replay events up 'end_round' (included).
+            for event in &future_events[..=end_round] {
                 server.receive(event.clone()).unwrap();
             }
         }
