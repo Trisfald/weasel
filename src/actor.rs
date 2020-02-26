@@ -82,7 +82,8 @@ pub trait ActorRules<R: BattleRules> {
         Box::new(std::iter::empty())
     }
 
-    /// Returns true if the actor can activate this ability with the given activation profile.
+    /// Returns `Ok` if `action.actor` can activate `action.ability` with `action.activation`,
+    /// otherwise returns an error describing the issue preventing the activation.\
     /// The ability is guaranteed to be known by the actor.
     ///
     /// The provided implementation accepts any activation.
@@ -90,8 +91,8 @@ pub trait ActorRules<R: BattleRules> {
         Ok(())
     }
 
-    /// Activate an ability.
-    /// `ability` is guaranteed to be known by `actor`.\
+    /// Activates an ability.
+    /// `action.ability` is guaranteed to be known by `action.actor`.\
     /// In order to change the state of the world, abilities should insert
     /// event prototypes in `event_queue`.
     ///

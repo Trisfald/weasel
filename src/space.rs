@@ -96,7 +96,7 @@ pub trait SpaceRules<R: BattleRules> {
     /// Generates a `SpaceModel` starting from a `SpaceSeed`.
     fn generate_model(&self, seed: &Option<Self::SpaceSeed>) -> Self::SpaceModel;
 
-    /// Checks if a given entity can move into a new position.
+    /// Checks if the given entity can occupy a new position.
     ///
     /// The claim tells in which context the entity is trying to acquire the position.
     ///
