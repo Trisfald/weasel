@@ -98,8 +98,8 @@ pub trait TeamRules<R: BattleRules> {
         _state: &BattleState<R>,
         _team: &Team<R>,
         _type: EntityAddition<R>,
-    ) -> bool {
-        true
+    ) -> WeaselResult<(), R> {
+        Ok(())
     }
 
     /// Generate the objectives for a team.

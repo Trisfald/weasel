@@ -191,13 +191,13 @@ impl<R: BattleRules + 'static> Event<R> for CreateObject<R> {
             return Err(WeaselError::DuplicatedObject(self.id.clone()));
         }
         // Check position.
-        if !battle.space().check_move(
-            PositionClaim::Spawn(&EntityId::Object(self.id.clone())),
-            &self.position,
-        ) {
-            return Err(WeaselError::PositionError(None, self.position.clone()));
-        }
-        Ok(())
+        battle
+            .space()
+            .check_move(
+                PositionClaim::Spawn(&EntityId::Object(self.id.clone())),
+                &self.position,
+            )
+            .map_err(|err| WeaselError::PositionError(None, self.position.clone(), Box::new(err)))
     }
 
     fn apply(&self, battle: &mut Battle<R>, _: &mut Option<EventQueue<R>>) {

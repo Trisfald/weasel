@@ -338,10 +338,13 @@ impl<R: BattleRules + 'static> Event<R> for StartRound<R> {
             metrics,
         );
         // Invoke `CharacterRules` callback.
-        battle
-            .rules
-            .actor_rules()
-            .on_round_start(actor, event_queue, &mut battle.entropy, metrics);
+        battle.rules.actor_rules().on_round_start(
+            &battle.state,
+            actor,
+            event_queue,
+            &mut battle.entropy,
+            metrics,
+        );
     }
 
     fn kind(&self) -> EventKind {
@@ -476,10 +479,13 @@ impl<R: BattleRules + 'static> Event<R> for EndRound<R> {
             .unwrap_or_else(|| panic!("constraint violated: actor {:?} not found", id));
         let metrics = &mut battle.metrics.write_handle();
         // Invoke `CharacterRules` callback.
-        battle
-            .rules
-            .actor_rules()
-            .on_round_end(actor, event_queue, &mut battle.entropy, metrics);
+        battle.rules.actor_rules().on_round_end(
+            &battle.state,
+            actor,
+            event_queue,
+            &mut battle.entropy,
+            metrics,
+        );
         // Invoke `RoundRules` callback.
         battle.state.rounds.on_end(
             &battle.state.entities,

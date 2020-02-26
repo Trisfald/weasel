@@ -82,16 +82,17 @@ pub trait ActorRules<R: BattleRules> {
         Box::new(std::iter::empty())
     }
 
-    /// Returns true if the actor can activate this ability with the given activation profile.
+    /// Returns `Ok` if `action.actor` can activate `action.ability` with `action.activation`,
+    /// otherwise returns an error describing the issue preventing the activation.\
     /// The ability is guaranteed to be known by the actor.
     ///
     /// The provided implementation accepts any activation.
-    fn activable(&self, _action: Action<R>) -> bool {
-        true
+    fn activable(&self, _state: &BattleState<R>, _action: Action<R>) -> WeaselResult<(), R> {
+        Ok(())
     }
 
-    /// Activate an ability.
-    /// `ability` is guaranteed to be known by `actor`.\
+    /// Activates an ability.
+    /// `action.ability` is guaranteed to be known by `action.actor`.\
     /// In order to change the state of the world, abilities should insert
     /// event prototypes in `event_queue`.
     ///
@@ -123,6 +124,7 @@ pub trait ActorRules<R: BattleRules> {
     /// The provided implementation does nothing.
     fn on_round_start(
         &self,
+        _state: &BattleState<R>,
         _actor: &dyn Actor<R>,
         _event_queue: &mut Option<EventQueue<R>>,
         _entropy: &mut Entropy<R>,
@@ -135,6 +137,7 @@ pub trait ActorRules<R: BattleRules> {
     /// The provided implementation does nothing.
     fn on_round_end(
         &self,
+        _state: &BattleState<R>,
         _actor: &dyn Actor<R>,
         _event_queue: &mut Option<EventQueue<R>>,
         _entropy: &mut Entropy<R>,

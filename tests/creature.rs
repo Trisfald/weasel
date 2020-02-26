@@ -17,7 +17,7 @@ use weasel::space::{PositionClaim, SpaceRules};
 use weasel::user::UserMetricId;
 use weasel::{
     battle_rules, battle_rules_with_actor, battle_rules_with_character, rules::empty::*,
-    WeaselError,
+    WeaselError, WeaselResult,
 };
 
 static TEAM_1_ID: u32 = 1;
@@ -425,8 +425,12 @@ fn remove_creature() {
             model: &Self::SpaceModel,
             _claim: PositionClaim<'a, CustomRules>,
             position: &Self::Position,
-        ) -> bool {
-            !model.contains(position)
+        ) -> WeaselResult<(), CustomRules> {
+            if !model.contains(position) {
+                Ok(())
+            } else {
+                Err(WeaselError::GenericError)
+            }
         }
 
         fn move_entity<'a>(

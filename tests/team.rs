@@ -13,8 +13,7 @@ use weasel::team::{
     ConcludeObjectives, Conclusion, CreateTeam, EntityAddition, Relation, RemoveTeam,
     ResetObjectives, SetRelations, Team, TeamRules,
 };
-use weasel::WeaselError;
-use weasel::{battle_rules, rules::empty::*};
+use weasel::{battle_rules, rules::empty::*, WeaselError, WeaselResult};
 
 #[derive(Default)]
 struct CustomTeamRules {
@@ -27,10 +26,20 @@ impl<R: BattleRules> TeamRules<R> for CustomTeamRules {
     type ObjectivesSeed = ();
     type Objectives = ();
 
-    fn allow_new_entity(&self, _: &BattleState<R>, _: &Team<R>, mode: EntityAddition<R>) -> bool {
-        match mode {
+    fn allow_new_entity(
+        &self,
+        _: &BattleState<R>,
+        _: &Team<R>,
+        mode: EntityAddition<R>,
+    ) -> WeaselResult<(), R> {
+        let allowed = match mode {
             EntityAddition::CreatureSpawn => *self.allow_new_entities.borrow(),
             EntityAddition::CreatureConversion(_) => *self.allow_converted_entities.borrow(),
+        };
+        if allowed {
+            Ok(())
+        } else {
+            Err(WeaselError::GenericError)
         }
     }
 }
@@ -77,7 +86,10 @@ fn creature_creation() {
     let result = CreateCreature::trigger(&mut server, CREATURE_1_ID, TEAM_1_ID, ()).fire();
     assert_eq!(
         result.err().map(|e| e.unfold()),
-        Some(WeaselError::NewCreatureUnaccepted(TEAM_1_ID))
+        Some(WeaselError::NewCreatureUnaccepted(
+            TEAM_1_ID,
+            Box::new(WeaselError::GenericError)
+        ))
     );
 }
 
@@ -342,7 +354,8 @@ fn convert_creature() {
             .map(|e| e.unfold()),
         Some(WeaselError::ConvertedCreatureUnaccepted(
             TEAM_2_ID,
-            CREATURE_1_ID
+            CREATURE_1_ID,
+            Box::new(WeaselError::GenericError)
         ))
     );
     // Check consistency.

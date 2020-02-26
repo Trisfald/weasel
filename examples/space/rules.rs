@@ -8,7 +8,7 @@ use weasel::event::{EventQueue, EventTrigger};
 use weasel::metric::WriteMetrics;
 use weasel::round::Rounds;
 use weasel::space::{PositionClaim, SpaceRules};
-use weasel::{battle_rules, battle_rules_with_space, rules::empty::*};
+use weasel::{battle_rules, battle_rules_with_space, rules::empty::*, WeaselError, WeaselResult};
 
 /// Length of each dimension of the battlefield.
 const BATTLEFIELD_LENGTH: usize = 5;
@@ -36,9 +36,13 @@ impl SpaceRules<CustomRules> for CustomSpaceRules {
         model: &Self::SpaceModel,
         _claim: PositionClaim<'a, CustomRules>,
         position: &Self::Position,
-    ) -> bool {
+    ) -> WeaselResult<(), CustomRules> {
         // An entity can move into a square if it's free.
-        model.is_free(position)
+        if model.is_free(position) {
+            Ok(())
+        } else {
+            Err(WeaselError::UserError("position occupied".to_string()))
+        }
     }
 
     fn move_entity<'a>(
