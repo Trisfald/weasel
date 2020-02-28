@@ -112,7 +112,7 @@ impl<R: BattleRules> Character<R> for Creature<R> {
 
     fn status_mut(&mut self, id: &StatusId<R>) -> Option<&mut LinkedStatus<R>> {
         self.statuses.get_mut(id)
-    }   
+    }
 
     fn add_status(&mut self, status: LinkedStatus<R>) -> Option<LinkedStatus<R>> {
         self.statuses.insert(status.id().clone(), status)
@@ -120,7 +120,7 @@ impl<R: BattleRules> Character<R> for Creature<R> {
 
     fn remove_status(&mut self, id: &StatusId<R>) -> Option<LinkedStatus<R>> {
         self.statuses.remove(id)
-    }        
+    }
 }
 
 impl<R: BattleRules> Actor<R> for Creature<R> {
@@ -801,7 +801,7 @@ mod tests {
     use crate::rules::{ability::SimpleAbility, statistic::SimpleStatistic, status::SimpleStatus};
     use crate::util::tests::{creature, server, team};
     use crate::{battle_rules, rules::empty::*};
-    use crate::{battle_rules_with_actor, battle_rules_with_fight, battle_rules_with_character};
+    use crate::{battle_rules_with_actor, battle_rules_with_character, battle_rules_with_fight};
 
     #[derive(Default)]
     pub struct CustomCharacterRules {}
@@ -838,7 +838,7 @@ mod tests {
         type Impact = ();
         type Status = SimpleStatus<u32, u32>;
         type Potency = ();
-    }    
+    }
 
     #[test]
     fn mutable_status() {
@@ -856,7 +856,7 @@ mod tests {
         assert_eq!(creature.status(&1).unwrap().effect(), 25);
         creature.remove_status(&1);
         assert!(creature.status(&1).is_none());
-    }    
+    }
 
     #[derive(Default)]
     pub struct CustomActorRules {}

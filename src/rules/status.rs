@@ -12,13 +12,17 @@ use std::hash::Hash;
 pub struct SimpleStatus<I, V> {
     id: I,
     effect: V,
-    duration: Option<u16>, 
+    duration: Option<u16>,
 }
 
 impl<I, V: Copy> SimpleStatus<I, V> {
     /// Creates a new `SimpleStatus`.
     pub fn new(id: I, effect: V, duration: Option<u16>) -> SimpleStatus<I, V> {
-        SimpleStatus { id, effect, duration }
+        SimpleStatus {
+            id,
+            effect,
+            duration,
+        }
     }
 
     /// Returns the effect provoked by this status.

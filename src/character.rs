@@ -6,7 +6,7 @@ use crate::entropy::Entropy;
 use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger, Prioritized};
 use crate::metric::WriteMetrics;
-use crate::status::{Potency, Status, StatusId, LinkedStatus};
+use crate::status::{LinkedStatus, Potency, Status, StatusId};
 use crate::util::Id;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
@@ -134,7 +134,7 @@ pub trait Character<R: BattleRules>: Entity<R> {
     fn status(&self, id: &StatusId<R>) -> Option<&LinkedStatus<R>>;
 
     /// Returns a mutable reference to the status with the given id.
-    fn status_mut(&mut self, id: &StatusId<R>) -> Option<&mut LinkedStatus<R>>;    
+    fn status_mut(&mut self, id: &StatusId<R>) -> Option<&mut LinkedStatus<R>>;
 
     /// Adds a new status. Replaces an existing status with the same id.
     /// Returns the replaced status, if present.
@@ -142,7 +142,7 @@ pub trait Character<R: BattleRules>: Entity<R> {
 
     /// Removes a status.
     /// Returns the removed status, if present.
-    fn remove_status(&mut self, id: &StatusId<R>) -> Option<LinkedStatus<R>>;    
+    fn remove_status(&mut self, id: &StatusId<R>) -> Option<LinkedStatus<R>>;
 }
 
 /// An event to alter the statistics of a character.

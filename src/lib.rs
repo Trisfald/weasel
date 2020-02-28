@@ -52,6 +52,7 @@
 //!
 //! - Creatures and inanimate objects.
 //! - Statistics and abilities for characters.
+//! - Long lasting status effects.
 //! - Player managed teams.
 //! - Team objectives and diplomacy.
 //! - Division of the battle into rounds.

@@ -29,7 +29,7 @@ impl<R: BattleRules> LinkedStatus<R> {
     pub fn new(status: Status<R>) -> LinkedStatus<R> {
         LinkedStatus {
             status,
-            origin: None
+            origin: None,
         }
     }
 
@@ -37,7 +37,7 @@ impl<R: BattleRules> LinkedStatus<R> {
     pub fn with_origin(status: Status<R>, origin: EventId) -> LinkedStatus<R> {
         LinkedStatus {
             status,
-            origin: Some(origin)
+            origin: Some(origin),
         }
     }
 
