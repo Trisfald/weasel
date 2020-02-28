@@ -525,17 +525,17 @@ mod tests {
     use crate::util::tests::{creature, object, server, team};
     use crate::{battle_rules, rules::empty::*};
 
-    static TEAM_1_ID: u32 = 1;
-    static TEAM_ERR_ID: u32 = 99;
-    static CREATURE_1_ID: u32 = 1;
-    static CREATURE_2_ID: u32 = 2;
-    static CREATURE_ERR_ID: u32 = 99;
-    static OBJECT_1_ID: u32 = 1;
-    static OBJECT_2_ID: u32 = 2;
-    static OBJECT_ERR_ID: u32 = 99;
-    static ENTITY_C1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
-    static ENTITY_O1_ID: EntityId<CustomRules> = EntityId::Object(OBJECT_1_ID);
-    static ENTITY_ERR_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_ERR_ID);
+    const TEAM_1_ID: u32 = 1;
+    const TEAM_ERR_ID: u32 = 99;
+    const CREATURE_1_ID: u32 = 1;
+    const CREATURE_2_ID: u32 = 2;
+    const CREATURE_ERR_ID: u32 = 99;
+    const OBJECT_1_ID: u32 = 1;
+    const OBJECT_2_ID: u32 = 2;
+    const OBJECT_ERR_ID: u32 = 99;
+    const ENTITY_C1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
+    const ENTITY_O1_ID: EntityId<CustomRules> = EntityId::Object(OBJECT_1_ID);
+    const ENTITY_ERR_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_ERR_ID);
 
     battle_rules! {}
 

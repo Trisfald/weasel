@@ -17,15 +17,15 @@ use weasel::{WeaselError, WeaselResult};
 #[cfg(feature = "serialization")]
 mod helper;
 
-static TEAM_1_ID: u32 = 1;
-static CREATURE_1_ID: u32 = 1;
-static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
-static SERVER_1_ID: EventSinkId = 1;
-static CLIENT_1_ID: EventSinkId = 1;
-static CLIENT_2_ID: EventSinkId = 2;
-static CLIENT_ERR_ID: EventSinkId = 99;
-static PLAYER_1_ID: PlayerId = 1;
-static PLAYER_2_ID: PlayerId = 2;
+const TEAM_1_ID: u32 = 1;
+const CREATURE_1_ID: u32 = 1;
+const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
+const SERVER_1_ID: EventSinkId = 1;
+const CLIENT_1_ID: EventSinkId = 1;
+const CLIENT_2_ID: EventSinkId = 2;
+const CLIENT_ERR_ID: EventSinkId = 99;
+const PLAYER_1_ID: PlayerId = 1;
+const PLAYER_2_ID: PlayerId = 2;
 
 /// Retrieves events from a server or client
 macro_rules! events {
@@ -320,8 +320,8 @@ fn integrity_checks() {
 
 #[test]
 fn check_version() {
-    static VERSION_NEW: u32 = 4;
-    static VERSION_OLD: u32 = 2;
+    const VERSION_NEW: u32 = 4;
+    const VERSION_OLD: u32 = 2;
     // Create a server with newer rules.
     let mut rules = CustomRules::new();
     rules.version = VERSION_NEW;
@@ -538,7 +538,7 @@ fn client_server_serde() {
     use weasel::creature::RemoveCreature;
     use weasel::round::EndRound;
 
-    static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
+    const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
     // Create a server.
     let server = Rc::new(RefCell::new(util::server(CustomRules::new())));
     let server_sink = TestServerSink::new(SERVER_1_ID, server.clone());

@@ -32,8 +32,8 @@ use weasel::{WeaselError, WeaselResult};
 #[cfg(feature = "serialization")]
 mod helper;
 
-static TEAM_1_ID: u32 = 1;
-static CREATURE_1_ID: u32 = 1;
+const TEAM_1_ID: u32 = 1;
+const CREATURE_1_ID: u32 = 1;
 
 /// Declare an user event.
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
@@ -188,9 +188,9 @@ fn conditional() {
         }
     }
 
-    static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
-    static ABILITY_ID: u32 = 1;
-    static POWER: u32 = 10;
+    const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
+    const ABILITY_ID: u32 = 1;
+    const POWER: u32 = 10;
 
     battle_rules_with_actor! { CustomActorRules }
 
@@ -344,9 +344,9 @@ fn user_event_serde() {
 macro_rules! events_vec {
     () => {{
         battle_rules! {}
-        static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
-        static ABILITY_1_ID: u32 = 1;
-        static OBJECT_1_ID: u32 = 1;
+        const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
+        const ABILITY_1_ID: u32 = 1;
+        const OBJECT_1_ID: u32 = 1;
         // Collect all events into a vector.
         let mut events: Vec<Box<dyn Event<CustomRules>>> = Vec::new();
         events.push(DummyEvent::trigger(&mut ()).event());

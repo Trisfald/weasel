@@ -5,7 +5,7 @@ use weasel::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
 use weasel::user::{UserEventPacker, UserRules};
 use weasel::{battle_rules, battle_rules_with_user, rules::empty::*, WeaselError, WeaselResult};
 
-pub(crate) static PIZZAS_CREATED_METRIC: &str = "pizzas_created";
+pub(crate) const PIZZAS_CREATED_METRIC: &str = "pizzas_created";
 
 // It's not a real game so we can use generic no-op battle rules.
 // We still want to override the UserRules to define how to serialize our custom event and to

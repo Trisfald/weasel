@@ -12,13 +12,13 @@ use weasel::space::Space;
 use weasel::WeaselError;
 use weasel::{battle_rules, battle_rules_with_rounds, rules::empty::*};
 
-static TEAM_1_ID: u32 = 1;
-static CREATURE_1_ID: u32 = 0;
-static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
-static CREATURE_2_ID: u32 = 1;
-static ENTITY_2_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_2_ID);
-static CREATURE_ERR_ID: u32 = 2;
-static ENTITY_ERR_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_ERR_ID);
+const TEAM_1_ID: u32 = 1;
+const CREATURE_1_ID: u32 = 0;
+const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
+const CREATURE_2_ID: u32 = 1;
+const ENTITY_2_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_2_ID);
+const CREATURE_ERR_ID: u32 = 2;
+const ENTITY_ERR_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_ERR_ID);
 
 #[derive(Clone, Default, Debug)]
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]

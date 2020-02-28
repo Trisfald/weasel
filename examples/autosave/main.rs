@@ -15,8 +15,8 @@ mod sink;
 battle_rules! {}
 
 static TEAM_ID: TeamId<CustomRules> = 0;
-static AUTOSAVE_NAME: &str = "autosave";
-static SINK_ID: EventSinkId = 0;
+const AUTOSAVE_NAME: &str = "autosave";
+const SINK_ID: EventSinkId = 0;
 
 fn main() {
     print_intro();

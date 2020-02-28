@@ -14,7 +14,7 @@ pub(crate) static PUNCH: AbilityId<CustomRules> = 1;
 /// Id for the passive ability 'power up'.
 pub(crate) static POWER_UP: AbilityId<CustomRules> = 2;
 /// Starting power for punches.
-pub(crate) static PUNCH_START_POWER: u32 = 10;
+pub(crate) const PUNCH_START_POWER: u32 = 10;
 
 // In this example we only need to redefine the actor rules
 battle_rules_with_actor! {

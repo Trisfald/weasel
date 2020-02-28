@@ -182,10 +182,10 @@ mod tests {
     use crate::battle::Battle;
     use crate::{battle_rules, rules::empty::*};
 
-    static PLAYER_1_ID: PlayerId = 1;
-    static PLAYER_2_ID: PlayerId = 2;
-    static TEAM_1_ID: u32 = 1;
-    static TEAM_2_ID: u32 = 2;
+    const PLAYER_1_ID: PlayerId = 1;
+    const PLAYER_2_ID: PlayerId = 2;
+    const TEAM_1_ID: u32 = 1;
+    const TEAM_2_ID: u32 = 2;
 
     battle_rules! {}
 

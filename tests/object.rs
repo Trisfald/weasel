@@ -18,9 +18,9 @@ use weasel::{
     WeaselError, WeaselResult,
 };
 
-static OBJECT_1_ID: u32 = 1;
-static OBJECT_2_ID: u32 = 2;
-static OBJECT_ERR_ID: u32 = 99;
+const OBJECT_1_ID: u32 = 1;
+const OBJECT_2_ID: u32 = 2;
+const OBJECT_ERR_ID: u32 = 99;
 
 #[test]
 fn new_object() {
@@ -50,8 +50,8 @@ fn new_object() {
 #[test]
 fn object_cannot_act() {
     battle_rules! {}
-    static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Object(OBJECT_1_ID);
-    static ABILITY_1_ID: u32 = 1;
+    const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Object(OBJECT_1_ID);
+    const ABILITY_1_ID: u32 = 1;
     // Create a battle with one object.
     let mut server = util::server(CustomRules::new());
     util::object(&mut server, OBJECT_1_ID, ());
@@ -101,7 +101,7 @@ fn statistics_generated() {
     }
 
     battle_rules_with_character! { CustomCharacterRules }
-    static SEED: u32 = 5;
+    const SEED: u32 = 5;
     // Create a new object.
     let mut server = util::server(CustomRules::new());
     assert_eq!(
@@ -153,10 +153,10 @@ fn regenerate_statistics() {
     static STAT_1_ID: StatisticId<CustomRules> = 1;
     static STAT_2_ID: StatisticId<CustomRules> = 2;
     static STAT_3_ID: StatisticId<CustomRules> = 3;
-    static STAT_VALUE: u32 = 10;
-    static STAT_ERR_VALUE: u32 = 0;
-    static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Object(OBJECT_1_ID);
-    static ENTITY_ERR_ID: EntityId<CustomRules> = EntityId::Object(OBJECT_ERR_ID);
+    const STAT_VALUE: u32 = 10;
+    const STAT_ERR_VALUE: u32 = 0;
+    const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Object(OBJECT_1_ID);
+    const ENTITY_ERR_ID: EntityId<CustomRules> = EntityId::Object(OBJECT_ERR_ID);
     // Create a new object with two statistics.
     let mut server = util::server(CustomRules::new());
     assert_eq!(
@@ -255,7 +255,7 @@ fn remove_object() {
     }
 
     battle_rules_with_space! { CustomSpaceRules }
-    static POSITION_1: u32 = 1;
+    const POSITION_1: u32 = 1;
     // Create a battle with one object.
     let mut server = util::server(CustomRules::new());
     util::object(&mut server, OBJECT_1_ID, POSITION_1);
@@ -303,7 +303,7 @@ fn remove_object_on_alter() {
     }
 
     battle_rules_with_character! { CustomCharacterRules }
-    static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Object(OBJECT_1_ID);
+    const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Object(OBJECT_1_ID);
     // Create a battle with one object.
     let mut server = util::server(CustomRules::new());
     util::object(&mut server, OBJECT_1_ID, ());

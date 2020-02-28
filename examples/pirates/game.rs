@@ -17,8 +17,8 @@ use weasel::team::{CreateTeam, TeamId};
 use weasel::Server;
 
 // Constants to identify teams.
-static PLAYER_TEAM: &str = "player";
-static ENEMY_TEAM: &str = "enemy";
+const PLAYER_TEAM: &str = "player";
+const ENEMY_TEAM: &str = "enemy";
 // Constants to identify creatures (ships).
 static PLAYER_SHIP: CreatureId<PiratesRules> = 0;
 static ENEMY_SHIP: CreatureId<PiratesRules> = 1;

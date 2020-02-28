@@ -44,12 +44,12 @@ impl<R: BattleRules> TeamRules<R> for CustomTeamRules {
     }
 }
 
-static TEAM_1_ID: u32 = 1;
-static TEAM_2_ID: u32 = 2;
-static TEAM_3_ID: u32 = 3;
-static TEAM_ERR_ID: u32 = 99;
-static CREATURE_1_ID: u32 = 1;
-static CREATURE_ERR_ID: u32 = 99;
+const TEAM_1_ID: u32 = 1;
+const TEAM_2_ID: u32 = 2;
+const TEAM_3_ID: u32 = 3;
+const TEAM_ERR_ID: u32 = 99;
+const CREATURE_1_ID: u32 = 1;
+const CREATURE_ERR_ID: u32 = 99;
 
 #[test]
 fn new_team() {
@@ -680,8 +680,8 @@ fn check_objectives() {
         EmptyEntropyRules
     }
 
-    static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
-    static ABILITY_ID: u32 = 1;
+    const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
+    const ABILITY_ID: u32 = 1;
 
     // Test round checks.
     // Create a battle with one creature.
@@ -760,7 +760,7 @@ fn check_objectives() {
 
 #[test]
 fn remove_team() {
-    static PLAYER_1_ID: PlayerId = 1;
+    const PLAYER_1_ID: PlayerId = 1;
     battle_rules! {}
     // Create a battle with one team.
     let mut server = util::server(CustomRules::new());

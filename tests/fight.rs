@@ -11,15 +11,15 @@ use weasel::rules::ability::SimpleAbility;
 use weasel::rules::statistic::SimpleStatistic;
 use weasel::{battle_rules, rules::empty::*};
 
-static TEAM_1_ID: u32 = 1;
-static CREATURE_1_ID: u32 = 1;
-static CREATURE_2_ID: u32 = 2;
-static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
-static ENTITY_2_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_2_ID);
-static ABILITY_ID: u32 = 1;
-static POWER: i32 = 1;
-static HEALTH: i32 = 10;
-static HEALTH_ID: &str = "health";
+const TEAM_1_ID: u32 = 1;
+const CREATURE_1_ID: u32 = 1;
+const CREATURE_2_ID: u32 = 2;
+const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
+const ENTITY_2_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_2_ID);
+const ABILITY_ID: u32 = 1;
+const POWER: i32 = 1;
+const HEALTH: i32 = 10;
+const HEALTH_ID: &str = "health";
 
 #[derive(Default)]
 pub struct CustomCharacterRules {}

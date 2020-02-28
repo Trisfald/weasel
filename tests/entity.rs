@@ -2,15 +2,15 @@ use weasel::battle::BattleRules;
 use weasel::entity::{Entity, EntityId};
 use weasel::{battle_rules, rules::empty::*, WeaselError};
 
-static TEAM_1_ID: u32 = 1;
-static CREATURE_1_ID: u32 = 1;
-static CREATURE_2_ID: u32 = 2;
-static OBJECT_1_ID: u32 = 1;
-static OBJECT_2_ID: u32 = 2;
-static ENTITY_C1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
-static ENTITY_C2_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_2_ID);
-static ENTITY_O1_ID: EntityId<CustomRules> = EntityId::Object(OBJECT_1_ID);
-static ENTITY_O2_ID: EntityId<CustomRules> = EntityId::Object(OBJECT_2_ID);
+const TEAM_1_ID: u32 = 1;
+const CREATURE_1_ID: u32 = 1;
+const CREATURE_2_ID: u32 = 2;
+const OBJECT_1_ID: u32 = 1;
+const OBJECT_2_ID: u32 = 2;
+const ENTITY_C1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
+const ENTITY_C2_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_2_ID);
+const ENTITY_O1_ID: EntityId<CustomRules> = EntityId::Object(OBJECT_1_ID);
+const ENTITY_O2_ID: EntityId<CustomRules> = EntityId::Object(OBJECT_2_ID);
 
 battle_rules! {}
 

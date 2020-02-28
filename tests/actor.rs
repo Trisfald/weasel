@@ -9,9 +9,9 @@ use weasel::rules::empty::EmptyAbility;
 use weasel::space::MoveEntity;
 use weasel::{battle_rules, rules::empty::*};
 
-static TEAM_1_ID: u32 = 1;
-static CREATURE_1_ID: u32 = 1;
-static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
+const TEAM_1_ID: u32 = 1;
+const CREATURE_1_ID: u32 = 1;
+const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
 
 #[derive(Default)]
 pub struct CustomActorRules {}

@@ -206,13 +206,13 @@ pub mod system {
     use super::*;
 
     /// Number of rounds since the start of the battle.
-    pub static ROUNDS_STARTED: SystemMetricId = 0;
+    pub const ROUNDS_STARTED: SystemMetricId = 0;
     /// Number of creatures created.
-    pub static CREATURES_CREATED: SystemMetricId = 1;
+    pub const CREATURES_CREATED: SystemMetricId = 1;
     /// Number of objects created.
-    pub static OBJECTS_CREATED: SystemMetricId = 1;
+    pub const OBJECTS_CREATED: SystemMetricId = 1;
     /// Number of teams created.
-    pub static TEAMS_CREATED: SystemMetricId = 2;
+    pub const TEAMS_CREATED: SystemMetricId = 2;
 }
 
 #[cfg(test)]

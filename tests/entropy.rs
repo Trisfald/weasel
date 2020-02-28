@@ -13,17 +13,17 @@ use weasel::{battle_rules, rules::empty::*};
 #[cfg(feature = "serialization")]
 mod helper;
 
-static SEED: u64 = 1_204_678_643_940_597_513;
-static TEAM_1_ID: u32 = 1;
-static CREATURE_1_ID: u32 = 1;
-static STAT_ID: u32 = 1;
-static STAT_VALUE_MIN: i32 = 1;
-static STAT_VALUE_MAX: i32 = 1000;
-static STAT_VALUE: i32 = 820;
-static ABILITY_ID: u32 = 1;
-static ABILITY_POWER_MIN: i32 = 1;
-static ABILITY_POWER_MAX: i32 = 1000;
-static ABILITY_POWER: i32 = 33;
+const SEED: u64 = 1_204_678_643_940_597_513;
+const TEAM_1_ID: u32 = 1;
+const CREATURE_1_ID: u32 = 1;
+const STAT_ID: u32 = 1;
+const STAT_VALUE_MIN: i32 = 1;
+const STAT_VALUE_MAX: i32 = 1000;
+const STAT_VALUE: i32 = 820;
+const ABILITY_ID: u32 = 1;
+const ABILITY_POWER_MIN: i32 = 1;
+const ABILITY_POWER_MAX: i32 = 1000;
+const ABILITY_POWER: i32 = 33;
 
 #[derive(Default)]
 pub struct CustomCharacterRules {}

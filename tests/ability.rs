@@ -11,15 +11,15 @@ use weasel::{
     battle_rules, battle_rules_with_actor, rules::empty::*, Server, WeaselError, WeaselResult,
 };
 
-static TEAM_1_ID: u32 = 1;
-static TEAM_2_ID: u32 = 2;
-static CREATURE_1_ID: u32 = 1;
-static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
-static CREATURE_ERR_ID: u32 = 5;
-static ENTITY_ERR_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_ERR_ID);
-static ABILITY_ID: u32 = 1;
-static ABILITY_ERR_ID: u32 = 5;
-static PLAYER_1_ID: PlayerId = 1;
+const TEAM_1_ID: u32 = 1;
+const TEAM_2_ID: u32 = 2;
+const CREATURE_1_ID: u32 = 1;
+const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
+const CREATURE_ERR_ID: u32 = 5;
+const ENTITY_ERR_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_ERR_ID);
+const ABILITY_ID: u32 = 1;
+const ABILITY_ERR_ID: u32 = 5;
+const PLAYER_1_ID: PlayerId = 1;
 
 #[derive(Default)]
 pub struct CustomActorRules {}
