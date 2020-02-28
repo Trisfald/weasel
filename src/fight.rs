@@ -61,20 +61,6 @@ pub trait FightRules<R: BattleRules> {
     ) {
     }
 
-    /// Clears the side effects of a status when the latter is removed from a character.
-    ///
-    /// The provided implementation does nothing.
-    fn remove_status(
-        &self,
-        _state: &BattleState<R>,
-        _character: &dyn Character<R>,
-        _status: &Status<R>,
-        _event_queue: &mut Option<EventQueue<R>>,
-        _entropy: &mut Entropy<R>,
-        _metrics: &mut WriteMetrics<R>,
-    ) {
-    }
-
     /// Applies the periodic side effects of a status.
     /// Returns `true` if the status should end after this update.
     ///
@@ -92,6 +78,20 @@ pub trait FightRules<R: BattleRules> {
         _metrics: &mut WriteMetrics<R>,
     ) -> bool {
         false
+    }
+
+    /// Clears the side effects of a status when the latter is removed from a character.
+    ///
+    /// The provided implementation does nothing.
+    fn remove_status(
+        &self,
+        _state: &BattleState<R>,
+        _character: &dyn Character<R>,
+        _status: &Status<R>,
+        _event_queue: &mut Option<EventQueue<R>>,
+        _entropy: &mut Entropy<R>,
+        _metrics: &mut WriteMetrics<R>,
+    ) {
     }
 }
 
