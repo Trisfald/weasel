@@ -10,7 +10,7 @@ use weasel::Server;
 
 mod rules;
 
-static TEAM_ID: TeamId<CustomRules> = 1;
+const TEAM_ID: TeamId<CustomRules> = 1;
 
 fn main() {
     // Create a server to manage the battle.

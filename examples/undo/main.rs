@@ -11,9 +11,9 @@ use weasel::Server;
 
 mod rules;
 
-static TEAM_ID: TeamId<CustomRules> = 0;
-static CREATURE_ID: CreatureId<CustomRules> = 0;
-static ENTITY_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_ID);
+const TEAM_ID: TeamId<CustomRules> = 0;
+const CREATURE_ID: CreatureId<CustomRules> = 0;
+const ENTITY_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_ID);
 
 fn main() {
     print_intro();

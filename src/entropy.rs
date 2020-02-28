@@ -232,7 +232,7 @@ mod tests {
     use crate::util::tests::server;
     use crate::{battle_rules, rules::empty::*};
 
-    static DEFAULT_SEED: i32 = 3;
+    const DEFAULT_SEED: i32 = 3;
 
     #[derive(Debug, Default, Clone, Copy)]
     pub struct CustomEntropyRules {}

@@ -10,14 +10,14 @@ use weasel::server::Server;
 use weasel::space::{AlterSpace, MoveEntity, PositionClaim, ResetSpace, SpaceRules};
 use weasel::{battle_rules, rules::empty::*, WeaselError, WeaselResult};
 
-static TEAM_1_ID: u32 = 1;
-static CREATURE_1_ID: u32 = 1;
-static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
-static CREATURE_2_ID: u32 = 2;
-static OBJECT_1_ID: u32 = 1;
-static POSITION_1: u32 = 1;
-static POSITION_2: u32 = 2;
-static POSITION_T: u32 = 99;
+const TEAM_1_ID: u32 = 1;
+const CREATURE_1_ID: u32 = 1;
+const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
+const CREATURE_2_ID: u32 = 2;
+const OBJECT_1_ID: u32 = 1;
+const POSITION_1: u32 = 1;
+const POSITION_2: u32 = 2;
+const POSITION_T: u32 = 99;
 
 #[derive(Default)]
 struct CustomSpaceRules {}

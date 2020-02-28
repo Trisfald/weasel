@@ -20,11 +20,11 @@ use weasel::{
     WeaselError, WeaselResult,
 };
 
-static TEAM_1_ID: u32 = 1;
-static TEAM_5_ID: u32 = 5;
-static CREATURE_1_ID: u32 = 1;
-static CREATURE_5_ID: u32 = 5;
-static CREATURE_ERR_ID: u32 = 99;
+const TEAM_1_ID: u32 = 1;
+const TEAM_5_ID: u32 = 5;
+const CREATURE_1_ID: u32 = 1;
+const CREATURE_5_ID: u32 = 5;
+const CREATURE_ERR_ID: u32 = 99;
 
 #[test]
 fn new_creature() {
@@ -94,7 +94,7 @@ fn statistics_generated() {
     }
 
     battle_rules_with_character! { CustomCharacterRules }
-    static SEED: u32 = 5;
+    const SEED: u32 = 5;
     // Create a new creature.
     let mut server = util::server(CustomRules::new());
     util::team(&mut server, TEAM_1_ID);
@@ -140,13 +140,13 @@ fn regenerate_statistics() {
 
     battle_rules_with_character! { CustomCharacterRules }
 
-    static STAT_1_ID: StatisticId<CustomRules> = 1;
-    static STAT_2_ID: StatisticId<CustomRules> = 2;
-    static STAT_3_ID: StatisticId<CustomRules> = 3;
-    static STAT_VALUE: u32 = 10;
-    static STAT_ERR_VALUE: u32 = 0;
-    static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
-    static ENTITY_ERR_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_ERR_ID);
+    const STAT_1_ID: StatisticId<CustomRules> = 1;
+    const STAT_2_ID: StatisticId<CustomRules> = 2;
+    const STAT_3_ID: StatisticId<CustomRules> = 3;
+    const STAT_VALUE: u32 = 10;
+    const STAT_ERR_VALUE: u32 = 0;
+    const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
+    const ENTITY_ERR_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_ERR_ID);
     // Create a new creature with two statistics.
     let mut server = util::server(CustomRules::new());
     util::team(&mut server, TEAM_1_ID);
@@ -223,7 +223,7 @@ fn abilities_generated() {
     }
 
     battle_rules_with_actor! { CustomActorRules }
-    static SEED: u32 = 5;
+    const SEED: u32 = 5;
     // Create a new creature.
     let mut server = util::server(CustomRules::new());
     util::team(&mut server, TEAM_1_ID);
@@ -268,13 +268,13 @@ fn regenerate_abilities() {
 
     battle_rules_with_actor! { CustomActorRules }
 
-    static ABILITY_1_ID: AbilityId<CustomRules> = 1;
-    static ABILITY_2_ID: AbilityId<CustomRules> = 2;
-    static ABILITY_3_ID: AbilityId<CustomRules> = 3;
-    static ABILITY_VALUE: u32 = 10;
-    static ABILITY_ERR_VALUE: u32 = 0;
-    static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
-    static ENTITY_ERR_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_ERR_ID);
+    const ABILITY_1_ID: AbilityId<CustomRules> = 1;
+    const ABILITY_2_ID: AbilityId<CustomRules> = 2;
+    const ABILITY_3_ID: AbilityId<CustomRules> = 3;
+    const ABILITY_VALUE: u32 = 10;
+    const ABILITY_ERR_VALUE: u32 = 0;
+    const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
+    const ENTITY_ERR_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_ERR_ID);
     // Create a new creature with two abilities.
     let mut server = util::server(CustomRules::new());
     util::team(&mut server, TEAM_1_ID);
@@ -364,8 +364,8 @@ fn user_metrics() {
     }
 
     battle_rules_with_character! { CharacterRulesWithMetrics }
-    static SEED: u64 = 5;
-    static TOTAL_STAT_VALUE: u64 = 5 * 2;
+    const SEED: u64 = 5;
+    const TOTAL_STAT_VALUE: u64 = 5 * 2;
     // Create a battle.
     let mut server = util::server(CustomRules::new());
     util::team(&mut server, TEAM_1_ID);
@@ -461,8 +461,8 @@ fn remove_creature() {
         CustomRoundsRules,
         EmptyEntropyRules
     }
-    static POSITION_1: u32 = 1;
-    static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
+    const POSITION_1: u32 = 1;
+    const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
     // Create a battle with one creature.
     let mut server = util::server(CustomRules::new());
     util::team(&mut server, TEAM_1_ID);
@@ -545,7 +545,7 @@ fn remove_creature_on_alter() {
     }
 
     battle_rules_with_character! { CustomCharacterRules }
-    static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
+    const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
     // Create a battle with one creature.
     let mut server = util::server(CustomRules::new());
     util::team(&mut server, TEAM_1_ID);

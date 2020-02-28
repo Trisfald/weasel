@@ -15,11 +15,11 @@ use weasel::util::Id;
 use weasel::{battle_rules, rules::empty::*};
 
 // Constants to identify statistics (of ships).
-pub(crate) static STAT_HULL: StatisticId<PiratesRules> = 0;
-pub(crate) static STAT_CREW: StatisticId<PiratesRules> = 1;
+pub(crate) const STAT_HULL: StatisticId<PiratesRules> = 0;
+pub(crate) const STAT_CREW: StatisticId<PiratesRules> = 1;
 // Constants to identify abilities (of ships).
-pub(crate) static ABILITY_CANNONBALL: &str = "cannonballs";
-pub(crate) static ABILITY_GRAPESHOT: &str = "grapeshots";
+pub(crate) const ABILITY_CANNONBALL: &str = "cannonballs";
+pub(crate) const ABILITY_GRAPESHOT: &str = "grapeshots";
 
 // Define our custom team rules.
 #[derive(Default)]

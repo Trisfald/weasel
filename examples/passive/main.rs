@@ -10,11 +10,11 @@ use weasel::Server;
 
 mod rules;
 
-static TEAM_ID: TeamId<CustomRules> = 1;
-static CREATURE_1_ID: CreatureId<CustomRules> = 1;
-static CREATURE_2_ID: CreatureId<CustomRules> = 2;
-static ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
-static ENTITY_2_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_2_ID);
+const TEAM_ID: TeamId<CustomRules> = 1;
+const CREATURE_1_ID: CreatureId<CustomRules> = 1;
+const CREATURE_2_ID: CreatureId<CustomRules> = 2;
+const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
+const ENTITY_2_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_2_ID);
 
 fn main() {
     // Create a server to manage the battle.

@@ -5,8 +5,8 @@ use weasel::event::{EventId, EventKind, EventTrigger};
 use weasel::round::EndRound;
 use weasel::{battle_rules, rules::empty::*};
 
-static TEAM_1_ID: u32 = 1;
-static CREATURE_1_ID: u32 = 1;
+const TEAM_1_ID: u32 = 1;
+const CREATURE_1_ID: u32 = 1;
 
 battle_rules! {}
 
