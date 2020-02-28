@@ -20,8 +20,8 @@ use weasel::Server;
 const PLAYER_TEAM: &str = "player";
 const ENEMY_TEAM: &str = "enemy";
 // Constants to identify creatures (ships).
-const PLAYER_SHIP: CreatureId<PiratesRules> = 0;
-const ENEMY_SHIP: CreatureId<PiratesRules> = 1;
+static PLAYER_SHIP: CreatureId<PiratesRules> = 0;
+static ENEMY_SHIP: CreatureId<PiratesRules> = 1;
 
 pub struct Game {
     server: Server<PiratesRules>,

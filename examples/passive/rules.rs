@@ -10,9 +10,9 @@ use weasel::rules::ability::SimpleAbility;
 use weasel::{battle_rules, battle_rules_with_actor, rules::empty::*};
 
 /// Id for the active ability 'punch'.
-pub(crate) const PUNCH: AbilityId<CustomRules> = 1;
+pub(crate) static PUNCH: AbilityId<CustomRules> = 1;
 /// Id for the passive ability 'power up'.
-pub(crate) const POWER_UP: AbilityId<CustomRules> = 2;
+pub(crate) static POWER_UP: AbilityId<CustomRules> = 2;
 /// Starting power for punches.
 pub(crate) const PUNCH_START_POWER: u32 = 10;
 

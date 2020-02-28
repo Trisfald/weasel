@@ -140,9 +140,9 @@ fn regenerate_statistics() {
 
     battle_rules_with_character! { CustomCharacterRules }
 
-    const STAT_1_ID: StatisticId<CustomRules> = 1;
-    const STAT_2_ID: StatisticId<CustomRules> = 2;
-    const STAT_3_ID: StatisticId<CustomRules> = 3;
+    static STAT_1_ID: StatisticId<CustomRules> = 1;
+    static STAT_2_ID: StatisticId<CustomRules> = 2;
+    static STAT_3_ID: StatisticId<CustomRules> = 3;
     const STAT_VALUE: u32 = 10;
     const STAT_ERR_VALUE: u32 = 0;
     const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
@@ -268,9 +268,9 @@ fn regenerate_abilities() {
 
     battle_rules_with_actor! { CustomActorRules }
 
-    const ABILITY_1_ID: AbilityId<CustomRules> = 1;
-    const ABILITY_2_ID: AbilityId<CustomRules> = 2;
-    const ABILITY_3_ID: AbilityId<CustomRules> = 3;
+    static ABILITY_1_ID: AbilityId<CustomRules> = 1;
+    static ABILITY_2_ID: AbilityId<CustomRules> = 2;
+    static ABILITY_3_ID: AbilityId<CustomRules> = 3;
     const ABILITY_VALUE: u32 = 10;
     const ABILITY_ERR_VALUE: u32 = 0;
     const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);

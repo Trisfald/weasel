@@ -150,9 +150,9 @@ fn regenerate_statistics() {
 
     battle_rules_with_character! { CustomCharacterRules }
 
-    const STAT_1_ID: StatisticId<CustomRules> = 1;
-    const STAT_2_ID: StatisticId<CustomRules> = 2;
-    const STAT_3_ID: StatisticId<CustomRules> = 3;
+    static STAT_1_ID: StatisticId<CustomRules> = 1;
+    static STAT_2_ID: StatisticId<CustomRules> = 2;
+    static STAT_3_ID: StatisticId<CustomRules> = 3;
     const STAT_VALUE: u32 = 10;
     const STAT_ERR_VALUE: u32 = 0;
     const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Object(OBJECT_1_ID);

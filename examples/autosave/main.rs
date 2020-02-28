@@ -14,7 +14,7 @@ mod sink;
 // It's not a real game so we can use generic no-op battle rules.
 battle_rules! {}
 
-const TEAM_ID: TeamId<CustomRules> = 0;
+static TEAM_ID: TeamId<CustomRules> = 0;
 const AUTOSAVE_NAME: &str = "autosave";
 const SINK_ID: EventSinkId = 0;
 

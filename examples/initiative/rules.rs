@@ -11,7 +11,7 @@ use weasel::rules::statistic::SimpleStatistic;
 use weasel::space::Space;
 use weasel::{battle_rules, rules::empty::*};
 
-const SPEED: StatisticId<CustomRules> = 0;
+static SPEED: StatisticId<CustomRules> = 0;
 
 // Declare the battle rules with the help of a macro.
 battle_rules! {
