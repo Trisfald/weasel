@@ -15,6 +15,7 @@ use crate::object::{CreateObject, RemoveObject};
 use crate::player::PlayerId;
 use crate::round::{EndRound, ResetRounds, StartRound};
 use crate::space::{AlterSpace, MoveEntity, ResetSpace};
+use crate::status::InflictStatus;
 use crate::team::{ConcludeObjectives, CreateTeam, RemoveTeam, ResetObjectives, SetRelations};
 use crate::user::{UserEventPackage, UserEventPacker};
 use serde::{Deserialize, Serialize};
@@ -114,6 +115,7 @@ flat_event! {
     AlterAbilities, "AlterAbilities<R>: Serialize", "AlterAbilities<R>: Deserialize<'de>",
     RegenerateStatistics, "RegenerateStatistics<R>: Serialize", "RegenerateStatistics<R>: Deserialize<'de>",
     RegenerateAbilities, "RegenerateAbilities<R>: Serialize", "RegenerateAbilities<R>: Deserialize<'de>",
+    InflictStatus, "InflictStatus<R>: Serialize", "InflictStatus<R>: Deserialize<'de>",
     ConvertCreature, "ConvertCreature<R>: Serialize", "ConvertCreature<R>: Deserialize<'de>",
     SetRelations, "SetRelations<R>: Serialize", "SetRelations<R>: Deserialize<'de>",
     ConcludeObjectives, "ConcludeObjectives<R>: Serialize", "ConcludeObjectives<R>: Deserialize<'de>",

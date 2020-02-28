@@ -20,6 +20,7 @@ use weasel::rules::ability::SimpleAbility;
 #[cfg(feature = "serialization")]
 use weasel::serde::FlatEvent;
 use weasel::space::{AlterSpace, MoveEntity, ResetSpace};
+use weasel::status::InflictStatus;
 use weasel::team::{
     ConcludeObjectives, Conclusion, CreateTeam, Relation, RemoveTeam, ResetObjectives, SetRelations,
 };
@@ -347,6 +348,7 @@ macro_rules! events_vec {
         const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
         const ABILITY_1_ID: u32 = 1;
         const OBJECT_1_ID: u32 = 1;
+        const STATUS_1_ID: u32 = 1;
         // Collect all events into a vector.
         let mut events: Vec<Box<dyn Event<CustomRules>>> = Vec::new();
         events.push(DummyEvent::trigger(&mut ()).event());
@@ -362,6 +364,7 @@ macro_rules! events_vec {
         events.push(AlterAbilities::trigger(&mut (), ENTITY_1_ID, ()).event());
         events.push(RegenerateStatistics::trigger(&mut (), ENTITY_1_ID.clone()).event());
         events.push(RegenerateAbilities::trigger(&mut (), ENTITY_1_ID.clone()).event());
+        events.push(InflictStatus::trigger(&mut (), ENTITY_1_ID.clone(), STATUS_1_ID).event());
         events.push(ConvertCreature::trigger(&mut (), CREATURE_1_ID, TEAM_1_ID).event());
         events.push(
             SetRelations::trigger(&mut (), &[(TEAM_1_ID, TEAM_1_ID, Relation::Ally)]).event(),

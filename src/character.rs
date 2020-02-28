@@ -84,7 +84,7 @@ pub trait CharacterRules<R: BattleRules> {
         &self,
         _character: &mut dyn Character<R>,
         _status_id: &StatusId<R>,
-        _potency: &Potency<R>,
+        _potency: &Option<Potency<R>>,
         _entropy: &mut Entropy<R>,
         _metrics: &mut WriteMetrics<R>,
     ) -> Option<Status<R>> {
@@ -520,7 +520,10 @@ where
 }
 
 /// Checks if an entity exists and is a character.
-fn verify_is_character<R>(entities: &Entities<R>, id: &EntityId<R>) -> WeaselResult<(), R>
+pub(crate) fn verify_is_character<R>(
+    entities: &Entities<R>,
+    id: &EntityId<R>,
+) -> WeaselResult<(), R>
 where
     R: BattleRules,
 {

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for status effects.
 - New method `generate_status` in `CharacterRules`.
 - New methods `apply_status`, `update_status` and `remove_status` in `FightRules`.
+- `InflictStatus` and `RemoveStatus` events.
 - Example to showcase status effects.
 
 ### Changed
