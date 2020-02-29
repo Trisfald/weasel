@@ -1,4 +1,4 @@
-use weasel::actor::{Actor, ActorRules};
+use weasel::actor::{Actor, ActorRules, AlterAbilities};
 use weasel::battle::{BattleRules, BattleState};
 use weasel::battle_rules_with_actor;
 use weasel::entity::EntityId;
@@ -77,4 +77,20 @@ fn round_start_and_end() {
         assert_eq!(events[4].kind(), EventKind::EndRound);
         assert_eq!(events[5].kind(), EventKind::MoveEntity);
     }
+}
+
+#[test]
+fn default_works() {
+    battle_rules! {}
+    // Create a server with a creature.
+    let mut server = util::server(CustomRules::new());
+    util::team(&mut server, TEAM_1_ID);
+    util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, ());
+    // Empty AlterAbilities with default rules does not return an error.
+    assert_eq!(
+        AlterAbilities::trigger(&mut server, EntityId::Creature(CREATURE_1_ID), ())
+            .fire()
+            .err(),
+        None
+    );
 }

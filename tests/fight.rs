@@ -168,3 +168,11 @@ fn simple_attack() {
     assert_eq!(events[7].kind(), EventKind::AlterStatistics);
     assert_eq!(events[7].origin(), Some(6));
 }
+
+#[test]
+fn default_works() {
+    battle_rules! {}
+    let mut server = util::server(CustomRules::new());
+    // ApplyImpact with default rules does not return an error.
+    assert_eq!(ApplyImpact::trigger(&mut server, ()).fire().err(), None);
+}
