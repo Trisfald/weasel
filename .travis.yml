@@ -13,7 +13,6 @@ script:
   - cargo fmt --all -- --check
   - cargo clippy --tests --all-features -- -D warnings
   - cargo test
-  - cargo clean
   - cargo test --all-features
 
 addons:
