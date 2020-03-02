@@ -82,7 +82,7 @@ pub trait CharacterRules<R: BattleRules> {
     /// The provided implementation returns `None`.
     fn generate_status(
         &self,
-        _character: &mut dyn Character<R>,
+        _character: &dyn Character<R>,
         _status_id: &StatusId<R>,
         _potency: &Option<Potency<R>>,
         _entropy: &mut Entropy<R>,
@@ -246,7 +246,7 @@ impl<R: BattleRules> Clone for AlterStatistics<R> {
 
 impl<R: BattleRules + 'static> Event<R> for AlterStatistics<R> {
     fn verify(&self, battle: &Battle<R>) -> WeaselResult<(), R> {
-        verify_is_character(battle.entities(), &self.id)
+        verify_get_character(battle.entities(), &self.id).map(|_| ())
     }
 
     fn apply(&self, battle: &mut Battle<R>, event_queue: &mut Option<EventQueue<R>>) {
@@ -420,7 +420,7 @@ impl<R: BattleRules> Clone for RegenerateStatistics<R> {
 
 impl<R: BattleRules + 'static> Event<R> for RegenerateStatistics<R> {
     fn verify(&self, battle: &Battle<R>) -> WeaselResult<(), R> {
-        verify_is_character(battle.entities(), &self.id)
+        verify_get_character(battle.entities(), &self.id).map(|_| ())
     }
 
     fn apply(&self, battle: &mut Battle<R>, _: &mut Option<EventQueue<R>>) {
@@ -520,10 +520,11 @@ where
 }
 
 /// Checks if an entity exists and is a character.
-pub(crate) fn verify_is_character<R>(
-    entities: &Entities<R>,
+/// Returns the character if successful;
+pub(crate) fn verify_get_character<'a, R>(
+    entities: &'a Entities<R>,
     id: &EntityId<R>,
-) -> WeaselResult<(), R>
+) -> WeaselResult<&'a dyn Character<R>, R>
 where
     R: BattleRules,
 {
@@ -531,9 +532,9 @@ where
     if !id.is_character() {
         return Err(WeaselError::NotACharacter(id.clone()));
     }
-    // Check if the entity exists.
-    entities
-        .entity(id)
+    // Check if the character exists.
+    let character = entities
+        .character(id)
         .ok_or_else(|| WeaselError::EntityNotFound(id.clone()))?;
-    Ok(())
+    Ok(character)
 }

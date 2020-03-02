@@ -8,8 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Support for status effects.
 - New method `generate_status` in `CharacterRules`.
-- New methods `apply_status`, `update_status` and `remove_status` in `FightRules`.
-- `InflictStatus` and `RemoveStatus` events.
+- New methods `apply_status`, `update_status` and `delete_status` in `FightRules`.
+- `InflictStatus` and `ClearStatus` events.
+- Added `StatusNotPresent` to `WeaselError`.
 - Example to showcase status effects.
 
 ### Changed

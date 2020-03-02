@@ -1,9 +1,9 @@
 //! Module for long lasting status effects.
 
 use crate::battle::{Battle, BattleRules};
-use crate::character::verify_is_character;
+use crate::character::{verify_get_character, CharacterRules};
 use crate::entity::EntityId;
-use crate::error::WeaselResult;
+use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventId, EventKind, EventProcessor, EventQueue, EventTrigger};
 use crate::fight::FightRules;
 use crate::util::Id;
@@ -78,13 +78,18 @@ impl<R: BattleRules> std::ops::DerefMut for LinkedStatus<R> {
     }
 }
 
-/// An event to inflict a status effect on a character.
+/// Event to inflict a status effect on a character.
+///
+/// A status may apply side effects upon activation and each time the creature takes an action.
 ///
 /// # Examples
 /// ```
 /// use weasel::battle::{Battle, BattleRules};
+/// use weasel::creature::CreateCreature;
+/// use weasel::entity::EntityId;
 /// use weasel::event::{EventTrigger, EventKind};
 /// use weasel::status::InflictStatus;
+/// use weasel::team::CreateTeam;
 /// use weasel::{Server, battle_rules, rules::empty::*};
 ///
 /// battle_rules! {}
@@ -92,7 +97,22 @@ impl<R: BattleRules> std::ops::DerefMut for LinkedStatus<R> {
 /// let battle = Battle::builder(CustomRules::new()).build();
 /// let mut server = Server::builder(battle).build();
 ///
-/// todo
+/// let team_id = 1;
+/// CreateTeam::trigger(&mut server, team_id).fire().unwrap();
+/// let creature_id = 1;
+/// let position = ();
+/// CreateCreature::trigger(&mut server, creature_id, team_id, position)
+///     .fire()
+///     .unwrap();
+///
+/// let status_id = 1;
+/// InflictStatus::trigger(&mut server, EntityId::Creature(creature_id), status_id)
+///     .fire()
+///     .unwrap();
+/// assert_eq!(
+///     server.battle().history().events().iter().last().unwrap().kind(),
+///     EventKind::InflictStatus
+/// );
 /// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct InflictStatus<R: BattleRules> {
@@ -177,11 +197,62 @@ impl<R: BattleRules> Clone for InflictStatus<R> {
 
 impl<R: BattleRules + 'static> Event<R> for InflictStatus<R> {
     fn verify(&self, battle: &Battle<R>) -> WeaselResult<(), R> {
-        verify_is_character(battle.entities(), &self.entity_id)
+        verify_get_character(battle.entities(), &self.entity_id).map(|_| ())
     }
 
     fn apply(&self, battle: &mut Battle<R>, event_queue: &mut Option<EventQueue<R>>) {
-        // TODO
+        // Retrieve the character.
+        let character = battle
+            .state
+            .entities
+            .character_mut(&self.entity_id)
+            .unwrap_or_else(|| {
+                panic!(
+                    "constraint violated: character {:?} not found",
+                    self.entity_id
+                )
+            });
+        // Generate the status.
+        let status = battle.rules.character_rules().generate_status(
+            character,
+            &self.status_id,
+            &self.potency,
+            &mut battle.entropy,
+            &mut battle.metrics.write_handle(),
+        );
+        if let Some(status) = status {
+            // We can assume that the id of this event will be equal to history's next_id(),
+            // because the id will be assigned just after this function returns.
+            let origin = battle.history.next_id();
+            // Add the status to the character.
+            character.add_status(LinkedStatus::with_origin(status, origin));
+            // Retrieve the character again, but this time immutably borrowing battle.state.
+            let character = battle
+                .state
+                .entities
+                .character(&self.entity_id)
+                .unwrap_or_else(|| {
+                    panic!(
+                        "constraint violated: character {:?} not found",
+                        self.entity_id
+                    )
+                });
+            // Apply the status' side effects.
+            let status = character.status(&self.status_id).unwrap_or_else(|| {
+                panic!(
+                    "constraint violated: status {:?} not found in {:?}",
+                    self.status_id, self.entity_id
+                )
+            });
+            battle.rules.fight_rules().apply_status(
+                &battle.state,
+                character,
+                status,
+                event_queue,
+                &mut battle.entropy,
+                &mut battle.metrics.write_handle(),
+            );
+        }
     }
 
     fn kind(&self) -> EventKind {
@@ -209,6 +280,18 @@ where
     potency: Option<Potency<R>>,
 }
 
+impl<'a, R, P> InflictStatusTrigger<'a, R, P>
+where
+    R: BattleRules + 'static,
+    P: EventProcessor<R>,
+{
+    /// Specify the potency of the status.
+    pub fn potency(&'a mut self, potency: Potency<R>) -> &'a mut InflictStatusTrigger<'a, R, P> {
+        self.potency = Some(potency);
+        self
+    }
+}
+
 impl<'a, R, P> EventTrigger<'a, R, P> for InflictStatusTrigger<'a, R, P>
 where
     R: BattleRules + 'static,
@@ -224,6 +307,201 @@ where
             entity_id: self.entity_id.clone(),
             status_id: self.status_id.clone(),
             potency: self.potency.clone(),
+        })
+    }
+}
+
+/// Event to erase a status effect and its side effects from a character.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::creature::CreateCreature;
+/// use weasel::entity::EntityId;
+/// use weasel::event::{EventTrigger, EventKind};
+/// use weasel::status::ClearStatus;
+/// use weasel::team::CreateTeam;
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let team_id = 1;
+/// CreateTeam::trigger(&mut server, team_id).fire().unwrap();
+/// let creature_id = 1;
+/// let position = ();
+/// CreateCreature::trigger(&mut server, creature_id, team_id, position)
+///     .fire()
+///     .unwrap();
+///
+/// let status_id = 1;
+/// let result =
+///     ClearStatus::trigger(&mut server, EntityId::Creature(creature_id), status_id).fire();
+/// // In this case the event should return an error because the creature is not afflicted
+/// // by the status.
+/// assert!(result.is_err());
+/// ```
+#[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
+pub struct ClearStatus<R: BattleRules> {
+    #[cfg_attr(
+        feature = "serialization",
+        serde(bound(
+            serialize = "EntityId<R>: Serialize",
+            deserialize = "EntityId<R>: Deserialize<'de>"
+        ))
+    )]
+    entity_id: EntityId<R>,
+
+    #[cfg_attr(
+        feature = "serialization",
+        serde(bound(
+            serialize = "StatusId<R>: Serialize",
+            deserialize = "StatusId<R>: Deserialize<'de>"
+        ))
+    )]
+    status_id: StatusId<R>,
+}
+
+impl<R: BattleRules> ClearStatus<R> {
+    /// Returns a trigger for this event.
+    pub fn trigger<'a, P: EventProcessor<R>>(
+        processor: &'a mut P,
+        entity_id: EntityId<R>,
+        status_id: StatusId<R>,
+    ) -> ClearStatusTrigger<'a, R, P> {
+        ClearStatusTrigger {
+            processor,
+            entity_id,
+            status_id,
+        }
+    }
+
+    /// Returns the id of the entity from whom the status will be cleared.
+    pub fn entity_id(&self) -> &EntityId<R> {
+        &self.entity_id
+    }
+
+    /// Returns the id of the status to be cleared.
+    pub fn status_id(&self) -> &StatusId<R> {
+        &self.status_id
+    }
+}
+
+impl<R: BattleRules> Debug for ClearStatus<R> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(
+            f,
+            "ClearStatus {{ entity_id: {:?}, status_id: {:?} }}",
+            self.entity_id, self.status_id
+        )
+    }
+}
+
+impl<R: BattleRules> Clone for ClearStatus<R> {
+    fn clone(&self) -> Self {
+        ClearStatus {
+            entity_id: self.entity_id.clone(),
+            status_id: self.status_id.clone(),
+        }
+    }
+}
+
+impl<R: BattleRules + 'static> Event<R> for ClearStatus<R> {
+    fn verify(&self, battle: &Battle<R>) -> WeaselResult<(), R> {
+        let character = verify_get_character(battle.entities(), &self.entity_id)?;
+        // The character must be afflicted by the status.
+        if character.status(&self.status_id).is_none() {
+            Err(WeaselError::StatusNotPresent(
+                self.entity_id.clone(),
+                self.status_id.clone(),
+            ))
+        } else {
+            Ok(())
+        }
+    }
+
+    fn apply(&self, battle: &mut Battle<R>, event_queue: &mut Option<EventQueue<R>>) {
+        // Retrieve the character.
+        let character = battle
+            .state
+            .entities
+            .character(&self.entity_id)
+            .unwrap_or_else(|| {
+                panic!(
+                    "constraint violated: character {:?} not found",
+                    self.entity_id
+                )
+            });
+        // Delete the status' side effects.
+        let status = character.status(&self.status_id).unwrap_or_else(|| {
+            panic!(
+                "constraint violated: status {:?} not found in {:?}",
+                self.status_id, self.entity_id
+            )
+        });
+        battle.rules.fight_rules().delete_status(
+            &battle.state,
+            character,
+            status,
+            event_queue,
+            &mut battle.entropy,
+            &mut battle.metrics.write_handle(),
+        );
+        // Retrieve the character, this time through a mutable reference.
+        let character = battle
+            .state
+            .entities
+            .character_mut(&self.entity_id)
+            .unwrap_or_else(|| {
+                panic!(
+                    "constraint violated: character {:?} not found",
+                    self.entity_id
+                )
+            });
+        // Remove the status from the character.
+        character.remove_status(&self.status_id);
+    }
+
+    fn kind(&self) -> EventKind {
+        EventKind::ClearStatus
+    }
+
+    fn box_clone(&self) -> Box<dyn Event<R>> {
+        Box::new(self.clone())
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+/// Trigger to build and fire a `ClearStatus` event.
+pub struct ClearStatusTrigger<'a, R, P>
+where
+    R: BattleRules,
+    P: EventProcessor<R>,
+{
+    processor: &'a mut P,
+    entity_id: EntityId<R>,
+    status_id: StatusId<R>,
+}
+
+impl<'a, R, P> EventTrigger<'a, R, P> for ClearStatusTrigger<'a, R, P>
+where
+    R: BattleRules + 'static,
+    P: EventProcessor<R>,
+{
+    fn processor(&'a mut self) -> &'a mut P {
+        self.processor
+    }
+
+    /// Returns a `ClearStatus` event.
+    fn event(&self) -> Box<dyn Event<R>> {
+        Box::new(ClearStatus {
+            entity_id: self.entity_id.clone(),
+            status_id: self.status_id.clone(),
         })
     }
 }

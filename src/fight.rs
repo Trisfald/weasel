@@ -80,10 +80,10 @@ pub trait FightRules<R: BattleRules> {
         false
     }
 
-    /// Clears the side effects of a status when the latter is removed from a character.
+    /// Removes the side effects of a status when the latter is removed from a character.
     ///
     /// The provided implementation does nothing.
-    fn remove_status(
+    fn delete_status(
         &self,
         _state: &BattleState<R>,
         _character: &dyn Character<R>,

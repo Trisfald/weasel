@@ -48,6 +48,8 @@ pub enum EventKind {
     RegenerateAbilities,
     /// Inflict a status effect on a character.
     InflictStatus,
+    /// Frees a character from a status effect.
+    ClearStatus,
     /// Convert a creature from one team to another.
     ConvertCreature,
     /// Set new relations between teams.

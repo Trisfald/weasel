@@ -20,7 +20,7 @@ use weasel::rules::ability::SimpleAbility;
 #[cfg(feature = "serialization")]
 use weasel::serde::FlatEvent;
 use weasel::space::{AlterSpace, MoveEntity, ResetSpace};
-use weasel::status::InflictStatus;
+use weasel::status::{ClearStatus, InflictStatus};
 use weasel::team::{
     ConcludeObjectives, Conclusion, CreateTeam, Relation, RemoveTeam, ResetObjectives, SetRelations,
 };
@@ -365,6 +365,7 @@ macro_rules! events_vec {
         events.push(RegenerateStatistics::trigger(&mut (), ENTITY_1_ID.clone()).event());
         events.push(RegenerateAbilities::trigger(&mut (), ENTITY_1_ID.clone()).event());
         events.push(InflictStatus::trigger(&mut (), ENTITY_1_ID.clone(), STATUS_1_ID).event());
+        events.push(ClearStatus::trigger(&mut (), ENTITY_1_ID.clone(), STATUS_1_ID).event());
         events.push(ConvertCreature::trigger(&mut (), CREATURE_1_ID, TEAM_1_ID).event());
         events.push(
             SetRelations::trigger(&mut (), &[(TEAM_1_ID, TEAM_1_ID, Relation::Ally)]).event(),
