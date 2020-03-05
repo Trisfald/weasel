@@ -6,7 +6,7 @@ use crate::entropy::Entropy;
 use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger, Prioritized};
 use crate::metric::WriteMetrics;
-use crate::status::{LinkedStatus, Potency, Status, StatusId};
+use crate::status::{AppliedStatus, Potency, Status, StatusId};
 use crate::util::Id;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
@@ -113,6 +113,9 @@ pub trait Character<R: BattleRules>: Entity<R> {
     /// Returns an iterator over statistics.
     fn statistics<'a>(&'a self) -> Box<dyn Iterator<Item = &'a Statistic<R>> + 'a>;
 
+    /// Returns a mutable iterator over statistics.
+    fn statistics_mut<'a>(&'a mut self) -> Box<dyn Iterator<Item = &'a mut Statistic<R>> + 'a>;
+
     /// Returns the statistic with the given id.
     fn statistic(&self, id: &StatisticId<R>) -> Option<&Statistic<R>>;
 
@@ -128,21 +131,24 @@ pub trait Character<R: BattleRules>: Entity<R> {
     fn remove_statistic(&mut self, id: &StatisticId<R>) -> Option<Statistic<R>>;
 
     /// Returns an iterator over statuses.
-    fn statuses<'a>(&'a self) -> Box<dyn Iterator<Item = &'a LinkedStatus<R>> + 'a>;
+    fn statuses<'a>(&'a self) -> Box<dyn Iterator<Item = &'a AppliedStatus<R>> + 'a>;
+
+    /// Returns a mutable iterator over statuses.
+    fn statuses_mut<'a>(&'a mut self) -> Box<dyn Iterator<Item = &'a mut AppliedStatus<R>> + 'a>;
 
     /// Returns the status with the given id.
-    fn status(&self, id: &StatusId<R>) -> Option<&LinkedStatus<R>>;
+    fn status(&self, id: &StatusId<R>) -> Option<&AppliedStatus<R>>;
 
     /// Returns a mutable reference to the status with the given id.
-    fn status_mut(&mut self, id: &StatusId<R>) -> Option<&mut LinkedStatus<R>>;
+    fn status_mut(&mut self, id: &StatusId<R>) -> Option<&mut AppliedStatus<R>>;
 
     /// Adds a new status. Replaces an existing status with the same id.
     /// Returns the replaced status, if present.
-    fn add_status(&mut self, status: LinkedStatus<R>) -> Option<LinkedStatus<R>>;
+    fn add_status(&mut self, status: AppliedStatus<R>) -> Option<AppliedStatus<R>>;
 
     /// Removes a status.
     /// Returns the removed status, if present.
-    fn remove_status(&mut self, id: &StatusId<R>) -> Option<LinkedStatus<R>>;
+    fn remove_status(&mut self, id: &StatusId<R>) -> Option<AppliedStatus<R>>;
 }
 
 /// An event to alter the statistics of a character.

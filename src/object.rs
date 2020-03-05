@@ -8,7 +8,7 @@ use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
 use crate::fight::FightRules;
 use crate::metric::system::OBJECTS_CREATED;
 use crate::space::{Position, PositionClaim};
-use crate::status::{LinkedStatus, StatusId};
+use crate::status::{AppliedStatus, StatusId};
 use crate::util::{collect_from_iter, Id};
 use indexmap::IndexMap;
 #[cfg(feature = "serialization")]
@@ -25,7 +25,7 @@ type Statistics<R> = IndexMap<
 >;
 
 type Statuses<R> =
-    IndexMap<<<<R as BattleRules>::FR as FightRules<R>>::Status as Id>::Id, LinkedStatus<R>>;
+    IndexMap<<<<R as BattleRules>::FR as FightRules<R>>::Status as Id>::Id, AppliedStatus<R>>;
 
 /// An object is an inanimate entity.
 ///
@@ -70,6 +70,10 @@ impl<R: BattleRules> Character<R> for Object<R> {
         Box::new(self.statistics.values())
     }
 
+    fn statistics_mut<'a>(&'a mut self) -> Box<dyn Iterator<Item = &'a mut Statistic<R>> + 'a> {
+        Box::new(self.statistics.values_mut())
+    }
+
     fn statistic(&self, id: &StatisticId<R>) -> Option<&Statistic<R>> {
         self.statistics.get(id)
     }
@@ -86,23 +90,27 @@ impl<R: BattleRules> Character<R> for Object<R> {
         self.statistics.remove(id)
     }
 
-    fn statuses<'a>(&'a self) -> Box<dyn Iterator<Item = &'a LinkedStatus<R>> + 'a> {
+    fn statuses<'a>(&'a self) -> Box<dyn Iterator<Item = &'a AppliedStatus<R>> + 'a> {
         Box::new(self.statuses.values())
     }
 
-    fn status(&self, id: &StatusId<R>) -> Option<&LinkedStatus<R>> {
+    fn statuses_mut<'a>(&'a mut self) -> Box<dyn Iterator<Item = &'a mut AppliedStatus<R>> + 'a> {
+        Box::new(self.statuses.values_mut())
+    }
+
+    fn status(&self, id: &StatusId<R>) -> Option<&AppliedStatus<R>> {
         self.statuses.get(id)
     }
 
-    fn status_mut(&mut self, id: &StatusId<R>) -> Option<&mut LinkedStatus<R>> {
+    fn status_mut(&mut self, id: &StatusId<R>) -> Option<&mut AppliedStatus<R>> {
         self.statuses.get_mut(id)
     }
 
-    fn add_status(&mut self, status: LinkedStatus<R>) -> Option<LinkedStatus<R>> {
+    fn add_status(&mut self, status: AppliedStatus<R>) -> Option<AppliedStatus<R>> {
         self.statuses.insert(status.id().clone(), status)
     }
 
-    fn remove_status(&mut self, id: &StatusId<R>) -> Option<LinkedStatus<R>> {
+    fn remove_status(&mut self, id: &StatusId<R>) -> Option<AppliedStatus<R>> {
         self.statuses.remove(id)
     }
 }
@@ -502,10 +510,10 @@ mod tests {
         let object = server.battle.state.entities.object_mut(&1).unwrap();
         // Run checks.
         assert!(object.status(&1).is_none());
-        object.add_status(LinkedStatus::new(SimpleStatus::new(1, 50, Some(1))));
+        object.add_status(AppliedStatus::new(SimpleStatus::new(1, 50, Some(1))));
         assert!(object.status(&1).is_some());
-        object.status_mut(&1).unwrap().advance();
-        assert!(object.status(&1).unwrap().finished());
+        object.status_mut(&1).unwrap().set_effect(25);
+        assert_eq!(object.status(&1).unwrap().effect(), 25);
         object.remove_status(&1);
         assert!(object.status(&1).is_none());
     }

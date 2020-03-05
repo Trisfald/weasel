@@ -20,6 +20,9 @@ pub trait Actor<R: BattleRules>: Character<R> {
     /// Returns an iterator over abilities.
     fn abilities<'a>(&'a self) -> Box<dyn Iterator<Item = &'a Ability<R>> + 'a>;
 
+    /// Returns a mutable iterator over abilities.
+    fn abilities_mut<'a>(&'a mut self) -> Box<dyn Iterator<Item = &'a mut Ability<R>> + 'a>;
+
     /// Returns the ability with the given id.
     fn ability(&self, id: &AbilityId<R>) -> Option<&Ability<R>>;
 

@@ -6,8 +6,11 @@ use crate::entity::{Entities, EntityId};
 use crate::entropy::Entropy;
 use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventRights, EventTrigger};
+use crate::fight::FightRules;
 use crate::metric::{system::*, WriteMetrics};
 use crate::space::Space;
+use crate::status::ClearStatus;
+use crate::util::Id;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
 use std::any::Any;
@@ -219,6 +222,8 @@ pub type RoundsModel<R> = <<R as BattleRules>::RR as RoundsRules<R>>::RoundsMode
 
 /// Event to make an actor start a new round.
 ///
+/// When an actor starts a round all his status effects will be updated.
+///
 /// # Examples
 /// ```
 /// use weasel::battle::{Battle, BattleRules};
@@ -345,6 +350,40 @@ impl<R: BattleRules + 'static> Event<R> for StartRound<R> {
             &mut battle.entropy,
             metrics,
         );
+        // Update the duration of all statuses afflicting the actor.
+        let character = battle
+            .state
+            .entities
+            .character_mut(&self.id)
+            .unwrap_or_else(|| panic!("constraint violated: character {:?} not found", self.id));
+        for status in character.statuses_mut() {
+            status.update();
+        }
+        // Apply the effects of all statuses.
+        let character = battle
+            .state
+            .entities
+            .character(&self.id)
+            .unwrap_or_else(|| panic!("constraint violated: character {:?} not found", self.id));
+        for status in character.statuses() {
+            let terminated = battle.rules.fight_rules().update_status(
+                &battle.state,
+                character,
+                status,
+                event_queue,
+                &mut battle.entropy,
+                metrics,
+            );
+            if terminated {
+                // Remove the status.
+                ClearStatus::trigger(
+                    event_queue,
+                    character.entity_id().clone(),
+                    status.id().clone(),
+                )
+                .fire();
+            }
+        }
     }
 
     fn kind(&self) -> EventKind {

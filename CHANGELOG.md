@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New methods `apply_status`, `update_status` and `delete_status` in `FightRules`.
 - `InflictStatus` and `ClearStatus` events.
 - Added `StatusNotPresent` to `WeaselError`.
+- Mutable iterators over statistics and abilities.
 - Example to showcase status effects.
 
 ### Changed

@@ -11,7 +11,7 @@ use crate::fight::FightRules;
 use crate::metric::system::*;
 use crate::round::RoundState;
 use crate::space::{Position, PositionClaim};
-use crate::status::{LinkedStatus, StatusId};
+use crate::status::{AppliedStatus, StatusId};
 use crate::team::{EntityAddition, TeamId, TeamRules};
 use crate::util::{collect_from_iter, Id};
 use indexmap::IndexMap;
@@ -29,7 +29,7 @@ type Statistics<R> = IndexMap<
 >;
 
 type Statuses<R> =
-    IndexMap<<<<R as BattleRules>::FR as FightRules<R>>::Status as Id>::Id, LinkedStatus<R>>;
+    IndexMap<<<<R as BattleRules>::FR as FightRules<R>>::Status as Id>::Id, AppliedStatus<R>>;
 
 type Abilities<R> = IndexMap<
     <<<R as BattleRules>::AR as ActorRules<R>>::Ability as Id>::Id,
@@ -86,6 +86,10 @@ impl<R: BattleRules> Character<R> for Creature<R> {
         Box::new(self.statistics.values())
     }
 
+    fn statistics_mut<'a>(&'a mut self) -> Box<dyn Iterator<Item = &'a mut Statistic<R>> + 'a> {
+        Box::new(self.statistics.values_mut())
+    }
+
     fn statistic(&self, id: &StatisticId<R>) -> Option<&Statistic<R>> {
         self.statistics.get(id)
     }
@@ -102,23 +106,27 @@ impl<R: BattleRules> Character<R> for Creature<R> {
         self.statistics.remove(id)
     }
 
-    fn statuses<'a>(&'a self) -> Box<dyn Iterator<Item = &'a LinkedStatus<R>> + 'a> {
+    fn statuses<'a>(&'a self) -> Box<dyn Iterator<Item = &'a AppliedStatus<R>> + 'a> {
         Box::new(self.statuses.values())
     }
 
-    fn status(&self, id: &StatusId<R>) -> Option<&LinkedStatus<R>> {
+    fn statuses_mut<'a>(&'a mut self) -> Box<dyn Iterator<Item = &'a mut AppliedStatus<R>> + 'a> {
+        Box::new(self.statuses.values_mut())
+    }
+
+    fn status(&self, id: &StatusId<R>) -> Option<&AppliedStatus<R>> {
         self.statuses.get(id)
     }
 
-    fn status_mut(&mut self, id: &StatusId<R>) -> Option<&mut LinkedStatus<R>> {
+    fn status_mut(&mut self, id: &StatusId<R>) -> Option<&mut AppliedStatus<R>> {
         self.statuses.get_mut(id)
     }
 
-    fn add_status(&mut self, status: LinkedStatus<R>) -> Option<LinkedStatus<R>> {
+    fn add_status(&mut self, status: AppliedStatus<R>) -> Option<AppliedStatus<R>> {
         self.statuses.insert(status.id().clone(), status)
     }
 
-    fn remove_status(&mut self, id: &StatusId<R>) -> Option<LinkedStatus<R>> {
+    fn remove_status(&mut self, id: &StatusId<R>) -> Option<AppliedStatus<R>> {
         self.statuses.remove(id)
     }
 }
@@ -126,6 +134,10 @@ impl<R: BattleRules> Character<R> for Creature<R> {
 impl<R: BattleRules> Actor<R> for Creature<R> {
     fn abilities<'a>(&'a self) -> Box<dyn Iterator<Item = &'a Ability<R>> + 'a> {
         Box::new(self.abilities.values())
+    }
+
+    fn abilities_mut<'a>(&'a mut self) -> Box<dyn Iterator<Item = &'a mut Ability<R>> + 'a> {
+        Box::new(self.abilities.values_mut())
     }
 
     fn ability(&self, id: &AbilityId<R>) -> Option<&Ability<R>> {
@@ -850,7 +862,7 @@ mod tests {
         let creature = server.battle.state.entities.creature_mut(&1).unwrap();
         // Run checks.
         assert!(creature.status(&1).is_none());
-        creature.add_status(LinkedStatus::new(SimpleStatus::new(1, 50, Some(1))));
+        creature.add_status(AppliedStatus::new(SimpleStatus::new(1, 50, Some(1))));
         assert!(creature.status(&1).is_some());
         creature.status_mut(&1).unwrap().set_effect(25);
         assert_eq!(creature.status(&1).unwrap().effect(), 25);

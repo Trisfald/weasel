@@ -6,7 +6,7 @@ use crate::entropy::Entropy;
 use crate::error::WeaselResult;
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
 use crate::metric::WriteMetrics;
-use crate::status::Status;
+use crate::status::{Application, AppliedStatus};
 use crate::util::Id;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
@@ -48,13 +48,16 @@ pub trait FightRules<R: BattleRules> {
     }
 
     /// Applies the side effects of a status when it's inflicted upon a character.
+    /// `application` contains the context in which the status is applied.
+    ///
+    /// The status is automatically registered on the character before the call to this method.
     ///
     /// The provided implementation does nothing.
     fn apply_status(
         &self,
         _state: &BattleState<R>,
         _character: &dyn Character<R>,
-        _status: &Status<R>,
+        _application: Application<R>,
         _event_queue: &mut Option<EventQueue<R>>,
         _entropy: &mut Entropy<R>,
         _metrics: &mut WriteMetrics<R>,
@@ -72,7 +75,7 @@ pub trait FightRules<R: BattleRules> {
         &self,
         _state: &BattleState<R>,
         _character: &dyn Character<R>,
-        _status: &Status<R>,
+        _status: &AppliedStatus<R>,
         _event_queue: &mut Option<EventQueue<R>>,
         _entropy: &mut Entropy<R>,
         _metrics: &mut WriteMetrics<R>,
@@ -82,12 +85,15 @@ pub trait FightRules<R: BattleRules> {
 
     /// Removes the side effects of a status when the latter is removed from a character.
     ///
+    /// The character is guaranteed to be affected by `status`.
+    /// The status will be automatically dropped immediately after this method.
+    ///
     /// The provided implementation does nothing.
     fn delete_status(
         &self,
         _state: &BattleState<R>,
         _character: &dyn Character<R>,
-        _status: &Status<R>,
+        _status: &AppliedStatus<R>,
         _event_queue: &mut Option<EventQueue<R>>,
         _entropy: &mut Entropy<R>,
         _metrics: &mut WriteMetrics<R>,

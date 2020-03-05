@@ -25,26 +25,35 @@ pub type StatusId<R> = <Status<R> as Id>::Id;
 /// Represents the intensity of a status.
 pub type Potency<R> = <<R as BattleRules>::FR as FightRules<R>>::Potency;
 
-/// Stores a `Status` and an optional link to its origin.
-pub struct LinkedStatus<R: BattleRules> {
+/// Type for duration of statuses (in number of rounds).
+pub type StatusDuration = EventId;
+
+/// Stores a `Status` and additional information about it.
+pub struct AppliedStatus<R: BattleRules> {
+    /// The status.
     status: Status<R>,
+    /// An optional link to the origin event.
     origin: Option<EventId>,
+    /// How long this status have been running.
+    duration: StatusDuration,
 }
 
-impl<R: BattleRules> LinkedStatus<R> {
-    /// Creates a new `LinkedStatus` without any origin.
-    pub fn new(status: Status<R>) -> LinkedStatus<R> {
-        LinkedStatus {
+impl<R: BattleRules> AppliedStatus<R> {
+    /// Creates a new `AppliedStatus` without any origin.
+    pub fn new(status: Status<R>) -> AppliedStatus<R> {
+        AppliedStatus {
             status,
             origin: None,
+            duration: 0,
         }
     }
 
-    /// Creates a new `LinkedStatus` with an origin.
-    pub fn with_origin(status: Status<R>, origin: EventId) -> LinkedStatus<R> {
-        LinkedStatus {
+    /// Creates a new `AppliedStatus` with an origin.
+    pub fn with_origin(status: Status<R>, origin: EventId) -> AppliedStatus<R> {
+        AppliedStatus {
             status,
             origin: Some(origin),
+            duration: 0,
         }
     }
 
@@ -62,9 +71,20 @@ impl<R: BattleRules> LinkedStatus<R> {
     pub fn origin(&self) -> Option<EventId> {
         self.origin
     }
+
+    /// Returns for how many rounds the status has been in place.\
+    /// Duration is increased at every round start.
+    pub fn duration(&self) -> StatusDuration {
+        self.duration
+    }
+
+    /// Increases the duration by one.
+    pub(crate) fn update(&mut self) {
+        self.duration += 1;
+    }
 }
 
-impl<R: BattleRules> std::ops::Deref for LinkedStatus<R> {
+impl<R: BattleRules> std::ops::Deref for AppliedStatus<R> {
     type Target = Status<R>;
 
     fn deref(&self) -> &Self::Target {
@@ -72,10 +92,24 @@ impl<R: BattleRules> std::ops::Deref for LinkedStatus<R> {
     }
 }
 
-impl<R: BattleRules> std::ops::DerefMut for LinkedStatus<R> {
+impl<R: BattleRules> std::ops::DerefMut for AppliedStatus<R> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.status
     }
+}
+
+/// Alias of `Status<R>`, used for new incoming statuses.
+pub type NewStatus<R> = AppliedStatus<R>;
+
+/// Alias of `Status<R>`, used for replaced statuses.
+pub type OldStatus<R> = AppliedStatus<R>;
+
+/// Represents the application of a new status effect.
+pub enum Application<'a, R: BattleRules> {
+    /// A completely new status is applied.
+    New(&'a NewStatus<R>),
+    /// An existing status is replaced by a new one.
+    Replacement(&'a OldStatus<R>, &'a NewStatus<R>),
 }
 
 /// Event to inflict a status effect on a character.
@@ -225,7 +259,7 @@ impl<R: BattleRules + 'static> Event<R> for InflictStatus<R> {
             // because the id will be assigned just after this function returns.
             let origin = battle.history.next_id();
             // Add the status to the character.
-            character.add_status(LinkedStatus::with_origin(status, origin));
+            let old_status = character.add_status(AppliedStatus::with_origin(status, origin));
             // Retrieve the character again, but this time immutably borrowing battle.state.
             let character = battle
                 .state
@@ -244,10 +278,15 @@ impl<R: BattleRules + 'static> Event<R> for InflictStatus<R> {
                     self.status_id, self.entity_id
                 )
             });
+            let application = if let Some(old) = old_status.as_ref() {
+                Application::Replacement(old, status)
+            } else {
+                Application::New(status)
+            };
             battle.rules.fight_rules().apply_status(
                 &battle.state,
                 character,
-                status,
+                application,
                 event_queue,
                 &mut battle.entropy,
                 &mut battle.metrics.write_handle(),
