@@ -6,6 +6,7 @@ use weasel::entropy::Entropy;
 use weasel::event::{EventKind, EventQueue, EventTrigger};
 use weasel::fight::FightRules;
 use weasel::metric::WriteMetrics;
+use weasel::round::EnvironmentRound;
 use weasel::rules::statistic::SimpleStatistic;
 use weasel::rules::status::SimpleStatus;
 use weasel::status::{
@@ -18,8 +19,10 @@ const TEAM_1_ID: u32 = 1;
 const CREATURE_1_ID: u32 = 1;
 const CREATURE_ERR_ID: u32 = 99;
 const OBJECT_1_ID: u32 = 1;
+const OBJECT_2_ID: u32 = 2;
 const ENTITY_C1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
 const ENTITY_O1_ID: EntityId<CustomRules> = EntityId::Object(OBJECT_1_ID);
+const ENTITY_O2_ID: EntityId<CustomRules> = EntityId::Object(OBJECT_2_ID);
 const ENTITY_ERR_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_ERR_ID);
 const STATISTIC_ID: u32 = 1;
 const STATISTIC_VALUE: i32 = 10;
@@ -78,10 +81,8 @@ impl CharacterRules<CustomRules> for CustomCharacterRules {
         _entropy: &mut Entropy<CustomRules>,
         _metrics: &mut WriteMetrics<CustomRules>,
     ) -> Option<Status<CustomRules>> {
-        if *self.unstackable_statuses.borrow() {
-            if character.status(status_id).is_some() {
-                return None;
-            }
+        if *self.unstackable_statuses.borrow() && character.status(status_id).is_some() {
+            return None;
         }
         let potency = potency.unwrap_or_else(|| (0, 0));
         Some(SimpleStatus::new(*status_id, potency.0, Some(potency.1)))
@@ -179,10 +180,13 @@ macro_rules! creature {
     }};
 }
 
-/// Returns the object with id OBJECT_1_ID.
+/// Returns the object with the given id.
 macro_rules! object {
     ($server: expr) => {{
-        $server.battle().entities().object(&OBJECT_1_ID).unwrap()
+        object!($server, &OBJECT_1_ID)
+    }};
+    ($server: expr, $id: expr) => {{
+        $server.battle().entities().object($id).unwrap()
     }};
 }
 
@@ -327,9 +331,18 @@ fn status_update() {
 #[test]
 fn status_for_objects() {
     let mut server = scenario!();
-    // Add a new status to the object.
+    // Create another object.
+    util::object(&mut server, OBJECT_2_ID, ());
+    // Add a new status to both objects.
     assert_eq!(
         InflictStatus::trigger(&mut server, ENTITY_O1_ID, STATUS_1_ID)
+            .potency((STATUS_INTENSITY, STATUS_DURATION))
+            .fire()
+            .err(),
+        None
+    );
+    assert_eq!(
+        InflictStatus::trigger(&mut server, ENTITY_O2_ID, STATUS_1_ID)
             .potency((STATUS_INTENSITY, STATUS_DURATION))
             .fire()
             .err(),
@@ -341,7 +354,21 @@ fn status_for_objects() {
         object!(server).statistic(&STATISTIC_ID).unwrap().value(),
         STATUS_INTENSITY * STATISTIC_VALUE
     );
-    // Remove the status from the object.
+    // Trigger a round for the environment.
+    assert_eq!(EnvironmentRound::trigger(&mut server).fire().err(), None);
+    // Check that both objects have been altered by the status update.
+    assert_eq!(
+        object!(server).statistic(&STATISTIC_ID).unwrap().value(),
+        STATUS_INTENSITY * STATISTIC_VALUE + 1
+    );
+    assert_eq!(
+        object!(server, &OBJECT_2_ID)
+            .statistic(&STATISTIC_ID)
+            .unwrap()
+            .value(),
+        STATUS_INTENSITY * STATISTIC_VALUE + 1
+    );
+    // Remove the status from the first object.
     assert_eq!(
         ClearStatus::trigger(&mut server, ENTITY_O1_ID, STATUS_1_ID)
             .fire()
@@ -352,6 +379,17 @@ fn status_for_objects() {
     assert!(object!(server).status(&STATUS_1_ID).is_none());
     assert_eq!(
         object!(server).statistic(&STATISTIC_ID).unwrap().value(),
+        STATISTIC_VALUE
+    );
+    // Do another round.
+    assert_eq!(EnvironmentRound::trigger(&mut server).fire().err(), None);
+    // Check that the status expired from the second object.
+    assert!(object!(server, &OBJECT_2_ID).status(&STATUS_1_ID).is_none());
+    assert_eq!(
+        object!(server, &OBJECT_2_ID)
+            .statistic(&STATISTIC_ID)
+            .unwrap()
+            .value(),
         STATISTIC_VALUE
     );
 }

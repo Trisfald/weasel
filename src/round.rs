@@ -2,15 +2,13 @@
 
 use crate::actor::{Actor, ActorRules};
 use crate::battle::{Battle, BattleRules, Checkpoint};
-use crate::entity::{Entities, EntityId};
+use crate::entity::{Entities, Entity, EntityId};
 use crate::entropy::Entropy;
 use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventRights, EventTrigger};
-use crate::fight::FightRules;
 use crate::metric::{system::*, WriteMetrics};
 use crate::space::Space;
-use crate::status::ClearStatus;
-use crate::util::Id;
+use crate::status::update_statuses;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
 use std::any::Any;
@@ -350,40 +348,9 @@ impl<R: BattleRules + 'static> Event<R> for StartRound<R> {
             &mut battle.entropy,
             metrics,
         );
-        // Update the duration of all statuses afflicting the actor.
-        let character = battle
-            .state
-            .entities
-            .character_mut(&self.id)
-            .unwrap_or_else(|| panic!("constraint violated: character {:?} not found", self.id));
-        for status in character.statuses_mut() {
-            status.update();
-        }
-        // Apply the effects of all statuses.
-        let character = battle
-            .state
-            .entities
-            .character(&self.id)
-            .unwrap_or_else(|| panic!("constraint violated: character {:?} not found", self.id));
-        for status in character.statuses() {
-            let terminated = battle.rules.fight_rules().update_status(
-                &battle.state,
-                character,
-                status,
-                event_queue,
-                &mut battle.entropy,
-                metrics,
-            );
-            if terminated {
-                // Remove the status.
-                ClearStatus::trigger(
-                    event_queue,
-                    character.entity_id().clone(),
-                    status.id().clone(),
-                )
-                .fire();
-            }
-        }
+        // Update all statuses afflicting the actor.
+        update_statuses(&self.id, battle, event_queue)
+            .unwrap_or_else(|err| panic!("constraint violated: {:?}", err));
     }
 
     fn kind(&self) -> EventKind {
@@ -723,6 +690,126 @@ where
     fn event(&self) -> Box<dyn Event<R>> {
         Box::new(ResetRounds {
             seed: self.seed.clone(),
+        })
+    }
+}
+
+/// Event to perform a collective round for the environment's inanimate entities.\
+/// The purpose of this event is to update the statuses of all objects.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::event::EventTrigger;
+/// use weasel::metric::system::ROUNDS_STARTED;
+/// use weasel::round::{EnvironmentRound};
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// EnvironmentRound::trigger(&mut server).fire().unwrap();
+/// assert_eq!(
+///     server.battle().metrics().system_u64(ROUNDS_STARTED),
+///     Some(1)
+/// );
+/// ```
+#[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
+pub struct EnvironmentRound<R> {
+    #[cfg_attr(feature = "serialization", serde(skip))]
+    _phantom: PhantomData<R>,
+}
+
+impl<R: BattleRules> EnvironmentRound<R> {
+    /// Returns a trigger for this event.
+    pub fn trigger<P: EventProcessor<R>>(processor: &mut P) -> EnvironmentRoundTrigger<R, P> {
+        EnvironmentRoundTrigger {
+            processor,
+            _phantom: PhantomData,
+        }
+    }
+}
+
+impl<R> Debug for EnvironmentRound<R> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "EnvironmentRound {{ }}")
+    }
+}
+
+impl<R> Clone for EnvironmentRound<R> {
+    fn clone(&self) -> Self {
+        EnvironmentRound {
+            _phantom: PhantomData,
+        }
+    }
+}
+
+impl<R: BattleRules + 'static> Event<R> for EnvironmentRound<R> {
+    fn verify(&self, battle: &Battle<R>) -> WeaselResult<(), R> {
+        // Verify that no other round is in progress.
+        if let RoundState::Started(_) = battle.rounds().state() {
+            return Err(WeaselError::RoundInProgress);
+        }
+        Ok(())
+    }
+
+    fn apply(&self, battle: &mut Battle<R>, event_queue: &mut Option<EventQueue<R>>) {
+        // Increase metrics.
+        battle
+            .metrics_mut()
+            .add_system_u64(ROUNDS_STARTED, 1)
+            .unwrap_or_else(|err| panic!("constraint violated: {:?}", err));
+        // Update the statuses of all objects.
+        let objects_ids: Vec<_> = battle
+            .entities()
+            .objects()
+            .map(|object| object.entity_id())
+            .cloned()
+            .collect();
+        for object_id in objects_ids {
+            update_statuses(&object_id, battle, event_queue)
+                .unwrap_or_else(|err| panic!("constraint violated: {:?}", err));
+        }
+    }
+
+    fn kind(&self) -> EventKind {
+        EventKind::EnvironmentRound
+    }
+
+    fn box_clone(&self) -> Box<dyn Event<R>> {
+        Box::new(self.clone())
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+/// Trigger to build and fire an `EnvironmentRound` event.
+pub struct EnvironmentRoundTrigger<'a, R, P>
+where
+    R: BattleRules,
+    P: EventProcessor<R>,
+{
+    processor: &'a mut P,
+    _phantom: PhantomData<R>,
+}
+
+impl<'a, R, P> EventTrigger<'a, R, P> for EnvironmentRoundTrigger<'a, R, P>
+where
+    R: BattleRules + 'static,
+    P: EventProcessor<R>,
+{
+    fn processor(&'a mut self) -> &'a mut P {
+        self.processor
+    }
+
+    /// Returns an `EnvironmentRound` event.
+    fn event(&self) -> Box<dyn Event<R>> {
+        Box::new(EnvironmentRound {
+            _phantom: self._phantom,
         })
     }
 }

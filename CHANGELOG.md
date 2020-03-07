@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `InflictStatus` and `ClearStatus` events.
 - Added `StatusNotPresent` to `WeaselError`.
 - Mutable iterators over statistics and abilities.
+- New event `EnvironmentRound`.
 - Example to showcase status effects.
 
 ### Changed

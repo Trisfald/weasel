@@ -112,6 +112,49 @@ pub enum Application<'a, R: BattleRules> {
     Replacement(&'a OldStatus<R>, &'a NewStatus<R>),
 }
 
+/// Updates all statuses of a entity. The entity must be a character.
+pub(crate) fn update_statuses<R: BattleRules + 'static>(
+    id: &EntityId<R>,
+    battle: &mut Battle<R>,
+    event_queue: &mut Option<EventQueue<R>>,
+) -> WeaselResult<(), R> {
+    // Update the duration of all statuses.
+    let character = battle
+        .state
+        .entities
+        .character_mut(id)
+        .ok_or_else(|| WeaselError::EntityNotFound(id.clone()))?;
+    for status in character.statuses_mut() {
+        status.update();
+    }
+    // Apply the effects of all statuses.
+    let character = battle
+        .state
+        .entities
+        .character(id)
+        .ok_or_else(|| WeaselError::EntityNotFound(id.clone()))?;
+    for status in character.statuses() {
+        let terminated = battle.rules.fight_rules().update_status(
+            &battle.state,
+            character,
+            status,
+            event_queue,
+            &mut battle.entropy,
+            &mut battle.metrics.write_handle(),
+        );
+        if terminated {
+            // Remove the status.
+            ClearStatus::trigger(
+                event_queue,
+                character.entity_id().clone(),
+                status.id().clone(),
+            )
+            .fire();
+        }
+    }
+    Ok(())
+}
+
 /// Event to inflict a status effect on a character.
 ///
 /// A status may apply side effects upon activation and each time the creature takes an action.

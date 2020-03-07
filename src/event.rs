@@ -34,6 +34,8 @@ pub enum EventKind {
     StartRound,
     /// End the current round.
     EndRound,
+    /// Perform a round for the environment.
+    EnvironmentRound,
     /// Activate an actor's ability.
     ActivateAbility,
     /// Apply the consequences of an impact on the world.

@@ -15,7 +15,7 @@ use weasel::event::{
 use weasel::fight::ApplyImpact;
 use weasel::metric::WriteMetrics;
 use weasel::object::{CreateObject, RemoveObject};
-use weasel::round::{EndRound, ResetRounds, StartRound};
+use weasel::round::{EndRound, EnvironmentRound, ResetRounds, StartRound};
 use weasel::rules::ability::SimpleAbility;
 #[cfg(feature = "serialization")]
 use weasel::serde::FlatEvent;
@@ -358,6 +358,7 @@ macro_rules! events_vec {
         events.push(MoveEntity::trigger(&mut (), ENTITY_1_ID, ()).event());
         events.push(StartRound::trigger(&mut (), ENTITY_1_ID).event());
         events.push(EndRound::trigger(&mut ()).event());
+        events.push(EnvironmentRound::trigger(&mut ()).event());
         events.push(ActivateAbility::trigger(&mut (), ENTITY_1_ID, ABILITY_1_ID).event());
         events.push(ApplyImpact::trigger(&mut (), ()).event());
         events.push(AlterStatistics::trigger(&mut (), ENTITY_1_ID, ()).event());
