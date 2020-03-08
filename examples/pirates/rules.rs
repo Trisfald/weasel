@@ -81,6 +81,9 @@ impl CharacterRules<PiratesRules> for PiratesCharacterRules {
     type StatisticsSeed = ();
     // Our alteration for statistics consists of the values to add to HULL and to CREW.
     type StatisticsAlteration = (i16, i16);
+    // This game doesn't have long lasting status effects.
+    type Status = EmptyStatus;
+    type StatusesAlteration = ();
 
     // In this method we generate statistics of ships.
     fn generate_statistics(
@@ -190,8 +193,7 @@ pub struct PiratesFightRules {}
 impl FightRules<PiratesRules> for PiratesFightRules {
     // Our impact type will be a tuple with target id and a statistics alteration.
     type Impact = (EntityId<PiratesRules>, StatisticsAlteration<PiratesRules>);
-    // There are no status effects in this game, so both status and potency are empty.
-    type Status = EmptyStatus;
+    // There are no status effects in this game, so no need to define potency.
     type Potency = ();
 
     fn apply_impact(

@@ -55,6 +55,8 @@ impl<R: BattleRules> CharacterRules<R> for EmptyCharacterRules {
     type Statistic = EmptyStat;
     type StatisticsSeed = ();
     type StatisticsAlteration = ();
+    type Status = EmptyStatus;
+    type StatusesAlteration = ();
 }
 
 /// Minimalistic implementation of actor rules, doing no-op for everything.
@@ -98,7 +100,6 @@ pub struct EmptyFightRules {}
 
 impl<R: BattleRules> FightRules<R> for EmptyFightRules {
     type Impact = ();
-    type Status = EmptyStatus;
     type Potency = ();
 }
 

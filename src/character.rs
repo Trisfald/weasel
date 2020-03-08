@@ -47,6 +47,16 @@ pub trait CharacterRules<R: BattleRules> {
     /// See [StatisticsAlteration](type.StatisticsAlteration.html).
     type StatisticsAlteration: Clone + Debug + Serialize + for<'a> Deserialize<'a>;
 
+    /// See [Status](../status/type.Status.html).
+    type Status: Id + 'static;
+
+    #[cfg(not(feature = "serialization"))]
+    /// See [StatusesAlteration](../status/type.StatusesAlteration.html).
+    type StatusesAlteration: Clone + Debug;
+    #[cfg(feature = "serialization")]
+    /// See [StatusesAlteration](../status/type.StatusesAlteration.html).
+    type StatusesAlteration: Clone + Debug + Serialize + for<'a> Deserialize<'a>;
+
     /// Generates all statistics of a character.
     /// Statistics should have unique ids, otherwise only the last entry will be persisted.
     ///
@@ -89,6 +99,18 @@ pub trait CharacterRules<R: BattleRules> {
         _metrics: &mut WriteMetrics<R>,
     ) -> Option<Status<R>> {
         None
+    }
+
+    /// Alters one or more statuses starting from the given alteration object.
+    ///
+    /// The provided implementation does nothing.
+    fn alter_statuses(
+        &self,
+        _character: &mut dyn Character<R>,
+        _alteration: &Self::StatusesAlteration,
+        _entropy: &mut Entropy<R>,
+        _metrics: &mut WriteMetrics<R>,
+    ) {
     }
 }
 

@@ -5,7 +5,6 @@ use crate::character::{Character, CharacterRules, Statistic, StatisticId, Statis
 use crate::entity::{Entity, EntityId};
 use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
-use crate::fight::FightRules;
 use crate::metric::system::OBJECTS_CREATED;
 use crate::space::{Position, PositionClaim};
 use crate::status::{AppliedStatus, StatusId};
@@ -25,7 +24,7 @@ type Statistics<R> = IndexMap<
 >;
 
 type Statuses<R> =
-    IndexMap<<<<R as BattleRules>::FR as FightRules<R>>::Status as Id>::Id, AppliedStatus<R>>;
+    IndexMap<<<<R as BattleRules>::CR as CharacterRules<R>>::Status as Id>::Id, AppliedStatus<R>>;
 
 /// An object is an inanimate entity.
 ///
@@ -460,9 +459,7 @@ mod tests {
     use crate::battle::BattleRules;
     use crate::rules::{statistic::SimpleStatistic, status::SimpleStatus};
     use crate::util::tests::{object, server};
-    use crate::{
-        battle_rules, battle_rules_with_character, battle_rules_with_fight, rules::empty::*,
-    };
+    use crate::{battle_rules, battle_rules_with_character, rules::empty::*};
 
     #[derive(Default)]
     pub struct CustomCharacterRules {}
@@ -473,6 +470,8 @@ mod tests {
         type Statistic = SimpleStatistic<u32, u32>;
         type StatisticsSeed = ();
         type StatisticsAlteration = ();
+        type Status = SimpleStatus<u32, u32>;
+        type StatusesAlteration = ();
     }
 
     #[test]
@@ -492,18 +491,9 @@ mod tests {
         assert!(object.statistic(&1).is_none());
     }
 
-    #[derive(Default)]
-    pub struct CustomFightRules {}
-
-    impl<R: BattleRules> FightRules<R> for CustomFightRules {
-        type Impact = ();
-        type Status = SimpleStatus<u32, u32>;
-        type Potency = ();
-    }
-
     #[test]
     fn mutable_status() {
-        battle_rules_with_fight! { CustomFightRules }
+        battle_rules_with_character! { CustomCharacterRules }
         // Create a battle.
         let mut server = server(CustomRules::new());
         object(&mut server, 1, ());

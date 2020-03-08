@@ -30,6 +30,8 @@ impl CharacterRules<CustomRules> for CustomCharacterRules {
     type Statistic = SimpleStatistic<String, i32>;
     type StatisticsSeed = ();
     type StatisticsAlteration = i32;
+    type Status = EmptyStatus;
+    type StatusesAlteration = ();
 
     fn generate_statistics(
         &self,
@@ -107,7 +109,6 @@ pub struct CustomFightRules {}
 
 impl FightRules<CustomRules> for CustomFightRules {
     type Impact = i32;
-    type Status = EmptyStatus;
     type Potency = ();
 
     fn apply_impact(

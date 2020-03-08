@@ -7,7 +7,6 @@ use crate::error::WeaselResult;
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
 use crate::metric::WriteMetrics;
 use crate::status::{Application, AppliedStatus};
-use crate::util::Id;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
 use std::any::Any;
@@ -22,9 +21,6 @@ pub trait FightRules<R: BattleRules> {
     #[cfg(feature = "serialization")]
     /// See [Impact](type.Impact.html).
     type Impact: Clone + Debug + Serialize + for<'a> Deserialize<'a>;
-
-    /// See [Status](../status/type.Status.html).
-    type Status: Id + 'static;
 
     #[cfg(not(feature = "serialization"))]
     /// See [Potency](../status/type.Potency.html).

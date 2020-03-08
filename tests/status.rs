@@ -10,8 +10,8 @@ use weasel::round::EnvironmentRound;
 use weasel::rules::statistic::SimpleStatistic;
 use weasel::rules::status::SimpleStatus;
 use weasel::status::{
-    Application, AppliedStatus, ClearStatus, InflictStatus, Potency, Status, StatusDuration,
-    StatusId,
+    AlterStatuses, Application, AppliedStatus, ClearStatus, InflictStatus, Potency, Status,
+    StatusDuration, StatusId,
 };
 use weasel::{battle_rules, rules::empty::*, Server, WeaselError};
 
@@ -43,6 +43,8 @@ impl CharacterRules<CustomRules> for CustomCharacterRules {
     type Statistic = SimpleStatistic<u32, i32>;
     type StatisticsSeed = ();
     type StatisticsAlteration = i32;
+    type Status = SimpleStatus<u32, i32>;
+    type StatusesAlteration = i32;
 
     fn generate_statistics(
         &self,
@@ -87,6 +89,19 @@ impl CharacterRules<CustomRules> for CustomCharacterRules {
         let potency = potency.unwrap_or_else(|| (0, 0));
         Some(SimpleStatus::new(*status_id, potency.0, Some(potency.1)))
     }
+
+    fn alter_statuses(
+        &self,
+        character: &mut dyn Character<CustomRules>,
+        alteration: &Self::StatusesAlteration,
+        _entropy: &mut Entropy<CustomRules>,
+        _metrics: &mut WriteMetrics<CustomRules>,
+    ) {
+        for status in character.statuses_mut() {
+            let current = status.effect();
+            status.set_effect(current + alteration);
+        }
+    }
 }
 
 #[derive(Default)]
@@ -94,7 +109,6 @@ pub struct CustomFightRules {}
 
 impl FightRules<CustomRules> for CustomFightRules {
     type Impact = ();
-    type Status = SimpleStatus<u32, i32>;
     // Pair of (intensity, duration).
     type Potency = (i32, StatusDuration);
 
@@ -450,5 +464,56 @@ fn status_not_stackable() {
     assert_eq!(
         creature!(server).statistic(&STATISTIC_ID).unwrap().value(),
         STATUS_INTENSITY * STATISTIC_VALUE
+    );
+}
+
+#[test]
+fn statuses_alteration() {
+    const ALTERATION: i32 = 10;
+    let mut server = scenario!();
+    // Inflict a status to both the creature and the object.
+    assert_eq!(
+        InflictStatus::trigger(&mut server, ENTITY_C1_ID, STATUS_1_ID)
+            .potency((STATUS_INTENSITY, STATUS_DURATION))
+            .fire()
+            .err(),
+        None
+    );
+    assert_eq!(
+        InflictStatus::trigger(&mut server, ENTITY_O1_ID, STATUS_1_ID)
+            .potency((STATUS_INTENSITY, STATUS_DURATION))
+            .fire()
+            .err(),
+        None
+    );
+    // Verify alter statuses preconditions.
+    assert_eq!(
+        AlterStatuses::trigger(&mut server, ENTITY_ERR_ID, ALTERATION)
+            .fire()
+            .err()
+            .map(|e| e.unfold()),
+        Some(WeaselError::EntityNotFound(ENTITY_ERR_ID))
+    );
+    // Alter the inflicted statuses.
+    assert_eq!(
+        AlterStatuses::trigger(&mut server, ENTITY_C1_ID, ALTERATION)
+            .fire()
+            .err(),
+        None
+    );
+    assert_eq!(
+        AlterStatuses::trigger(&mut server, ENTITY_O1_ID, ALTERATION)
+            .fire()
+            .err(),
+        None
+    );
+    // Check alterations.
+    assert_eq!(
+        creature!(server).status(&STATUS_1_ID).unwrap().effect(),
+        STATUS_INTENSITY + ALTERATION
+    );
+    assert_eq!(
+        object!(server).status(&STATUS_1_ID).unwrap().effect(),
+        STATUS_INTENSITY + ALTERATION
     );
 }

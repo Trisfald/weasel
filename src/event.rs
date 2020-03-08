@@ -42,6 +42,8 @@ pub enum EventKind {
     ApplyImpact,
     /// Modify the statistics of a character.
     AlterStatistics,
+    /// Modify the statuses of a character.
+    AlterStatuses,
     /// Modify the abilities of an actor.
     AlterAbilities,
     /// Regenerate the statistics of a character.

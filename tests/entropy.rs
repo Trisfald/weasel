@@ -34,6 +34,8 @@ impl CharacterRules<CustomRules> for CustomCharacterRules {
     type Statistic = SimpleStatistic<u32, i32>;
     type StatisticsSeed = ();
     type StatisticsAlteration = ();
+    type Status = EmptyStatus;
+    type StatusesAlteration = ();
 
     fn generate_statistics(
         &self,

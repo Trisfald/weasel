@@ -17,13 +17,16 @@ use std::fmt::{Debug, Formatter, Result};
 /// Statuses are used to represent anything that changes at least one property of an entity,
 /// for a given amont of time. DoT (damage over time) are one example.\
 /// A status can alter an entity just once or at every round.
-pub type Status<R> = <<R as BattleRules>::FR as FightRules<R>>::Status;
+pub type Status<R> = <<R as BattleRules>::CR as CharacterRules<R>>::Status;
 
 /// Alias for `Status<R>::Id`.
 pub type StatusId<R> = <Status<R> as Id>::Id;
 
 /// Represents the intensity of a status.
 pub type Potency<R> = <<R as BattleRules>::FR as FightRules<R>>::Potency;
+
+/// Contains the changes to apply an alteration to one or more statuses.
+pub type StatusesAlteration<R> = <<R as BattleRules>::CR as CharacterRules<R>>::StatusesAlteration;
 
 /// Type for duration of statuses (in number of rounds).
 pub type StatusDuration = EventId;
@@ -584,6 +587,168 @@ where
         Box::new(ClearStatus {
             entity_id: self.entity_id.clone(),
             status_id: self.status_id.clone(),
+        })
+    }
+}
+
+/// An event to alter the statuses of a character.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::creature::CreateCreature;
+/// use weasel::entity::EntityId;
+/// use weasel::event::{EventTrigger, EventKind};
+/// use weasel::status::AlterStatuses;
+/// use weasel::team::CreateTeam;
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let team_id = 1;
+/// CreateTeam::trigger(&mut server, team_id).fire().unwrap();
+/// let creature_id = 1;
+/// let position = ();
+/// CreateCreature::trigger(&mut server, creature_id, team_id, position)
+///     .fire()
+///     .unwrap();
+///
+/// let alteration = ();
+/// AlterStatuses::trigger(&mut server, EntityId::Creature(creature_id), alteration)
+///     .fire()
+///     .unwrap();
+/// assert_eq!(
+///     server.battle().history().events().iter().last().unwrap().kind(),
+///     EventKind::AlterStatuses
+/// );
+/// ```
+#[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
+pub struct AlterStatuses<R: BattleRules> {
+    #[cfg_attr(
+        feature = "serialization",
+        serde(bound(
+            serialize = "EntityId<R>: Serialize",
+            deserialize = "EntityId<R>: Deserialize<'de>"
+        ))
+    )]
+    id: EntityId<R>,
+
+    #[cfg_attr(
+        feature = "serialization",
+        serde(bound(
+            serialize = "StatusesAlteration<R>: Serialize",
+            deserialize = "StatusesAlteration<R>: Deserialize<'de>"
+        ))
+    )]
+    alteration: StatusesAlteration<R>,
+}
+
+impl<R: BattleRules> AlterStatuses<R> {
+    /// Returns a trigger for this event.
+    pub fn trigger<'a, P: EventProcessor<R>>(
+        processor: &'a mut P,
+        id: EntityId<R>,
+        alteration: StatusesAlteration<R>,
+    ) -> AlterStatusesTrigger<'a, R, P> {
+        AlterStatusesTrigger {
+            processor,
+            id,
+            alteration,
+        }
+    }
+
+    /// Returns the character's entity id.
+    pub fn id(&self) -> &EntityId<R> {
+        &self.id
+    }
+
+    /// Returns the definition of the changes to the character's statuses.
+    pub fn alteration(&self) -> &StatusesAlteration<R> {
+        &self.alteration
+    }
+}
+
+impl<R: BattleRules> Debug for AlterStatuses<R> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(
+            f,
+            "AlterStatuses {{ id: {:?}, alteration: {:?} }}",
+            self.id, self.alteration
+        )
+    }
+}
+
+impl<R: BattleRules> Clone for AlterStatuses<R> {
+    fn clone(&self) -> Self {
+        AlterStatuses {
+            id: self.id.clone(),
+            alteration: self.alteration.clone(),
+        }
+    }
+}
+
+impl<R: BattleRules + 'static> Event<R> for AlterStatuses<R> {
+    fn verify(&self, battle: &Battle<R>) -> WeaselResult<(), R> {
+        verify_get_character(battle.entities(), &self.id).map(|_| ())
+    }
+
+    fn apply(&self, battle: &mut Battle<R>, _: &mut Option<EventQueue<R>>) {
+        // Retrieve the character.
+        let character = battle
+            .state
+            .entities
+            .character_mut(&self.id)
+            .unwrap_or_else(|| panic!("constraint violated: character {:?} not found", self.id));
+        // Alter the character.
+        battle.rules.character_rules().alter_statuses(
+            character,
+            &self.alteration,
+            &mut battle.entropy,
+            &mut battle.metrics.write_handle(),
+        );
+    }
+
+    fn kind(&self) -> EventKind {
+        EventKind::AlterStatuses
+    }
+
+    fn box_clone(&self) -> Box<dyn Event<R>> {
+        Box::new(self.clone())
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+/// Trigger to build and fire an `AlterStatuses` event.
+pub struct AlterStatusesTrigger<'a, R, P>
+where
+    R: BattleRules,
+    P: EventProcessor<R>,
+{
+    processor: &'a mut P,
+    id: EntityId<R>,
+    alteration: StatusesAlteration<R>,
+}
+
+impl<'a, R, P> EventTrigger<'a, R, P> for AlterStatusesTrigger<'a, R, P>
+where
+    R: BattleRules + 'static,
+    P: EventProcessor<R>,
+{
+    fn processor(&'a mut self) -> &'a mut P {
+        self.processor
+    }
+
+    /// Returns an `AlterStatuses` event.
+    fn event(&self) -> Box<dyn Event<R>> {
+        Box::new(AlterStatuses {
+            id: self.id.clone(),
+            alteration: self.alteration.clone(),
         })
     }
 }

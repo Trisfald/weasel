@@ -7,7 +7,6 @@ use crate::character::{Character, CharacterRules, Statistic, StatisticId, Statis
 use crate::entity::{Entity, EntityId};
 use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
-use crate::fight::FightRules;
 use crate::metric::system::*;
 use crate::round::RoundState;
 use crate::space::{Position, PositionClaim};
@@ -29,7 +28,7 @@ type Statistics<R> = IndexMap<
 >;
 
 type Statuses<R> =
-    IndexMap<<<<R as BattleRules>::FR as FightRules<R>>::Status as Id>::Id, AppliedStatus<R>>;
+    IndexMap<<<<R as BattleRules>::CR as CharacterRules<R>>::Status as Id>::Id, AppliedStatus<R>>;
 
 type Abilities<R> = IndexMap<
     <<<R as BattleRules>::AR as ActorRules<R>>::Ability as Id>::Id,
@@ -813,7 +812,7 @@ mod tests {
     use crate::rules::{ability::SimpleAbility, statistic::SimpleStatistic, status::SimpleStatus};
     use crate::util::tests::{creature, server, team};
     use crate::{battle_rules, rules::empty::*};
-    use crate::{battle_rules_with_actor, battle_rules_with_character, battle_rules_with_fight};
+    use crate::{battle_rules_with_actor, battle_rules_with_character};
 
     #[derive(Default)]
     pub struct CustomCharacterRules {}
@@ -824,6 +823,8 @@ mod tests {
         type Statistic = SimpleStatistic<u32, u32>;
         type StatisticsSeed = ();
         type StatisticsAlteration = ();
+        type Status = SimpleStatus<u32, u32>;
+        type StatusesAlteration = ();
     }
 
     #[test]
@@ -843,18 +844,9 @@ mod tests {
         assert!(creature.statistic(&1).is_none());
     }
 
-    #[derive(Default)]
-    pub struct CustomFightRules {}
-
-    impl<R: BattleRules> FightRules<R> for CustomFightRules {
-        type Impact = ();
-        type Status = SimpleStatus<u32, u32>;
-        type Potency = ();
-    }
-
     #[test]
     fn mutable_status() {
-        battle_rules_with_fight! { CustomFightRules }
+        battle_rules_with_character! { CustomCharacterRules }
         // Create a battle.
         let mut server = server(CustomRules::new());
         team(&mut server, 1);
