@@ -28,6 +28,11 @@ addons:
 
 after_success: |
   test $TRAVIS_RUST_VERSION = "stable" && 
+  export CARGO_INCREMENTAL=0 &&
+  export RUSTFLAGS="-Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off " &&
+  cargo clean &&
+  RUSTFLAGS="$RUSTFLAGS -Cpanic=abort" cargo build --all-features $CARGO_OPTIONS &&
+  cargo build --tests --all-features $CARGO_OPTIONS &&
   wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz &&
   tar xzf master.tar.gz &&
   cd kcov-master &&
