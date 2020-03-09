@@ -14,7 +14,7 @@ script:
   - cargo clippy --tests --all-features -- -D warnings
   - cargo test
   - cargo clean
-  - CARGO_INCREMENTAL=0 RUSTFLAGS="-Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off" cargo test --all-features
+  - CARGO_INCREMENTAL=0 RUSTFLAGS="-Ccodegen-units=1 -Cinline-threshold=0 -Coverflow-checks=off" cargo test --all-features
 
 addons:
   apt:
