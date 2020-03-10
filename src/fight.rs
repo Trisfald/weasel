@@ -63,8 +63,8 @@ pub trait FightRules<R: BattleRules> {
     /// Applies the periodic side effects of a status.
     /// Returns `true` if the status should end after this update.
     ///
-    /// For actors, a status update happens at the start of their round.
-    /// todo
+    /// For actors status updates happen at the start of their round.\
+    /// For non-actor characters status updates happen when the event `EnvironmentRound` is fired.
     ///
     /// The provided implementation does nothing and never terminates statuses.
     fn update_status(
