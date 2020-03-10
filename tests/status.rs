@@ -3,7 +3,7 @@ use weasel::battle::{Battle, BattleRules, BattleState};
 use weasel::character::{AlterStatistics, Character, CharacterRules};
 use weasel::entity::{EntityId, Transmutation};
 use weasel::entropy::Entropy;
-use weasel::event::{EventKind, EventQueue, EventTrigger};
+use weasel::event::{EventKind, EventQueue, EventTrigger, LinkedQueue};
 use weasel::fight::FightRules;
 use weasel::metric::WriteMetrics;
 use weasel::round::EnvironmentRound;
@@ -134,12 +134,12 @@ impl FightRules<CustomRules> for CustomFightRules {
         _state: &BattleState<CustomRules>,
         character: &dyn Character<CustomRules>,
         status: &AppliedStatus<CustomRules>,
-        event_queue: &mut Option<EventQueue<CustomRules>>,
+        linked_queue: &mut Option<LinkedQueue<CustomRules>>,
         _entropy: &mut Entropy<CustomRules>,
         _metrics: &mut WriteMetrics<CustomRules>,
     ) -> bool {
         let current_value = character.statistic(&STATISTIC_ID).unwrap().value();
-        AlterStatistics::trigger(event_queue, *character.entity_id(), current_value + 1).fire();
+        AlterStatistics::trigger(linked_queue, *character.entity_id(), current_value + 1).fire();
         status.duration() == status.max_duration().unwrap()
     }
 
@@ -330,6 +330,21 @@ fn status_update() {
         creature!(server).status(&STATUS_1_ID).unwrap().duration(),
         1
     );
+    // Verify that the AlterStatistics event triggered by the status update has origin equal to the
+    // event id of InflictStatus.
+    let events = server.battle().history().events();
+    let inflict_id = events
+        .iter()
+        .find(|e| e.kind() == EventKind::InflictStatus)
+        .unwrap()
+        .id();
+    let alter_origin = events
+        .iter()
+        .rev()
+        .find(|e| e.kind() == EventKind::AlterStatistics)
+        .unwrap()
+        .origin();
+    assert_eq!(alter_origin, Some(inflict_id));
     // Do another round.
     util::start_round(&mut server, &ENTITY_C1_ID);
     util::end_round(&mut server);

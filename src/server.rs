@@ -85,8 +85,10 @@ impl<R: BattleRules + 'static> Server<R> {
         let mut errors = Vec::new();
         if let Some(event_queue) = event_queue {
             for mut prototype in event_queue {
-                // Set origin id in derived event.
-                prototype.set_origin(Some(event.id()));
+                // Set origin id in derived event, only if it wasn't set explicitly.
+                if prototype.origin().is_none() {
+                    prototype.set_origin(Some(event.id()));
+                }
                 let result = self.process(prototype);
                 if let Err(error) = result {
                     errors.push(error);

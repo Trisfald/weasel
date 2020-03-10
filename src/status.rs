@@ -4,7 +4,9 @@ use crate::battle::{Battle, BattleRules};
 use crate::character::{verify_get_character, CharacterRules};
 use crate::entity::EntityId;
 use crate::error::{WeaselError, WeaselResult};
-use crate::event::{Event, EventId, EventKind, EventProcessor, EventQueue, EventTrigger};
+use crate::event::{
+    Event, EventId, EventKind, EventProcessor, EventQueue, EventTrigger, LinkedQueue,
+};
 use crate::fight::FightRules;
 use crate::util::Id;
 #[cfg(feature = "serialization")]
@@ -141,7 +143,10 @@ pub(crate) fn update_statuses<R: BattleRules + 'static>(
             &battle.state,
             character,
             status,
-            event_queue,
+            // Set the origin of all events caused by the status' update to the status own origin.
+            &mut event_queue
+                .as_mut()
+                .map(|queue| LinkedQueue::new(queue, status.origin())),
             &mut battle.entropy,
             &mut battle.metrics.write_handle(),
         );

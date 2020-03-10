@@ -4,7 +4,7 @@ use crate::battle::{Battle, BattleRules, BattleState};
 use crate::character::Character;
 use crate::entropy::Entropy;
 use crate::error::WeaselResult;
-use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
+use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger, LinkedQueue};
 use crate::metric::WriteMetrics;
 use crate::status::{Application, AppliedStatus};
 #[cfg(feature = "serialization")]
@@ -72,7 +72,7 @@ pub trait FightRules<R: BattleRules> {
         _state: &BattleState<R>,
         _character: &dyn Character<R>,
         _status: &AppliedStatus<R>,
-        _event_queue: &mut Option<EventQueue<R>>,
+        _linked_queue: &mut Option<LinkedQueue<R>>,
         _entropy: &mut Entropy<R>,
         _metrics: &mut WriteMetrics<R>,
     ) -> bool {

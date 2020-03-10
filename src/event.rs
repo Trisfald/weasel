@@ -655,6 +655,51 @@ where
     }
 }
 
+/// Decorator for `EventQueue` processor. It sets the origin of all events inserted into the queue
+/// to the `EventId` specified during instantiation, unless origin has been manually specified.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{EndBattle, BattleRules};
+/// use weasel::event::{EventTrigger, DummyEvent, EventKind, LinkedQueue, EventQueue};
+/// use weasel::{battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let mut queue = EventQueue::<CustomRules>::new();
+/// let origin = 42;
+/// DummyEvent::trigger(&mut LinkedQueue::new(&mut queue, Some(origin))).fire();
+/// assert_eq!(queue[0].origin(), Some(origin));
+/// ```
+pub struct LinkedQueue<'a, R: BattleRules> {
+    event_queue: &'a mut EventQueue<R>,
+    origin: Option<EventId>,
+}
+
+impl<'a, R: BattleRules> LinkedQueue<'a, R> {
+    /// Creates a new LinkedQueue decorator for the given `event_queue`.
+    pub fn new(event_queue: &'a mut EventQueue<R>, origin: Option<EventId>) -> LinkedQueue<R> {
+        LinkedQueue {
+            event_queue,
+            origin,
+        }
+    }
+}
+
+impl<R> EventProcessor<R> for LinkedQueue<'_, R>
+where
+    R: BattleRules,
+{
+    type ProcessOutput = ();
+
+    fn process(&mut self, mut event: EventPrototype<R>) -> Self::ProcessOutput {
+        if event.origin().is_none() {
+            event.set_origin(self.origin);
+        }
+        self.event_queue.push(event);
+    }
+}
+
 /// Decorator for event triggers to add a condition on the generated event prototype.
 ///
 /// # Examples
@@ -1115,5 +1160,14 @@ mod tests {
         let prototype = event.prototype();
         assert!(prototype.condition.is_some());
         assert!(prototype.origin.is_some());
+    }
+
+    #[test]
+    fn linked_queue_respects_origin() {
+        let mut queue = EventQueue::<CustomRules>::new();
+        let origin = 42;
+        let mut linked_queue = LinkedQueue::new(&mut queue, Some(origin + 1));
+        Originated::new(DummyEvent::trigger(&mut linked_queue), origin).fire();
+        assert_eq!(queue[0].origin(), Some(origin));
     }
 }

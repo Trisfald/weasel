@@ -4,7 +4,7 @@ use weasel::battle::{BattleRules, BattleState};
 use weasel::character::{Character, CharacterRules, StatisticId};
 use weasel::entity::{Entities, EntityId};
 use weasel::entropy::Entropy;
-use weasel::event::EventQueue;
+use weasel::event::{EventQueue, LinkedQueue};
 use weasel::fight::FightRules;
 use weasel::metric::WriteMetrics;
 use weasel::rules::{statistic::SimpleStatistic, status::SimpleStatus};
@@ -103,7 +103,7 @@ impl FightRules<CustomRules> for CustomFightRules {
         _state: &BattleState<CustomRules>,
         character: &dyn Character<CustomRules>,
         status: &AppliedStatus<CustomRules>,
-        event_queue: &mut Option<EventQueue<CustomRules>>,
+        linked_queue: &mut Option<LinkedQueue<CustomRules>>,
         _entropy: &mut Entropy<CustomRules>,
         _metrics: &mut WriteMetrics<CustomRules>,
     ) -> bool {
