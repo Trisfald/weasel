@@ -5,3 +5,4 @@ pub mod empty;
 pub mod entropy;
 mod generic;
 pub mod statistic;
+pub mod status;

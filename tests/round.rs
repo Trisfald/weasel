@@ -6,7 +6,7 @@ use weasel::entity::{Entities, EntityId};
 use weasel::entropy::Entropy;
 use weasel::event::EventTrigger;
 use weasel::metric::{system::*, WriteMetrics};
-use weasel::round::{EndRound, ResetRounds, RoundState, RoundsRules, StartRound};
+use weasel::round::{EndRound, EnvironmentRound, ResetRounds, RoundState, RoundsRules, StartRound};
 use weasel::server::Server;
 use weasel::space::Space;
 use weasel::WeaselError;
@@ -114,7 +114,7 @@ fn start_round() {
     // Pre-start checks.
     assert_eq!(server.battle().rounds().model().adds, 2);
     assert_eq!(*server.battle().rounds().state(), RoundState::<_>::Ready);
-    // Check start is prevented for faulty conditions.
+    // Check start round is prevented for faulty conditions.
     assert_eq!(
         StartRound::trigger(&mut server, ENTITY_ERR_ID)
             .fire()
@@ -170,7 +170,7 @@ fn end_round() {
     // Pre-start checks.
     assert_eq!(server.battle().rounds().model().adds, 2);
     assert_eq!(*server.battle().rounds().state(), RoundState::<_>::Ready);
-    // Check end is prevented for faulty conditions.
+    // Check end round is prevented for faulty conditions.
     assert_eq!(
         EndRound::trigger(&mut server)
             .fire()
@@ -208,4 +208,28 @@ fn reset_rounds() {
     // Changing the rounds model in between rounds should be fine.
     util::end_round(&mut server);
     assert_eq!(ResetRounds::trigger(&mut server).fire().err(), None);
+}
+
+#[test]
+fn environment_round() {
+    // Initialize the battle.
+    let mut server = server!();
+    // Start a round.
+    util::start_round(&mut server, &ENTITY_1_ID);
+    // Check environment round is prevented for faulty conditions.
+    assert_eq!(
+        EnvironmentRound::trigger(&mut server)
+            .fire()
+            .err()
+            .map(|e| e.unfold()),
+        Some(WeaselError::RoundInProgress)
+    );
+    // End the current round and perform an enviroment round.
+    util::end_round(&mut server);
+    assert_eq!(EnvironmentRound::trigger(&mut server).fire().err(), None);
+    // Verify metric increase.
+    assert_eq!(
+        server.battle().metrics().system_u64(ROUNDS_STARTED),
+        Some(2)
+    );
 }

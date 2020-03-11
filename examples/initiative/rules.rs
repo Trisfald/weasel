@@ -43,6 +43,9 @@ impl CharacterRules<CustomRules> for CustomCharacterRules {
     type StatisticsSeed = u16;
     // We never alter statistics in this example.
     type StatisticsAlteration = ();
+    // No status effects in this game.
+    type Status = EmptyStatus;
+    type StatusesAlteration = ();
 
     fn generate_statistics(
         &self,

@@ -40,7 +40,7 @@ pub type EventCallback<R> =
 pub struct Battle<R: BattleRules> {
     pub(crate) state: BattleState<R>,
     pub(crate) entropy: Entropy<R>,
-    history: History<R>,
+    pub(crate) history: History<R>,
     pub(crate) rules: R,
     pub(crate) event_callback: Option<EventCallback<R>>,
     pub(crate) metrics: Metrics<R>,

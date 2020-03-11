@@ -5,6 +5,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Support for status effects.
+- New methods `generate_status` and `alter_statuses` in `CharacterRules`.
+- New methods `apply_status`, `update_status` and `delete_status` in `FightRules`.
+- `InflictStatus` and `ClearStatus` events.
+- Added `StatusNotPresent` to `WeaselError`.
+- Mutable iterators over statistics and abilities.
+- New event `EnvironmentRound`.
+- New associated type `Potency` in `FightRules`. 
+- New associated types `Status` and `StatusesAlteration` in `CharacterRules`.
+- Example to showcase status effects.
+
+### Changed
+- Renamed `ActorRules`'s `alter` into `alter_abilities` and `CharacterRules`'s `alter` into `alter_statistics`.
+
+### Fixed
+- Event's origin is not overridden anymore by the server if it is already set.
 
 ## [0.5.0] - 2020-02-26
 ### Added
@@ -25,11 +42,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Doc tests for all events and few other structs.
 - `Originated` decorator.
 - Introduced inanimate objects.
+- New events `CreateObject` and `RemoveObject`.
 - Improved public API for `Battle` and its submodules.
+- New associated type `ObjectId` in `CharacterRules`.
 
 ### Changed
 - It's now possible to manually set an event's origin.
-- New associated type `ObjectId` in `CharacterRules`.
 
 ## [0.3.1] - 2020-02-17
 ### Added

@@ -1,11 +1,13 @@
 use weasel::battle::BattleRules;
-use weasel::character::AlterStatistics;
+use weasel::character::{AlterStatistics, Character};
 use weasel::entity::EntityId;
 use weasel::event::EventTrigger;
+use weasel::status::InflictStatus;
 use weasel::{battle_rules, rules::empty::*};
 
 const TEAM_1_ID: u32 = 1;
 const CREATURE_1_ID: u32 = 1;
+const STATUS_1_ID: u32 = 1;
 
 #[test]
 fn default_works() {
@@ -20,5 +22,22 @@ fn default_works() {
             .fire()
             .err(),
         None
+    );
+    // Empty rules don't add any status.
+    assert_eq!(
+        InflictStatus::trigger(&mut server, EntityId::Creature(CREATURE_1_ID), STATUS_1_ID)
+            .fire()
+            .err(),
+        None
+    );
+    assert_eq!(
+        server
+            .battle()
+            .entities()
+            .creature(&CREATURE_1_ID)
+            .unwrap()
+            .statuses()
+            .count(),
+        0
     );
 }

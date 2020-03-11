@@ -52,6 +52,7 @@
 //!
 //! - Creatures and inanimate objects.
 //! - Statistics and abilities for characters.
+//! - Long lasting status effects.
 //! - Player managed teams.
 //! - Team objectives and diplomacy.
 //! - Division of the battle into rounds.
@@ -145,6 +146,7 @@ pub mod rules;
 pub mod serde;
 pub mod server;
 pub mod space;
+pub mod status;
 pub mod team;
 pub mod user;
 pub mod util;

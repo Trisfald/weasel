@@ -20,6 +20,9 @@ pub trait Actor<R: BattleRules>: Character<R> {
     /// Returns an iterator over abilities.
     fn abilities<'a>(&'a self) -> Box<dyn Iterator<Item = &'a Ability<R>> + 'a>;
 
+    /// Returns a mutable iterator over abilities.
+    fn abilities_mut<'a>(&'a mut self) -> Box<dyn Iterator<Item = &'a mut Ability<R>> + 'a>;
+
     /// Returns the ability with the given id.
     fn ability(&self, id: &AbilityId<R>) -> Option<&Ability<R>>;
 
@@ -110,7 +113,7 @@ pub trait ActorRules<R: BattleRules> {
     /// Alters one or more abilities starting from the given alteration object.
     ///
     /// The provided implementation does nothing.
-    fn alter(
+    fn alter_abilities(
         &self,
         _actor: &mut dyn Actor<R>,
         _alteration: &Self::AbilitiesAlteration,
@@ -283,7 +286,7 @@ impl<R: BattleRules + 'static> Event<R> for AlterAbilities<R> {
             .actor_mut(&self.id)
             .unwrap_or_else(|| panic!("constraint violated: actor {:?} not found", self.id));
         // Alter the actor.
-        battle.rules.actor_rules().alter(
+        battle.rules.actor_rules().alter_abilities(
             actor,
             &self.alteration,
             &mut battle.entropy,

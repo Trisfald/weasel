@@ -1,10 +1,12 @@
 //! Module to handle combat.
 
 use crate::battle::{Battle, BattleRules, BattleState};
+use crate::character::Character;
 use crate::entropy::Entropy;
 use crate::error::WeaselResult;
-use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
+use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger, LinkedQueue};
 use crate::metric::WriteMetrics;
+use crate::status::{Application, AppliedStatus};
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
 use std::any::Any;
@@ -20,6 +22,13 @@ pub trait FightRules<R: BattleRules> {
     /// See [Impact](type.Impact.html).
     type Impact: Clone + Debug + Serialize + for<'a> Deserialize<'a>;
 
+    #[cfg(not(feature = "serialization"))]
+    /// See [Potency](../status/type.Potency.html).
+    type Potency: Clone + Debug;
+    #[cfg(feature = "serialization")]
+    /// See [Potency](../status/type.Potency.html).
+    type Potency: Clone + Debug + Serialize + for<'a> Deserialize<'a>;
+
     /// Takes an impact and generates one or more events to change the state of creatures or
     /// other objects.
     ///
@@ -28,6 +37,59 @@ pub trait FightRules<R: BattleRules> {
         &self,
         _state: &BattleState<R>,
         _impact: &Self::Impact,
+        _event_queue: &mut Option<EventQueue<R>>,
+        _entropy: &mut Entropy<R>,
+        _metrics: &mut WriteMetrics<R>,
+    ) {
+    }
+
+    /// Applies the side effects of a status when it's inflicted upon a character.
+    /// `application` contains the context in which the status was created.
+    ///
+    /// The status is automatically added to the character before the call to this method.
+    ///
+    /// The provided implementation does nothing.
+    fn apply_status(
+        &self,
+        _state: &BattleState<R>,
+        _character: &dyn Character<R>,
+        _application: Application<R>,
+        _event_queue: &mut Option<EventQueue<R>>,
+        _entropy: &mut Entropy<R>,
+        _metrics: &mut WriteMetrics<R>,
+    ) {
+    }
+
+    /// Applies the periodic side effects of a status.
+    /// Returns `true` if the status should end after this update.
+    ///
+    /// For actors: status updates happen at the start of their round.\
+    /// For non-actor characters: status updates happen when the event `EnvironmentRound` is fired.
+    ///
+    /// The provided implementation does nothing and it never ends any status.
+    fn update_status(
+        &self,
+        _state: &BattleState<R>,
+        _character: &dyn Character<R>,
+        _status: &AppliedStatus<R>,
+        _linked_queue: &mut Option<LinkedQueue<R>>,
+        _entropy: &mut Entropy<R>,
+        _metrics: &mut WriteMetrics<R>,
+    ) -> bool {
+        false
+    }
+
+    /// Removes the side effects of a status when the latter is removed from a character.
+    ///
+    /// The character is guaranteed to be affected by `status`.
+    /// The status will be automatically dropped immediately after this method.
+    ///
+    /// The provided implementation does nothing.
+    fn delete_status(
+        &self,
+        _state: &BattleState<R>,
+        _character: &dyn Character<R>,
+        _status: &AppliedStatus<R>,
         _event_queue: &mut Option<EventQueue<R>>,
         _entropy: &mut Entropy<R>,
         _metrics: &mut WriteMetrics<R>,

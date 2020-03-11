@@ -84,6 +84,8 @@ fn statistics_generated() {
         type Statistic = EmptyStat;
         type StatisticsSeed = u32;
         type StatisticsAlteration = ();
+        type Status = EmptyStatus;
+        type StatusesAlteration = ();
 
         fn generate_statistics(
             &self,
@@ -129,6 +131,8 @@ fn regenerate_statistics() {
         // Vec with pair (id, value).
         type StatisticsSeed = Vec<(u32, u32)>;
         type StatisticsAlteration = ();
+        type Status = EmptyStatus;
+        type StatusesAlteration = ();
 
         fn generate_statistics(
             &self,
@@ -290,8 +294,10 @@ fn remove_object_on_alter() {
         type Statistic = EmptyStat;
         type StatisticsSeed = ();
         type StatisticsAlteration = ();
+        type Status = EmptyStatus;
+        type StatusesAlteration = ();
 
-        fn alter(
+        fn alter_statistics(
             &self,
             _character: &mut dyn Character<R>,
             _alteration: &Self::StatisticsAlteration,

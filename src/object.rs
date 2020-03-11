@@ -7,6 +7,7 @@ use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
 use crate::metric::system::OBJECTS_CREATED;
 use crate::space::{Position, PositionClaim};
+use crate::status::{AppliedStatus, StatusId};
 use crate::util::{collect_from_iter, Id};
 use indexmap::IndexMap;
 #[cfg(feature = "serialization")]
@@ -22,15 +23,19 @@ type Statistics<R> = IndexMap<
     <<R as BattleRules>::CR as CharacterRules<R>>::Statistic,
 >;
 
+type Statuses<R> =
+    IndexMap<<<<R as BattleRules>::CR as CharacterRules<R>>::Status as Id>::Id, AppliedStatus<R>>;
+
 /// An object is an inanimate entity.
 ///
 /// Objects possess a position and a set of statistics, but they can't start a round
-/// nor activate abilities.\
+/// nor activate abilities. They can be target of status effects.\
 /// Objects aren't part of any team.
 pub struct Object<R: BattleRules> {
     id: EntityId<R>,
     position: Position<R>,
     statistics: Statistics<R>,
+    statuses: Statuses<R>,
 }
 
 impl<R: BattleRules> Id for Object<R> {
@@ -64,6 +69,10 @@ impl<R: BattleRules> Character<R> for Object<R> {
         Box::new(self.statistics.values())
     }
 
+    fn statistics_mut<'a>(&'a mut self) -> Box<dyn Iterator<Item = &'a mut Statistic<R>> + 'a> {
+        Box::new(self.statistics.values_mut())
+    }
+
     fn statistic(&self, id: &StatisticId<R>) -> Option<&Statistic<R>> {
         self.statistics.get(id)
     }
@@ -78,6 +87,30 @@ impl<R: BattleRules> Character<R> for Object<R> {
 
     fn remove_statistic(&mut self, id: &StatisticId<R>) -> Option<Statistic<R>> {
         self.statistics.remove(id)
+    }
+
+    fn statuses<'a>(&'a self) -> Box<dyn Iterator<Item = &'a AppliedStatus<R>> + 'a> {
+        Box::new(self.statuses.values())
+    }
+
+    fn statuses_mut<'a>(&'a mut self) -> Box<dyn Iterator<Item = &'a mut AppliedStatus<R>> + 'a> {
+        Box::new(self.statuses.values_mut())
+    }
+
+    fn status(&self, id: &StatusId<R>) -> Option<&AppliedStatus<R>> {
+        self.statuses.get(id)
+    }
+
+    fn status_mut(&mut self, id: &StatusId<R>) -> Option<&mut AppliedStatus<R>> {
+        self.statuses.get_mut(id)
+    }
+
+    fn add_status(&mut self, status: AppliedStatus<R>) -> Option<AppliedStatus<R>> {
+        self.statuses.insert(status.id().clone(), status)
+    }
+
+    fn remove_status(&mut self, id: &StatusId<R>) -> Option<AppliedStatus<R>> {
+        self.statuses.remove(id)
     }
 }
 
@@ -213,6 +246,7 @@ impl<R: BattleRules + 'static> Event<R> for CreateObject<R> {
             id: EntityId::Object(self.id.clone()),
             position: self.position.clone(),
             statistics,
+            statuses: IndexMap::new(),
         };
         // Take the position.
         battle.state.space.move_entity(
@@ -423,7 +457,7 @@ where
 mod tests {
     use super::*;
     use crate::battle::BattleRules;
-    use crate::rules::statistic::SimpleStatistic;
+    use crate::rules::{statistic::SimpleStatistic, status::SimpleStatus};
     use crate::util::tests::{object, server};
     use crate::{battle_rules, battle_rules_with_character, rules::empty::*};
 
@@ -436,6 +470,8 @@ mod tests {
         type Statistic = SimpleStatistic<u32, u32>;
         type StatisticsSeed = ();
         type StatisticsAlteration = ();
+        type Status = SimpleStatus<u32, u32>;
+        type StatusesAlteration = ();
     }
 
     #[test]
@@ -445,12 +481,34 @@ mod tests {
         let mut server = server(CustomRules::new());
         object(&mut server, 1, ());
         let object = server.battle.state.entities.object_mut(&1).unwrap();
+        // Run checks.
         assert!(object.statistic(&1).is_none());
         object.add_statistic(SimpleStatistic::new(1, 50));
         assert!(object.statistic(&1).is_some());
         object.statistic_mut(&1).unwrap().set_value(25);
         assert_eq!(object.statistic(&1).unwrap().value(), 25);
+        object.statistics_mut().last().unwrap().set_value(30);
+        assert_eq!(object.statistic(&1).unwrap().value(), 30);
         object.remove_statistic(&1);
         assert!(object.statistic(&1).is_none());
+    }
+
+    #[test]
+    fn mutable_status() {
+        battle_rules_with_character! { CustomCharacterRules }
+        // Create a battle.
+        let mut server = server(CustomRules::new());
+        object(&mut server, 1, ());
+        let object = server.battle.state.entities.object_mut(&1).unwrap();
+        // Run checks.
+        assert!(object.status(&1).is_none());
+        object.add_status(AppliedStatus::new(SimpleStatus::new(1, 50, Some(1))));
+        assert!(object.status(&1).is_some());
+        object.status_mut(&1).unwrap().set_effect(25);
+        assert_eq!(object.status(&1).unwrap().effect(), 25);
+        object.statuses_mut().last().unwrap().set_effect(100);
+        assert_eq!(object.status(&1).unwrap().effect(), 100);
+        object.remove_status(&1);
+        assert!(object.status(&1).is_none());
     }
 }

@@ -29,3 +29,7 @@ Interactive example in which the player moves around a creature and can undo/red
 ## [Passive](passive/)
 
 An example to show how to define simple passive abilities.
+
+## [Status](status/)
+
+Example to demonstrate the usage of status effects and how to write rules for them.

@@ -64,3 +64,6 @@ name = "undo"
 
 [[example]]
 name = "passive"
+
+[[example]]
+name = "status"

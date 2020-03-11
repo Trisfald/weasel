@@ -68,7 +68,7 @@ impl ActorRules<CustomRules> for CustomActorRules {
         Box::new(v.into_iter())
     }
 
-    fn alter(
+    fn alter_abilities(
         &self,
         actor: &mut dyn Actor<CustomRules>,
         alteration: &Self::AbilitiesAlteration,
