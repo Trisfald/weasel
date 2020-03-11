@@ -487,6 +487,8 @@ mod tests {
         assert!(object.statistic(&1).is_some());
         object.statistic_mut(&1).unwrap().set_value(25);
         assert_eq!(object.statistic(&1).unwrap().value(), 25);
+        object.statistics_mut().last().unwrap().set_value(30);
+        assert_eq!(object.statistic(&1).unwrap().value(), 30);
         object.remove_statistic(&1);
         assert!(object.statistic(&1).is_none());
     }
@@ -504,6 +506,8 @@ mod tests {
         assert!(object.status(&1).is_some());
         object.status_mut(&1).unwrap().set_effect(25);
         assert_eq!(object.status(&1).unwrap().effect(), 25);
+        object.statuses_mut().last().unwrap().set_effect(100);
+        assert_eq!(object.status(&1).unwrap().effect(), 100);
         object.remove_status(&1);
         assert!(object.status(&1).is_none());
     }

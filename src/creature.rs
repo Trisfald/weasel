@@ -840,6 +840,8 @@ mod tests {
         assert!(creature.statistic(&1).is_some());
         creature.statistic_mut(&1).unwrap().set_value(25);
         assert_eq!(creature.statistic(&1).unwrap().value(), 25);
+        creature.statistics_mut().last().unwrap().set_value(30);
+        assert_eq!(creature.statistic(&1).unwrap().value(), 30);
         creature.remove_statistic(&1);
         assert!(creature.statistic(&1).is_none());
     }
@@ -858,6 +860,8 @@ mod tests {
         assert!(creature.status(&1).is_some());
         creature.status_mut(&1).unwrap().set_effect(25);
         assert_eq!(creature.status(&1).unwrap().effect(), 25);
+        creature.statuses_mut().last().unwrap().set_effect(100);
+        assert_eq!(creature.status(&1).unwrap().effect(), 100);
         creature.remove_status(&1);
         assert!(creature.status(&1).is_none());
     }
@@ -883,7 +887,9 @@ mod tests {
         assert!(creature.ability(&1).is_none());
         creature.add_ability(SimpleAbility::new(1, 50));
         assert!(creature.ability(&1).is_some());
-        creature.ability_mut(&1).unwrap().set_power(100);
+        creature.ability_mut(&1).unwrap().set_power(25);
+        assert_eq!(creature.ability(&1).unwrap().power(), 25);
+        creature.abilities_mut().last().unwrap().set_power(100);
         assert_eq!(creature.ability(&1).unwrap().power(), 100);
         creature.remove_ability(&1);
         assert!(creature.ability(&1).is_none());
