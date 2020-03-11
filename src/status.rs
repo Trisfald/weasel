@@ -17,7 +17,7 @@ use std::fmt::{Debug, Formatter, Result};
 /// A long lasting effect altering an entity's condition.
 ///
 /// Statuses are used to represent anything that changes at least one property of an entity,
-/// for a given amont of time. DoT (damage over time) are one example.\
+/// for a given amount of rounds. DoTs (damage over time) are one example.\
 /// A status can alter an entity just once or at every round.
 pub type Status<R> = <<R as BattleRules>::CR as CharacterRules<R>>::Status;
 

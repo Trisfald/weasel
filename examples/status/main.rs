@@ -1,13 +1,13 @@
 use crate::rules::*;
-use weasel::actor::Actor;
 use weasel::battle::Battle;
 use weasel::creature::{CreateCreature, CreatureId};
-use weasel::entity::{Entity, EntityId};
-use weasel::event::EventTrigger;
+use weasel::entity::EntityId;
+use weasel::event::{EventKind, EventTrigger};
 use weasel::object::{CreateObject, ObjectId};
 use weasel::round::{EndRound, EnvironmentRound, StartRound};
 use weasel::status::{ClearStatus, InflictStatus};
 use weasel::team::{CreateTeam, TeamId};
+use weasel::util::Id;
 use weasel::Server;
 
 mod rules;
@@ -24,18 +24,19 @@ fn main() {
     let mut server = Server::builder(battle).build();
     // Create a team.
     CreateTeam::trigger(&mut server, TEAM_ID).fire().unwrap();
-    // Spawn a creature and an object, both with 100 HEALTH.
+    // Spawn a creature and an object, both with 50 HEALTH.
     println!("Spawning a creature...");
     CreateCreature::trigger(&mut server, CREATURE_ID, TEAM_ID, ())
-        .statistics_seed(100)
+        .statistics_seed(50)
         .fire()
         .unwrap();
     println!("Spawning an object...");
     CreateObject::trigger(&mut server, OBJECT_ID, ())
-        .statistics_seed(100)
+        .statistics_seed(50)
         .fire()
         .unwrap();
-    println!();
+    // Display the entities' state.
+    print_state(&server);
     // Inflict a power-up status effect on the creature, with no time limit.
     println!("Inflicting a power-up on the creature...");
     InflictStatus::trigger(&mut server, ENTITY_1_ID, VIGOR)
@@ -49,23 +50,20 @@ fn main() {
         .fire()
         .unwrap();
     // Display the entities' state.
-    display_state(&server);
-    println!();
+    print_state(&server);
     // Do two full turns.
     for i in 1..=2 {
         turn(&mut server, i);
-        turn(&mut server, i);
     }
-    // The DoT should be gone automatically.
+    // The DoT should have been cleared automatically.
     // Remove the power-up manually.
     println!("Removing the creature power-up...");
     ClearStatus::trigger(&mut server, ENTITY_1_ID, VIGOR)
         .fire()
         .unwrap();
-    display_state(&server);
-    println!();
+    print_state(&server);
     // Display the link between the DoT status and the effects it created.
-    display_dot_effects(&server);
+    print_dot_effects(&server);
 }
 
 /// Performs a turn.
@@ -80,17 +78,49 @@ fn turn(server: &mut Server<CustomRules>, turn: u32) {
     // Do a round for all non-actor entities, to update their statuses.
     println!("Round of environment...");
     EnvironmentRound::trigger(server).fire().unwrap();
-    println!();
     // Display the entities' state.
-    display_state(server);
-    println!();
+    print_state(server);
 }
 
 /// Displays briefly the state of all entities.
-fn display_state(server: &Server<CustomRules>) {
-    // TODO
+fn print_state(server: &Server<CustomRules>) {
+    println!();
+    println!("------------------------- Entities -------------------------");
+    for character in server.battle().entities().characters() {
+        let statuses: Vec<_> = character
+            .statuses()
+            .map(|status| match *status.id() {
+                VIGOR => "vigor",
+                DOT => "DoT",
+                _ => unimplemented!(),
+            })
+            .collect();
+        println!(
+            "{:?} => health: {}, statuses: {:?}",
+            character.entity_id(),
+            character.statistic(&HEALTH).unwrap().value(),
+            statuses
+        );
+    }
+    println!();
 }
 
-fn display_dot_effects(server: &Server<CustomRules>) {
-    // TODO
+fn print_dot_effects(server: &Server<CustomRules>) {
+    println!("Event derived from the DOT status:");
+    // We want to show the chain of events derived from the DOT status.
+    // First find the event that put the DOT on the object.
+    // We know it's first InflictStatus iterating in reverse order.
+    let events = server.battle().history().events();
+    let inflict_event = events
+        .iter()
+        .rev()
+        .find(|e| e.kind() == EventKind::InflictStatus)
+        .unwrap();
+    println!("{:?}", inflict_event.event());
+    // Get all events with inflict_event as origin.
+    for event in events {
+        if event.origin() == Some(inflict_event.id()) {
+            println!("+-- {:?}", event.event());
+        }
+    }
 }

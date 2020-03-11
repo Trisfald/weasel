@@ -44,9 +44,9 @@ pub trait FightRules<R: BattleRules> {
     }
 
     /// Applies the side effects of a status when it's inflicted upon a character.
-    /// `application` contains the context in which the status is applied.
+    /// `application` contains the context in which the status was created.
     ///
-    /// The status is automatically registered on the character before the call to this method.
+    /// The status is automatically added to the character before the call to this method.
     ///
     /// The provided implementation does nothing.
     fn apply_status(
@@ -63,10 +63,10 @@ pub trait FightRules<R: BattleRules> {
     /// Applies the periodic side effects of a status.
     /// Returns `true` if the status should end after this update.
     ///
-    /// For actors status updates happen at the start of their round.\
-    /// For non-actor characters status updates happen when the event `EnvironmentRound` is fired.
+    /// For actors: status updates happen at the start of their round.\
+    /// For non-actor characters: status updates happen when the event `EnvironmentRound` is fired.
     ///
-    /// The provided implementation does nothing and never terminates statuses.
+    /// The provided implementation does nothing and it never ends any status.
     fn update_status(
         &self,
         _state: &BattleState<R>,

@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Renamed `ActorRules`'s `alter` into `alter_abilities` and `CharacterRules`'s `alter` into `alter_statistics`.
+
+### Fixed
 - Event's origin is not overridden anymore by the server if it is already set.
 
 ## [0.5.0] - 2020-02-26
