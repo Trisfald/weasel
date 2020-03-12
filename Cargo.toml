@@ -35,65 +35,9 @@ serde_json = "1.0"
 all-features = true
 
 [[test]]
-name = "ability-tests"
-path = "tests/ability.rs"
-
-[[test]]
-name = "actor-tests"
-path = "tests/actor.rs"
-
-[[test]]
-name = "battle-tests"
-path = "tests/battle.rs"
-
-[[test]]
-name = "character-tests"
-path = "tests/character.rs"
-
-[[test]]
-name = "client-server-tests"
-path = "tests/client_server.rs"
-
-[[test]]
-name = "entity-tests"
-path = "tests/entity.rs"
-
-[[test]]
-name = "entropy-tests"
-path = "tests/entropy.rs"
+name = "entropy_test"
+path = "tests/entropy_test.rs"
 required-features = ["random"]
-
-[[test]]
-name = "event-tests"
-path = "tests/event.rs"
-
-[[test]]
-name = "fight-tests"
-path = "tests/fight.rs"
-
-[[test]]
-name = "history-tests"
-path = "tests/history.rs"
-
-[[test]]
-name = "object-tests"
-path = "tests/object.rs"
-
-[[test]]
-name = "round-tests"
-path = "tests/round.rs"
-
-[[test]]
-name = "space-tests"
-path = "tests/space.rs"
-
-[[test]]
-name = "status-tests"
-path = "tests/status.rs"
-
-[[test]]
-name = "team-tests"
-path = "tests/team.rs"
 
 [[example]]
 name = "pirates"
