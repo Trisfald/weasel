@@ -35,8 +35,8 @@ serde_json = "1.0"
 all-features = true
 
 [[test]]
-name = "entropy"
-path = "tests/entropy.rs"
+name = "entropy-test"
+path = "tests/entropy_test.rs"
 required-features = ["random"]
 
 [[example]]
