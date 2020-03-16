@@ -90,6 +90,8 @@ pub enum EventRights<'a, R: BattleRules> {
     Server,
     /// Only the server or a player with rights to this team can fire the event.
     Team(&'a TeamId<R>),
+    /// Only the server or a player with rights to all of these teams can fire the event.
+    Teams(Vec<&'a TeamId<R>>),
 }
 
 /// An event is the only mean to apply a change to the world.

@@ -9,13 +9,15 @@ use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventRights, Ev
 use crate::metric::{system::*, WriteMetrics};
 use crate::space::Space;
 use crate::status::update_statuses;
+use indexmap::{indexset, IndexSet};
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::fmt::{Debug, Formatter, Result};
+use std::hash::Hash;
 use std::marker::PhantomData;
 
-/// Manages the battle's rounds. The main purpose is to tell which actor will act next.
+/// Manages the battle's rounds. The main purpose is to tell which actor(s) will act next.
 pub struct Rounds<R: BattleRules> {
     state: RoundStateType<R>,
     model: RoundsModel<R>,
@@ -42,14 +44,10 @@ impl<R: BattleRules> Rounds<R> {
         &mut self.model
     }
 
-    /// Returns true if the entity with the given id is the current actor.
+    /// Returns true if the entity with the given id is among the current actors.
     /// Entity existence is not verified.
-    pub(crate) fn is_acting(&self, entity_id: &EntityId<R>) -> bool {
-        if let RoundState::Started(id) = &self.state {
-            entity_id == id
-        } else {
-            false
-        }
+    pub fn is_acting(&self, entity_id: &EntityId<R>) -> bool {
+        self.state.has_actor(entity_id)
     }
 
     /// See [eligible](trait.RoundsRules.html#method.eligible).
@@ -120,12 +118,26 @@ pub type RoundStateType<R> = RoundState<EntityId<R>>;
 #[derive(Debug, Clone, PartialEq)]
 pub enum RoundState<EI>
 where
-    EI: Debug,
+    EI: Debug + Hash + Eq,
 {
     /// A new round is ready to start.
     Ready,
     /// A round is in progress.
-    Started(EI),
+    Started(IndexSet<EI>),
+}
+
+impl<EI> RoundState<EI>
+where
+    EI: Debug + Hash + Eq,
+{
+    /// Returns true if the round state is `Started` and the entity is one of its actors.
+    pub fn has_actor(&self, entity_id: &EI) -> bool {
+        if let RoundState::Started(actors) = self {
+            actors.contains(entity_id)
+        } else {
+            false
+        }
+    }
 }
 
 /// Rules to determine the order of rounds among actors.
@@ -228,7 +240,7 @@ pub type RoundsModel<R> = <<R as BattleRules>::RR as RoundsRules<R>>::RoundsMode
 /// use weasel::creature::CreateCreature;
 /// use weasel::entity::EntityId;
 /// use weasel::event::EventTrigger;
-/// use weasel::round::{RoundState, StartRound};
+/// use weasel::round::StartRound;
 /// use weasel::team::CreateTeam;
 /// use weasel::{Server, battle_rules, rules::empty::*};
 ///
@@ -248,10 +260,11 @@ pub type RoundsModel<R> = <<R as BattleRules>::RR as RoundsRules<R>>::RoundsMode
 /// StartRound::trigger(&mut server, EntityId::Creature(creature_id))
 ///     .fire()
 ///     .unwrap();
-/// assert_eq!(
-///     *server.battle().rounds().state(),
-///     RoundState::Started(EntityId::Creature(creature_id))
-/// );
+/// assert!(server
+///     .battle()
+///     .rounds()
+///     .state()
+///     .has_actor(&EntityId::Creature(creature_id)));
 /// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct StartRound<R: BattleRules> {
@@ -327,7 +340,7 @@ impl<R: BattleRules + 'static> Event<R> for StartRound<R> {
         battle
             .state
             .rounds
-            .set_state(RoundState::Started(actor.entity_id().clone()));
+            .set_state(RoundState::Started(indexset! {actor.entity_id().clone()}));
         metrics
             .add_system_u64(ROUNDS_STARTED, 1)
             .unwrap_or_else(|err| panic!("constraint violated: {:?}", err));
@@ -473,41 +486,45 @@ impl<R: BattleRules + 'static> Event<R> for EndRound<R> {
     }
 
     fn apply(&self, battle: &mut Battle<R>, event_queue: &mut Option<EventQueue<R>>) {
-        let id = if let RoundState::Started(id) = battle.state.rounds.state() {
-            Some(id.clone())
+        let actors = if let RoundState::Started(actors) = battle.state.rounds.state() {
+            actors.clone()
         } else {
             panic!("constraint violated: end round called when state is not started");
         };
-        let actor = battle
-            .state
-            .entities
-            .actor(&id.clone().unwrap())
-            .unwrap_or_else(|| panic!("constraint violated: actor {:?} not found", id));
-        let metrics = &mut battle.metrics.write_handle();
-        // Invoke `CharacterRules` callback.
-        battle.rules.actor_rules().on_round_end(
-            &battle.state,
-            actor,
-            event_queue,
-            &mut battle.entropy,
-            metrics,
-        );
-        // Invoke `RoundRules` callback.
-        battle.state.rounds.on_end(
-            &battle.state.entities,
-            &battle.state.space,
-            actor,
-            &mut battle.entropy,
-            metrics,
-        );
-        // Check teams' objectives.
-        Battle::check_objectives(
-            &battle.state,
-            &battle.rules.team_rules(),
-            &battle.metrics.read_handle(),
-            event_queue,
-            Checkpoint::RoundEnd,
-        );
+        // End the round for each actor.
+        for actor_id in actors {
+            let actor = battle.state.entities.actor(&actor_id).unwrap_or_else(|| {
+                panic!(
+                    "constraint violated: actor {:?} not found",
+                    actor_id.clone()
+                )
+            });
+            let metrics = &mut battle.metrics.write_handle();
+            // Invoke `CharacterRules` callback.
+            battle.rules.actor_rules().on_round_end(
+                &battle.state,
+                actor,
+                event_queue,
+                &mut battle.entropy,
+                metrics,
+            );
+            // Invoke `RoundRules` callback.
+            battle.state.rounds.on_end(
+                &battle.state.entities,
+                &battle.state.space,
+                actor,
+                &mut battle.entropy,
+                metrics,
+            );
+            // Check teams' objectives.
+            Battle::check_objectives(
+                &battle.state,
+                &battle.rules.team_rules(),
+                &battle.metrics.read_handle(),
+                event_queue,
+                Checkpoint::RoundEnd,
+            );
+        }
         // Set the round state.
         battle.state.rounds.set_state(RoundState::Ready);
     }
@@ -525,17 +542,23 @@ impl<R: BattleRules + 'static> Event<R> for EndRound<R> {
     }
 
     fn rights<'a>(&'a self, battle: &'a Battle<R>) -> EventRights<'a, R> {
-        let id = if let RoundState::Started(id) = battle.state.rounds.state() {
-            Some(id.clone())
+        let actors = if let RoundState::Started(actors) = battle.state.rounds.state() {
+            actors
         } else {
             panic!("constraint violated: end round called when state is not started");
         };
-        let actor = battle
-            .state
-            .entities
-            .actor(&id.clone().unwrap())
-            .unwrap_or_else(|| panic!("constraint violated: actor {:?} not found", id));
-        EventRights::Team(actor.team_id())
+        // Collect the rights to all teams involved.
+        let mut teams = Vec::new();
+        for actor_id in actors {
+            let actor = battle.state.entities.actor(actor_id).unwrap_or_else(|| {
+                panic!(
+                    "constraint violated: actor {:?} not found",
+                    actor_id.clone()
+                )
+            });
+            teams.push(actor.team_id());
+        }
+        EventRights::Teams(teams)
     }
 }
 

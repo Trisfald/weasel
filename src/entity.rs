@@ -14,6 +14,7 @@ use indexmap::IndexMap;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
 use std::fmt::{Debug, Display, Formatter, Result};
+use std::hash::{Hash, Hasher};
 
 /// An entity represents any being existing in the game world.
 pub trait Entity<R: BattleRules> {
@@ -139,6 +140,17 @@ impl<R: BattleRules> PartialEq<EntityId<R>> for EntityId<R> {
                 EntityId::Object(other_id) => id == other_id,
                 _ => false,
             },
+        }
+    }
+}
+
+impl<R: BattleRules> Eq for EntityId<R> {}
+
+impl<R: BattleRules> Hash for EntityId<R> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        match self {
+            EntityId::Creature(id) => id.hash(state),
+            EntityId::Object(id) => id.hash(state),
         }
     }
 }

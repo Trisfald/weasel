@@ -1,3 +1,4 @@
+use indexmap::indexset;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
 use weasel::actor::Actor;
@@ -137,7 +138,7 @@ fn start_round() {
     // Post-start checks.
     assert_eq!(
         *server.battle().rounds().state(),
-        RoundState::<_>::Started(ENTITY_1_ID)
+        RoundState::<_>::Started(indexset! {ENTITY_1_ID})
     );
     assert_eq!(server.battle().rounds().model().starts, 1);
     assert_eq!(
@@ -154,7 +155,7 @@ fn start_round() {
     );
     assert_eq!(
         *server.battle().rounds().state(),
-        RoundState::<_>::Started(ENTITY_1_ID)
+        RoundState::<_>::Started(indexset! {ENTITY_1_ID})
     );
     assert_eq!(server.battle().rounds().model().starts, 1);
     assert_eq!(

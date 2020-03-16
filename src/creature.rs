@@ -723,8 +723,8 @@ impl<R: BattleRules + 'static> Event<R> for RemoveCreature<R> {
             .creature(&self.id)
             .unwrap_or_else(|| panic!("constraint violated: creature {:?} not found", self.id));
         // End the current round, if this creature was the actor.
-        if let RoundState::Started(current_actor_id) = battle.state.rounds.state() {
-            if current_actor_id == creature.entity_id() {
+        if let RoundState::Started(actors) = battle.state.rounds.state() {
+            if actors.contains(creature.entity_id()) {
                 // Invoke `RoundRules` callback.
                 battle.state.rounds.on_end(
                     &battle.state.entities,
