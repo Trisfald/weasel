@@ -117,7 +117,8 @@ pub enum Application<'a, R: BattleRules> {
     Replacement(&'a OldStatus<R>, &'a NewStatus<R>),
 }
 
-/// Updates all statuses of a entity. The entity must be a character.
+/// Updates all statuses of a entity.
+/// Returns an error if the entity doesn't exist or if it isn't a character.
 pub(crate) fn update_statuses<R: BattleRules + 'static>(
     id: &EntityId<R>,
     battle: &mut Battle<R>,

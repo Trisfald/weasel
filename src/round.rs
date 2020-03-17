@@ -9,7 +9,7 @@ use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventRights, Ev
 use crate::metric::{system::*, WriteMetrics};
 use crate::space::Space;
 use crate::status::update_statuses;
-use indexmap::{indexset, IndexSet};
+use indexmap::IndexSet;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
 use std::any::Any;
@@ -271,38 +271,41 @@ pub struct StartRound<R: BattleRules> {
     #[cfg_attr(
         feature = "serialization",
         serde(bound(
-            serialize = "EntityId<R>: Serialize",
-            deserialize = "EntityId<R>: Deserialize<'de>"
+            serialize = "Vec<EntityId<R>>: Serialize",
+            deserialize = "Vec<EntityId<R>>: Deserialize<'de>"
         ))
     )]
-    id: EntityId<R>,
+    ids: Vec<EntityId<R>>,
 }
 
 impl<R: BattleRules> StartRound<R> {
-    /// Returns a trigger for this event.
+    /// Returns a trigger for this event, to start a round with a single actor.
     pub fn trigger<P: EventProcessor<R>>(
         processor: &mut P,
         id: EntityId<R>,
     ) -> StartRoundTrigger<R, P> {
-        StartRoundTrigger { processor, id }
+        StartRoundTrigger {
+            processor,
+            ids: vec![id],
+        }
     }
 
-    /// Returns the id of the entity that will start the round.
-    pub fn id(&self) -> &EntityId<R> {
-        &self.id
+    /// Returns the ids of the entities that will start the round.
+    pub fn ids(&self) -> &Vec<EntityId<R>> {
+        &self.ids
     }
 }
 
 impl<R: BattleRules> Debug for StartRound<R> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "StartRound {{ id: {:?} }}", self.id)
+        write!(f, "StartRound {{ ids: {:?} }}", self.ids)
     }
 }
 
 impl<R: BattleRules> Clone for StartRound<R> {
     fn clone(&self) -> Self {
         StartRound {
-            id: self.id.clone(),
+            ids: self.ids.clone(),
         }
     }
 }
@@ -313,57 +316,66 @@ impl<R: BattleRules + 'static> Event<R> for StartRound<R> {
         if let RoundState::Started(_) = battle.rounds().state() {
             return Err(WeaselError::RoundInProgress);
         }
-        // Verify if entity is an actor.
-        if !self.id.is_actor() {
-            return Err(WeaselError::NotAnActor(self.id.clone()));
-        }
-        // Verify if entity exists.
-        if let Some(actor) = battle.entities().actor(&self.id) {
-            // Verify if actor is eligible.
-            if !battle.rounds().eligible(actor) {
-                return Err(WeaselError::ActorNotEligible(self.id.clone()));
+        for id in &self.ids {
+            // Verify if entity is an actor.
+            if !id.is_actor() {
+                return Err(WeaselError::NotAnActor(id.clone()));
             }
-            Ok(())
-        } else {
-            Err(WeaselError::EntityNotFound(self.id.clone()))
+            // Verify if entity exists.
+            if let Some(actor) = battle.entities().actor(&id) {
+                // Verify if actor is eligible.
+                if !battle.rounds().eligible(actor) {
+                    return Err(WeaselError::ActorNotEligible(id.clone()));
+                }
+            } else {
+                return Err(WeaselError::EntityNotFound(id.clone()));
+            }
         }
+        Ok(())
     }
 
     fn apply(&self, battle: &mut Battle<R>, event_queue: &mut Option<EventQueue<R>>) {
-        let actor = battle
-            .state
-            .entities
-            .actor(&self.id)
-            .unwrap_or_else(|| panic!("constraint violated: actor {:?} not found", self.id));
-        let metrics = &mut battle.metrics.write_handle();
         // Set the round state.
+        let actors_ids = self.ids.iter().cloned().collect();
         battle
             .state
             .rounds
-            .set_state(RoundState::Started(indexset! {actor.entity_id().clone()}));
-        metrics
+            .set_state(RoundState::Started(actors_ids));
+        battle
+            .metrics
+            .write_handle()
             .add_system_u64(ROUNDS_STARTED, 1)
             .unwrap_or_else(|err| panic!("constraint violated: {:?}", err));
-        // Invoke `RoundRules` callback.
-        battle.state.rounds.rules.on_start(
-            &battle.state.entities,
-            &battle.state.space,
-            &mut battle.state.rounds.model,
-            actor,
-            &mut battle.entropy,
-            metrics,
-        );
-        // Invoke `CharacterRules` callback.
-        battle.rules.actor_rules().on_round_start(
-            &battle.state,
-            actor,
-            event_queue,
-            &mut battle.entropy,
-            metrics,
-        );
-        // Update all statuses afflicting the actor.
-        update_statuses(&self.id, battle, event_queue)
-            .unwrap_or_else(|err| panic!("constraint violated: {:?}", err));
+        // Perform some operations on every actor.
+        for id in &self.ids {
+            let metrics = &mut battle.metrics.write_handle();
+            // Get the actor.
+            let actor = battle
+                .state
+                .entities
+                .actor(id)
+                .unwrap_or_else(|| panic!("constraint violated: actor {:?} not found", id));
+            // Invoke `RoundRules` callback.
+            battle.state.rounds.rules.on_start(
+                &battle.state.entities,
+                &battle.state.space,
+                &mut battle.state.rounds.model,
+                actor,
+                &mut battle.entropy,
+                metrics,
+            );
+            // Invoke `CharacterRules` callback.
+            battle.rules.actor_rules().on_round_start(
+                &battle.state,
+                actor,
+                event_queue,
+                &mut battle.entropy,
+                metrics,
+            );
+            // Update all statuses afflicting the actor.
+            update_statuses(id, battle, event_queue)
+                .unwrap_or_else(|err| panic!("constraint violated: {:?}", err));
+        }
     }
 
     fn kind(&self) -> EventKind {
@@ -379,12 +391,16 @@ impl<R: BattleRules + 'static> Event<R> for StartRound<R> {
     }
 
     fn rights<'a>(&'a self, battle: &'a Battle<R>) -> EventRights<'a, R> {
-        let actor = battle
-            .state
-            .entities
-            .actor(&self.id)
-            .unwrap_or_else(|| panic!("constraint violated: actor {:?} not found", self.id));
-        EventRights::Team(actor.team_id())
+        // Collect all teams involved out of the list of actors.
+        let mut teams = Vec::new();
+        for id in &self.ids {
+            let actor =
+                battle.state.entities.actor(id).unwrap_or_else(|| {
+                    panic!("constraint violated: actor {:?} not found", id.clone())
+                });
+            teams.push(actor.team_id());
+        }
+        EventRights::Teams(teams)
     }
 }
 
@@ -395,7 +411,7 @@ where
     P: EventProcessor<R>,
 {
     processor: &'a mut P,
-    id: EntityId<R>,
+    ids: Vec<EntityId<R>>,
 }
 
 impl<'a, R, P> EventTrigger<'a, R, P> for StartRoundTrigger<'a, R, P>
@@ -410,7 +426,7 @@ where
     /// Returns an `StartRound` event.
     fn event(&self) -> Box<dyn Event<R>> {
         Box::new(StartRound {
-            id: self.id.clone(),
+            ids: self.ids.clone(),
         })
     }
 }
@@ -486,13 +502,13 @@ impl<R: BattleRules + 'static> Event<R> for EndRound<R> {
     }
 
     fn apply(&self, battle: &mut Battle<R>, event_queue: &mut Option<EventQueue<R>>) {
-        let actors = if let RoundState::Started(actors) = battle.state.rounds.state() {
+        let actors_ids = if let RoundState::Started(actors) = battle.state.rounds.state() {
             actors.clone()
         } else {
             panic!("constraint violated: end round called when state is not started");
         };
         // End the round for each actor.
-        for actor_id in actors {
+        for actor_id in actors_ids {
             let actor = battle.state.entities.actor(&actor_id).unwrap_or_else(|| {
                 panic!(
                     "constraint violated: actor {:?} not found",

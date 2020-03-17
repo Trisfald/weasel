@@ -152,11 +152,11 @@ impl<R: BattleRules + 'static> EventServer<R> for Server<R> {
                     }
                 }
             }
-            EventRights::Teams(teams) => {
+            EventRights::Teams(teams_ids) => {
                 if self.authentication {
                     if let Some(player) = event.player() {
                         // Player id is present. Check if it matches the event's rights.
-                        for team_id in teams {
+                        for team_id in teams_ids {
                             self.check_rights(player, team_id)?;
                         }
                     } else {
