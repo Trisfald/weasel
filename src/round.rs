@@ -290,6 +290,19 @@ impl<R: BattleRules> StartRound<R> {
         }
     }
 
+    /// Returns a trigger for this event, to start a round with a list of actors.\
+    /// Duplicated ids will be dropped during the event's processing.
+    pub fn trigger_with_actors<P, I>(processor: &mut P, ids: I) -> StartRoundTrigger<R, P>
+    where
+        P: EventProcessor<R>,
+        I: IntoIterator<Item = EntityId<R>>,
+    {
+        StartRoundTrigger {
+            processor,
+            ids: ids.into_iter().collect(),
+        }
+    }
+
     /// Returns the ids of the entities that will start the round.
     pub fn ids(&self) -> &Vec<EntityId<R>> {
         &self.ids
@@ -336,18 +349,18 @@ impl<R: BattleRules + 'static> Event<R> for StartRound<R> {
 
     fn apply(&self, battle: &mut Battle<R>, event_queue: &mut Option<EventQueue<R>>) {
         // Set the round state.
-        let actors_ids = self.ids.iter().cloned().collect();
+        let actors_ids: IndexSet<_> = self.ids.iter().cloned().collect();
         battle
             .state
             .rounds
-            .set_state(RoundState::Started(actors_ids));
+            .set_state(RoundState::Started(actors_ids.clone()));
         battle
             .metrics
             .write_handle()
             .add_system_u64(ROUNDS_STARTED, 1)
             .unwrap_or_else(|err| panic!("constraint violated: {:?}", err));
         // Perform some operations on every actor.
-        for id in &self.ids {
+        for id in &actors_ids {
             let metrics = &mut battle.metrics.write_handle();
             // Get the actor.
             let actor = battle

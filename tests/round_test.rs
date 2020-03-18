@@ -18,7 +18,9 @@ const CREATURE_1_ID: u32 = 0;
 const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
 const CREATURE_2_ID: u32 = 1;
 const ENTITY_2_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_2_ID);
-const CREATURE_ERR_ID: u32 = 2;
+const CREATURE_3_ID: u32 = 2;
+const ENTITY_3_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_3_ID);
+const CREATURE_ERR_ID: u32 = 99;
 const ENTITY_ERR_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_ERR_ID);
 
 #[derive(Clone, Default, Debug)]
@@ -26,7 +28,7 @@ const ENTITY_ERR_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_ERR_ID)
 struct Model {
     starts: u32,
     ends: u32,
-    adds: u32,
+    adds: usize,
     last: Option<EntityId<CustomRules>>,
 }
 
@@ -45,6 +47,11 @@ impl RoundsRules<CustomRules> for CustomRoundsRules {
     }
 
     fn eligible(&self, model: &Self::RoundsModel, actor: &dyn Actor<CustomRules>) -> bool {
+        // Entity 3 is always eligible.
+        if *actor.entity_id() == ENTITY_3_ID {
+            return true;
+        }
+        // Alterate rounds of entity 1 and 2.
         let entity_id = if model.last == Some(ENTITY_1_ID) {
             ENTITY_2_ID
         } else {
@@ -104,6 +111,7 @@ macro_rules! server {
         util::team(&mut server, TEAM_1_ID);
         util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, ());
         util::creature(&mut server, CREATURE_2_ID, TEAM_1_ID, ());
+        util::creature(&mut server, CREATURE_3_ID, TEAM_1_ID, ());
         server
     }};
 }
@@ -113,7 +121,10 @@ fn start_round() {
     // Initialize the battle.
     let mut server = server!();
     // Pre-start checks.
-    assert_eq!(server.battle().rounds().model().adds, 2);
+    assert_eq!(
+        server.battle().rounds().model().adds,
+        server.battle().entities().actors().count()
+    );
     assert_eq!(*server.battle().rounds().state(), RoundState::<_>::Ready);
     // Check start round is prevented for faulty conditions.
     assert_eq!(
@@ -169,7 +180,10 @@ fn end_round() {
     // Initialize the battle.
     let mut server = server!();
     // Pre-start checks.
-    assert_eq!(server.battle().rounds().model().adds, 2);
+    assert_eq!(
+        server.battle().rounds().model().adds,
+        server.battle().entities().actors().count()
+    );
     assert_eq!(*server.battle().rounds().state(), RoundState::<_>::Ready);
     // Check end round is prevented for faulty conditions.
     assert_eq!(
@@ -188,7 +202,7 @@ fn end_round() {
     // Post-end checks.
     assert_eq!(server.battle().rounds().model().ends, 1);
     assert_eq!(*server.battle().rounds().state(), RoundState::<_>::Ready);
-    // Check start round.
+    // Check a new round can start.
     util::start_round(&mut server, &ENTITY_2_ID);
 }
 
@@ -233,4 +247,66 @@ fn environment_round() {
         server.battle().metrics().system_u64(ROUNDS_STARTED),
         Some(2)
     );
+}
+
+#[test]
+fn round_multiple_actors() {
+    // Initialize the battle.
+    let mut server = server!();
+    // Check that start round is prevented when at least one actor do not exist.
+    assert_eq!(
+        StartRound::trigger_with_actors(&mut server, vec![ENTITY_1_ID, ENTITY_ERR_ID])
+            .fire()
+            .err()
+            .map(|e| e.unfold()),
+        Some(WeaselError::EntityNotFound(ENTITY_ERR_ID))
+    );
+    // Check eligibility.
+    assert_eq!(
+        StartRound::trigger_with_actors(&mut server, vec![ENTITY_1_ID, ENTITY_2_ID])
+            .fire()
+            .err()
+            .map(|e| e.unfold()),
+        Some(WeaselError::ActorNotEligible(ENTITY_2_ID))
+    );
+    // Start a round.
+    assert_eq!(
+        StartRound::trigger_with_actors(&mut server, vec![ENTITY_1_ID, ENTITY_3_ID])
+            .fire()
+            .err(),
+        None
+    );
+    // Post-start checks.
+    assert_eq!(
+        *server.battle().rounds().state(),
+        RoundState::<_>::Started(indexset! {ENTITY_1_ID, ENTITY_3_ID})
+    );
+    assert_eq!(server.battle().rounds().model().starts, 2);
+    assert_eq!(
+        server.battle().metrics().system_u64(ROUNDS_STARTED),
+        Some(1)
+    );
+    // End the round.
+    util::end_round(&mut server);
+    // Post-end checks.
+    assert_eq!(server.battle().rounds().model().ends, 2);
+    assert_eq!(*server.battle().rounds().state(), RoundState::<_>::Ready);
+}
+
+#[test]
+fn round_actor_uniqueness() {
+    // Initialize the battle.
+    let mut server = server!();
+    // Start a round with duplicated ids.
+    assert_eq!(
+        StartRound::trigger_with_actors(
+            &mut server,
+            vec![ENTITY_1_ID, ENTITY_3_ID, ENTITY_3_ID, ENTITY_1_ID]
+        )
+        .fire()
+        .err(),
+        None
+    );
+    // Verify that callbacks are invoked exactly once per actor.
+    assert_eq!(server.battle().rounds().model().starts, 2);
 }
