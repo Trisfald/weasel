@@ -7,7 +7,7 @@ use crate::event::{
     EventServer, EventWrapper, MultiClientSink, MultiClientSinkHandle, MultiClientSinkHandleMut,
     VersionedEventWrapper,
 };
-use crate::player::{RightsHandle, RightsHandleMut};
+use crate::player::{PlayerId, RightsHandle, RightsHandleMut};
 use crate::team::TeamId;
 
 /// The server is the main object used to orchestrate a battle.
@@ -103,6 +103,18 @@ impl<R: BattleRules + 'static> Server<R> {
             _ => Ok(()),
         }
     }
+
+    /// Checks if the given player has rights to the given team.
+    fn check_rights(&self, player: PlayerId, team_id: &TeamId<R>) -> WeaselResult<(), R> {
+        if !self.rights().check(player, team_id) {
+            Err(WeaselError::AuthenticationError(
+                Some(player),
+                team_id.clone(),
+            ))
+        } else {
+            Ok(())
+        }
+    }
 }
 
 impl<R: BattleRules + 'static> EventProcessor<R> for Server<R> {
@@ -133,11 +145,19 @@ impl<R: BattleRules + 'static> EventServer<R> for Server<R> {
                 if self.authentication {
                     if let Some(player) = event.player() {
                         // Player id is present. Check if it matches the event's rights.
-                        if !self.rights().check(player, team_id) {
-                            return Err(WeaselError::AuthenticationError(
-                                Some(player),
-                                team_id.clone(),
-                            ));
+                        self.check_rights(player, team_id)?;
+                    } else {
+                        // No player id present.
+                        return Err(WeaselError::MissingAuthentication);
+                    }
+                }
+            }
+            EventRights::Teams(teams_ids) => {
+                if self.authentication {
+                    if let Some(player) = event.player() {
+                        // Player id is present. Check if it matches the event's rights.
+                        for team_id in teams_ids {
+                            self.check_rights(player, team_id)?;
                         }
                     } else {
                         // No player id present.

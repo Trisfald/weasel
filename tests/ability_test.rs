@@ -3,7 +3,7 @@ use weasel::actor::{Action, ActorRules};
 use weasel::battle::{Battle, BattleRules, BattleState};
 use weasel::entity::EntityId;
 use weasel::entropy::Entropy;
-use weasel::event::{DummyEvent, EventKind, EventQueue, EventServer, EventTrigger};
+use weasel::event::{DummyEvent, EventKind, EventQueue, EventRights, EventServer, EventTrigger};
 use weasel::metric::WriteMetrics;
 use weasel::player::PlayerId;
 use weasel::rules::empty::EmptyAbility;
@@ -160,18 +160,29 @@ fn ability_rights() {
     util::team(&mut server, TEAM_2_ID);
     // Give to the player rights to the team without any creature.
     assert_eq!(server.rights_mut().add(PLAYER_1_ID, &TEAM_2_ID).err(), None);
-    // Ability activation should be rejected.
+    // Check event rights.
     util::start_round(&mut server, &ENTITY_1_ID);
-    // Fail when creature does not know the ability.
     let event = ActivateAbility::trigger(&mut server, ENTITY_1_ID, ABILITY_ID)
         .activation(2)
         .prototype()
         .client_prototype(0, Some(PLAYER_1_ID));
     assert_eq!(
-        server.process_client(event).err().map(|e| e.unfold()),
+        event.event().rights(server.battle()),
+        EventRights::Team(&TEAM_1_ID)
+    );
+    // Ability activation should be rejected.
+    assert_eq!(
+        server
+            .process_client(event.clone())
+            .err()
+            .map(|e| e.unfold()),
         Some(WeaselError::AuthenticationError(
             Some(PLAYER_1_ID),
             TEAM_1_ID
         ))
     );
+    // Give rights to the player.
+    assert_eq!(server.rights_mut().add(PLAYER_1_ID, &TEAM_1_ID).err(), None);
+    // Check that now he can activate the ability.
+    assert_eq!(server.process_client(event).err(), None);
 }
