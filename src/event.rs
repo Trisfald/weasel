@@ -9,6 +9,7 @@ use log::error;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
 use std::any::Any;
+use std::fmt::{Debug, Formatter, Result};
 use std::marker::PhantomData;
 use std::ops::{Deref, Range};
 
@@ -94,8 +95,32 @@ pub enum EventRights<'a, R: BattleRules> {
     Teams(Vec<&'a TeamId<R>>),
 }
 
+impl<'a, R: BattleRules> Debug for EventRights<'a, R> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        match self {
+            EventRights::None => write!(f, "EventRights::None"),
+            EventRights::Server => write!(f, "EventRights::Server"),
+            EventRights::Team(id) => write!(f, "EventRights::Team {{ {:?} }}", id),
+            EventRights::Teams(ids) => write!(f, "EventRights::Teams {{ {:?} }}", ids),
+        }
+    }
+}
+
+impl<'a, 'b, R: BattleRules> PartialEq<EventRights<'b, R>> for EventRights<'a, R> {
+    fn eq(&self, other: &EventRights<'b, R>) -> bool {
+        use EventRights::*;
+        match (self, other) {
+            (None, None) => true,
+            (Server, Server) => true,
+            (Team(a), Team(b)) => a == b,
+            (Teams(a), Teams(b)) => a == b,
+            _ => false,
+        }
+    }
+}
+
 /// An event is the only mean to apply a change to the world.
-pub trait Event<R: BattleRules>: std::fmt::Debug {
+pub trait Event<R: BattleRules>: Debug {
     /// Verifies if this event can be applied to the world.
     fn verify(&self, battle: &Battle<R>) -> WeaselResult<(), R>;
 
@@ -403,7 +428,7 @@ impl<R: BattleRules> Clone for ClientEventPrototype<R> {
 /// The requirement of this type is to be able to return an object for an ok state.
 pub trait DefaultOutput {
     /// Error type for this `DefaultOutput`.
-    type Error: Sized + PartialEq + std::fmt::Debug;
+    type Error: Sized + PartialEq + Debug;
     /// Returns the `ok` result for this type.
     fn ok() -> Self;
     /// Convert this output to a Option.
@@ -499,8 +524,8 @@ impl<R: BattleRules> DummyEvent<R> {
     }
 }
 
-impl<R> std::fmt::Debug for DummyEvent<R> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<R> Debug for DummyEvent<R> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "DummyEvent {{ }}")
     }
 }

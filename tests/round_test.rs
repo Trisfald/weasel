@@ -5,8 +5,9 @@ use weasel::actor::Actor;
 use weasel::battle::{Battle, BattleRules};
 use weasel::entity::{Entities, EntityId};
 use weasel::entropy::Entropy;
-use weasel::event::EventTrigger;
+use weasel::event::{EventProcessor, EventRights, EventServer, EventTrigger};
 use weasel::metric::{system::*, WriteMetrics};
+use weasel::player::PlayerId;
 use weasel::round::{EndRound, EnvironmentRound, ResetRounds, RoundState, RoundsRules, StartRound};
 use weasel::server::Server;
 use weasel::space::Space;
@@ -14,14 +15,16 @@ use weasel::WeaselError;
 use weasel::{battle_rules, battle_rules_with_rounds, rules::empty::*};
 
 const TEAM_1_ID: u32 = 1;
-const CREATURE_1_ID: u32 = 0;
+const TEAM_2_ID: u32 = 2;
+const CREATURE_1_ID: u32 = 1;
 const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
-const CREATURE_2_ID: u32 = 1;
+const CREATURE_2_ID: u32 = 2;
 const ENTITY_2_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_2_ID);
-const CREATURE_3_ID: u32 = 2;
+const CREATURE_3_ID: u32 = 3;
 const ENTITY_3_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_3_ID);
 const CREATURE_ERR_ID: u32 = 99;
 const ENTITY_ERR_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_ERR_ID);
+const PLAYER_1_ID: PlayerId = 1;
 
 #[derive(Clone, Default, Debug)]
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
@@ -309,4 +312,60 @@ fn round_actor_uniqueness() {
     );
     // Verify that callbacks are invoked exactly once per actor.
     assert_eq!(server.battle().rounds().model().starts, 2);
+}
+
+#[test]
+fn player_rights() {
+    // Create a server with two creatures in different teams. Require authentication.
+    let mut server = Server::builder(Battle::builder(CustomRules::new()).build())
+        .enforce_authentication()
+        .build();
+    util::team(&mut server, TEAM_1_ID);
+    util::team(&mut server, TEAM_2_ID);
+    util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, ());
+    util::creature(&mut server, CREATURE_3_ID, TEAM_2_ID, ());
+    // Give to the player rights to only one team.
+    assert_eq!(server.rights_mut().add(PLAYER_1_ID, &TEAM_2_ID).err(), None);
+    // Verify rights for StartRound.
+    let prototype =
+        StartRound::trigger_with_actors(&mut server, vec![ENTITY_1_ID, ENTITY_3_ID]).prototype();
+    let event = prototype.clone().client_prototype(0, Some(PLAYER_1_ID));
+    assert_eq!(
+        event.rights(server.battle()),
+        EventRights::Teams(vec![&TEAM_1_ID, &TEAM_2_ID])
+    );
+    // StartRound should be blocked.
+    assert_eq!(
+        server.process_client(event).err().map(|e| e.unfold()),
+        Some(WeaselError::AuthenticationError(
+            Some(PLAYER_1_ID),
+            TEAM_1_ID
+        ))
+    );
+    // We need to start a real round in order to verify EndRound.
+    // Bypass the rights checks by processing the event as a server.
+    assert_eq!(server.process(prototype).err(), None);
+    // Verify rights for EndRound.
+    let event = EndRound::trigger(&mut server)
+        .prototype()
+        .client_prototype(0, Some(PLAYER_1_ID));
+    assert_eq!(
+        event.rights(server.battle()),
+        EventRights::Teams(vec![&TEAM_1_ID, &TEAM_2_ID])
+    );
+    // EndRound should be blocked.
+    assert_eq!(
+        server
+            .process_client(event.clone())
+            .err()
+            .map(|e| e.unfold()),
+        Some(WeaselError::AuthenticationError(
+            Some(PLAYER_1_ID),
+            TEAM_1_ID
+        ))
+    );
+    // Give rights to the player.
+    assert_eq!(server.rights_mut().add(PLAYER_1_ID, &TEAM_1_ID).err(), None);
+    // Check that now he can end the round.
+    assert_eq!(server.process_client(event).err(), None);
 }
