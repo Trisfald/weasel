@@ -119,6 +119,8 @@ impl<'a, 'b, R: BattleRules> PartialEq<EventRights<'b, R>> for EventRights<'a, R
     }
 }
 
+impl<'a, R: BattleRules> Eq for EventRights<'a, R> {}
+
 /// An event is the only mean to apply a change to the world.
 pub trait Event<R: BattleRules>: Debug {
     /// Verifies if this event can be applied to the world.
@@ -1196,5 +1198,22 @@ mod tests {
         let mut linked_queue = LinkedQueue::new(&mut queue, Some(origin + 1));
         Originated::new(DummyEvent::trigger(&mut linked_queue), origin).fire();
         assert_eq!(queue[0].origin(), Some(origin));
+    }
+
+    #[test]
+    fn basic_event_rights_equality() {
+        type R = CustomRules;
+        use EventRights::*;
+        assert_eq!(EventRights::<R>::None, None);
+        assert_ne!(EventRights::<R>::None, Team(&1));
+        assert_ne!(EventRights::<R>::None, Teams(vec![&1]));
+        assert_eq!(EventRights::<R>::Server, Server);
+        assert_ne!(EventRights::<R>::Server, Team(&1));
+        assert_ne!(EventRights::<R>::Server, Teams(vec![&1]));
+        assert_eq!(EventRights::<R>::Team(&1), Team(&1));
+        assert_ne!(EventRights::<R>::Team(&1), Team(&2));
+        assert_eq!(EventRights::<R>::Teams(vec![&1, &2]), Teams(vec![&1, &2]));
+        assert_ne!(EventRights::<R>::Teams(vec![&1, &2]), Teams(vec![&1, &3]));
+        assert_ne!(EventRights::<R>::Team(&1), Teams(vec![&1]));
     }
 }
