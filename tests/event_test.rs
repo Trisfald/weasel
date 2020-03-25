@@ -8,18 +8,18 @@ use weasel::battle::{Battle, BattleRules, BattleState, EndBattle};
 use weasel::character::{AlterStatistics, RegenerateStatistics};
 use weasel::creature::{ConvertCreature, CreateCreature, RemoveCreature};
 use weasel::entity::EntityId;
-use weasel::entropy::{Entropy, ResetEntropy};
+use weasel::entropy::{Entropy, EntropyModel, ResetEntropy};
 use weasel::event::{
     Conditional, DummyEvent, Event, EventKind, EventProcessor, EventQueue, EventTrigger,
 };
 use weasel::fight::ApplyImpact;
 use weasel::metric::WriteMetrics;
 use weasel::object::{CreateObject, RemoveObject};
-use weasel::round::{EndRound, EnvironmentRound, ResetRounds, StartRound};
+use weasel::round::{EndRound, EnvironmentRound, ResetRounds, RoundsModel, StartRound};
 use weasel::rules::ability::SimpleAbility;
 #[cfg(feature = "serialization")]
 use weasel::serde::FlatEvent;
-use weasel::space::{AlterSpace, MoveEntity, ResetSpace};
+use weasel::space::{AlterSpace, MoveEntity, ResetSpace, SpaceModel};
 use weasel::status::{AlterStatuses, ClearStatus, InflictStatus};
 use weasel::team::{
     ConcludeObjectives, Conclusion, CreateTeam, Relation, RemoveTeam, ResetObjectives, SetRelations,
@@ -79,10 +79,22 @@ where
     }
 
     fn apply(&self, battle: &mut Battle<R>, _event_queue: &mut Option<EventQueue<R>>) {
+        // Try to set a user metric.
         battle
             .metrics_mut()
             .add_user_u64(UserMetricId::<R>::default(), 1)
             .unwrap();
+        // Verify access to useful components.
+        let _: &mut R = battle.rules_mut();
+        // Space rules and model.
+        let _: &mut R::SR = battle.space_mut().rules_mut();
+        let _: &mut SpaceModel<R> = battle.space_mut().model_mut();
+        // Rounds rules and model.
+        let _: &mut R::RR = battle.rounds_mut().rules_mut();
+        let _: &mut RoundsModel<R> = battle.rounds_mut().model_mut();
+        // Entropy rules and model.
+        let _: &mut R::ER = battle.entropy_mut().rules_mut();
+        let _: &mut EntropyModel<R> = battle.entropy_mut().model_mut();
     }
 
     fn kind(&self) -> EventKind {

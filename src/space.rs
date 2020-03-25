@@ -62,6 +62,11 @@ impl<R: BattleRules> Space<R> {
     pub fn rules(&self) -> &R::SR {
         &self.rules
     }
+
+    /// Returns a mutable reference to this space's rules.
+    pub fn rules_mut(&mut self) -> &mut R::SR {
+        &mut self.rules
+    }
 }
 
 /// Rules to govern the space dimension in a game.

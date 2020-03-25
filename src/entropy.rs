@@ -51,6 +51,11 @@ impl<R: BattleRules> Entropy<R> {
         &self.rules
     }
 
+    /// Returns a mutable reference to the `EntropyRules` in use.
+    pub fn rules_mut(&mut self) -> &mut R::ER {
+        &mut self.rules
+    }
+
     /// Regenerates this entropy's model starting from the given seed.
     pub(crate) fn regenerate_model(&mut self, seed: &Option<EntropySeed<R>>) {
         self.model = self.rules.generate_model(seed)

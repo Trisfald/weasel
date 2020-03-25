@@ -70,6 +70,11 @@ impl<R: BattleRules> Rounds<R> {
         &self.rules
     }
 
+    /// Returns a mutable reference to the `RoundRules` in use.
+    pub fn rules_mut(&mut self) -> &mut R::RR {
+        &mut self.rules
+    }
+
     /// Called when a new actor is added to the battle.
     pub(crate) fn on_actor_added(
         &mut self,
