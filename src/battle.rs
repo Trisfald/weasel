@@ -158,9 +158,14 @@ impl<R: BattleRules + 'static> Battle<R> {
         &self.history
     }
 
-    /// Returns this battle's rules.
+    /// Returns a reference to this battle's rules.
     pub fn rules(&self) -> &R {
         &self.rules
+    }
+
+    /// Returns a mutable reference to this battle's rules.
+    pub fn rules_mut(&mut self) -> &mut R {
+        &mut self.rules
     }
 
     /// Returns a reference to this battle's space representation.
