@@ -219,13 +219,7 @@ fn conditional() {
         ActivateAbility::trigger(&mut server, ENTITY_1_ID, ABILITY_ID)
             .activation(POWER)
             .fire()
-            .or_else(|err| err.filter(|err| {
-                if let WeaselError::ConditionUnsatisfied = err {
-                    false
-                } else {
-                    true
-                }
-            }))
+            .or_else(|err| err.filter(|err| { WeaselError::ConditionUnsatisfied != *err }))
             .err(),
         None
     );
