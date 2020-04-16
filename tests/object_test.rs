@@ -1,12 +1,13 @@
+use std::cell::RefCell;
 use std::collections::HashSet;
 use weasel::ability::ActivateAbility;
-use weasel::battle::BattleRules;
+use weasel::battle::{BattleRules, BattleState};
 use weasel::character::{
     AlterStatistics, Character, CharacterRules, RegenerateStatistics, StatisticId,
 };
 use weasel::entity::{EntityId, Transmutation};
 use weasel::entropy::Entropy;
-use weasel::event::EventTrigger;
+use weasel::event::{EventQueue, EventTrigger};
 use weasel::metric::{system::*, WriteMetrics};
 use weasel::object::{CreateObject, RemoveObject};
 use weasel::round::StartRound;
@@ -323,4 +324,43 @@ fn remove_object_on_alter() {
     // Check that the object was removed.
     let entities = server.battle().entities();
     assert!(entities.object(&OBJECT_1_ID).is_none());
+}
+
+#[test]
+fn character_added_callback() {
+    #[derive(Default)]
+    pub struct CustomCharacterRules {
+        counter: RefCell<u32>,
+    }
+
+    impl<R: BattleRules + 'static> CharacterRules<R> for CustomCharacterRules {
+        type CreatureId = ();
+        type ObjectId = u32;
+        type Statistic = EmptyStat;
+        type StatisticsSeed = ();
+        type StatisticsAlteration = ();
+        type Status = EmptyStatus;
+        type StatusesAlteration = ();
+
+        fn on_character_added(
+            &self,
+            _state: &BattleState<R>,
+            _character: &dyn Character<R>,
+            _event_queue: &mut Option<EventQueue<R>>,
+            _entropy: &mut Entropy<R>,
+            _metrics: &mut WriteMetrics<R>,
+        ) {
+            *self.counter.borrow_mut() += 1;
+        }
+    }
+
+    battle_rules_with_character! { CustomCharacterRules }
+    // Create a new object.
+    let mut server = util::server(CustomRules::new());
+    util::object(&mut server, OBJECT_1_ID, ());
+    // Check that the callback was invoked.
+    assert_eq!(
+        *server.battle().rules().character_rules().counter.borrow(),
+        1
+    );
 }

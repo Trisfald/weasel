@@ -1,14 +1,15 @@
+use std::cell::RefCell;
 use std::collections::HashSet;
 use weasel::ability::AbilityId;
 use weasel::actor::{Actor, ActorRules, RegenerateAbilities};
-use weasel::battle::BattleRules;
+use weasel::battle::{BattleRules, BattleState};
 use weasel::character::{
     AlterStatistics, Character, CharacterRules, RegenerateStatistics, StatisticId,
 };
 use weasel::creature::{CreateCreature, RemoveCreature};
 use weasel::entity::{EntityId, Transmutation};
 use weasel::entropy::Entropy;
-use weasel::event::EventTrigger;
+use weasel::event::{EventQueue, EventTrigger};
 use weasel::metric::{system::*, WriteMetrics};
 use weasel::round::{RoundState, RoundsRules};
 use weasel::rules::empty::{EmptyAbility, EmptyStat};
@@ -568,4 +569,44 @@ fn remove_creature_on_alter() {
     // Check that the creature was removed.
     let entities = server.battle().entities();
     assert!(entities.creature(&CREATURE_1_ID).is_none());
+}
+
+#[test]
+fn character_added_callback() {
+    #[derive(Default)]
+    pub struct CustomCharacterRules {
+        counter: RefCell<u32>,
+    }
+
+    impl<R: BattleRules + 'static> CharacterRules<R> for CustomCharacterRules {
+        type CreatureId = u32;
+        type ObjectId = ();
+        type Statistic = EmptyStat;
+        type StatisticsSeed = ();
+        type StatisticsAlteration = ();
+        type Status = EmptyStatus;
+        type StatusesAlteration = ();
+
+        fn on_character_added(
+            &self,
+            _state: &BattleState<R>,
+            _character: &dyn Character<R>,
+            _event_queue: &mut Option<EventQueue<R>>,
+            _entropy: &mut Entropy<R>,
+            _metrics: &mut WriteMetrics<R>,
+        ) {
+            *self.counter.borrow_mut() += 1;
+        }
+    }
+
+    battle_rules_with_character! { CustomCharacterRules }
+    // Create a new creature.
+    let mut server = util::server(CustomRules::new());
+    util::team(&mut server, TEAM_1_ID);
+    util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, ());
+    // Check that the callback was invoked.
+    assert_eq!(
+        *server.battle().rules().character_rules().counter.borrow(),
+        1
+    );
 }
