@@ -1,6 +1,6 @@
 //! Character rules.
 
-use crate::battle::{Battle, BattleRules};
+use crate::battle::{Battle, BattleRules, BattleState};
 use crate::entity::{transmute_entity, Entities, Entity, EntityId, Transmutation};
 use crate::entropy::Entropy;
 use crate::error::{WeaselError, WeaselResult};
@@ -108,6 +108,33 @@ pub trait CharacterRules<R: BattleRules> {
         &self,
         _character: &mut dyn Character<R>,
         _alteration: &Self::StatusesAlteration,
+        _entropy: &mut Entropy<R>,
+        _metrics: &mut WriteMetrics<R>,
+    ) {
+    }
+
+    /// Invoked when a character is added to the battle.
+    ///
+    /// The provided implementation does nothing.
+    fn on_character_added(
+        &self,
+        _state: &BattleState<R>,
+        _character: &dyn Character<R>,
+        _event_queue: &mut Option<EventQueue<R>>,
+        _entropy: &mut Entropy<R>,
+        _metrics: &mut WriteMetrics<R>,
+    ) {
+    }
+
+    /// Invoked when a character is transmuted during the the battle.
+    ///
+    /// The provided implementation does nothing.    
+    fn on_character_transmuted(
+        &self,
+        _state: &BattleState<R>,
+        _character: &dyn Character<R>,
+        _transmutation: Transmutation,
+        _event_queue: &mut Option<EventQueue<R>>,
         _entropy: &mut Entropy<R>,
         _metrics: &mut WriteMetrics<R>,
     ) {

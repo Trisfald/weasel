@@ -4,7 +4,7 @@ use crate::ability::{AbilitiesSeed, Ability, AbilityId};
 use crate::actor::{Actor, ActorRules};
 use crate::battle::{Battle, BattleRules, Checkpoint};
 use crate::character::{Character, CharacterRules, Statistic, StatisticId, StatisticsSeed};
-use crate::entity::{Entity, EntityId};
+use crate::entity::{Entity, EntityId, Transmutation};
 use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
 use crate::metric::system::*;
@@ -328,7 +328,7 @@ impl<R: BattleRules + 'static> Event<R> for CreateCreature<R> {
             .map_err(|err| WeaselError::PositionError(None, self.position.clone(), Box::new(err)))
     }
 
-    fn apply(&self, battle: &mut Battle<R>, _: &mut Option<EventQueue<R>>) {
+    fn apply(&self, battle: &mut Battle<R>, event_queue: &mut Option<EventQueue<R>>) {
         // Statistics' generation is influenced by the given statistics_seed, if present.
         let it = battle.rules.character_rules().generate_statistics(
             &self.statistics_seed,
@@ -361,6 +361,14 @@ impl<R: BattleRules + 'static> Event<R> for CreateCreature<R> {
         // Notify the rounds module.
         battle.state.rounds.on_actor_added(
             &creature,
+            &mut battle.entropy,
+            &mut battle.metrics.write_handle(),
+        );
+        // Invoke the character's rules callback.
+        battle.rules.character_rules().on_character_added(
+            &battle.state,
+            &creature,
+            event_queue,
             &mut battle.entropy,
             &mut battle.metrics.write_handle(),
         );
@@ -751,6 +759,15 @@ impl<R: BattleRules + 'static> Event<R> for RemoveCreature<R> {
             .entities
             .remove_creature(&self.id)
             .unwrap_or_else(|err| panic!("constraint violated: {:?}", err));
+        // Invoke the character's rules callback.
+        battle.rules.character_rules().on_character_transmuted(
+            &battle.state,
+            &creature,
+            Transmutation::REMOVAL,
+            event_queue,
+            &mut battle.entropy,
+            &mut battle.metrics.write_handle(),
+        );
         // Notify the rounds module.
         battle.state.rounds.on_actor_removed(
             &creature,
