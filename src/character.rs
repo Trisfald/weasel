@@ -126,13 +126,14 @@ pub trait CharacterRules<R: BattleRules> {
     ) {
     }
 
-    /// Invoked when a character is added to the battle.
+    /// Invoked when a character is transmuted during the the battle.
     ///
     /// The provided implementation does nothing.    
     fn on_character_transmuted(
         &self,
         _state: &BattleState<R>,
         _character: &dyn Character<R>,
+        _transmutation: Transmutation,
         _event_queue: &mut Option<EventQueue<R>>,
         _entropy: &mut Entropy<R>,
         _metrics: &mut WriteMetrics<R>,

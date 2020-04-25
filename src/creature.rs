@@ -4,7 +4,7 @@ use crate::ability::{AbilitiesSeed, Ability, AbilityId};
 use crate::actor::{Actor, ActorRules};
 use crate::battle::{Battle, BattleRules, Checkpoint};
 use crate::character::{Character, CharacterRules, Statistic, StatisticId, StatisticsSeed};
-use crate::entity::{Entity, EntityId};
+use crate::entity::{Entity, EntityId, Transmutation};
 use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
 use crate::metric::system::*;
@@ -759,6 +759,15 @@ impl<R: BattleRules + 'static> Event<R> for RemoveCreature<R> {
             .entities
             .remove_creature(&self.id)
             .unwrap_or_else(|err| panic!("constraint violated: {:?}", err));
+        // Invoke the character's rules callback.
+        battle.rules.character_rules().on_character_transmuted(
+            &battle.state,
+            &creature,
+            Transmutation::REMOVAL,
+            event_queue,
+            &mut battle.entropy,
+            &mut battle.metrics.write_handle(),
+        );
         // Notify the rounds module.
         battle.state.rounds.on_actor_removed(
             &creature,

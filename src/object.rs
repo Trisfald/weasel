@@ -2,7 +2,7 @@
 
 use crate::battle::{Battle, BattleRules};
 use crate::character::{Character, CharacterRules, Statistic, StatisticId, StatisticsSeed};
-use crate::entity::{Entity, EntityId};
+use crate::entity::{Entity, EntityId, Transmutation};
 use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
 use crate::metric::system::OBJECTS_CREATED;
@@ -406,13 +406,22 @@ impl<R: BattleRules + 'static> Event<R> for RemoveObject<R> {
         Ok(())
     }
 
-    fn apply(&self, battle: &mut Battle<R>, _: &mut Option<EventQueue<R>>) {
+    fn apply(&self, battle: &mut Battle<R>, event_queue: &mut Option<EventQueue<R>>) {
         // Remove the object.
         let object = battle
             .state
             .entities
             .remove_object(&self.id)
             .unwrap_or_else(|err| panic!("constraint violated: {:?}", err));
+        // Invoke the character's rules callback.
+        battle.rules.character_rules().on_character_transmuted(
+            &battle.state,
+            &object,
+            Transmutation::REMOVAL,
+            event_queue,
+            &mut battle.entropy,
+            &mut battle.metrics.write_handle(),
+        );
         // Free the position.
         battle.state.space.move_entity(
             PositionClaim::Movement(&object as &dyn Entity<R>),

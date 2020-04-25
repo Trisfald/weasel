@@ -572,10 +572,11 @@ fn remove_creature_on_alter() {
 }
 
 #[test]
-fn character_added_callback() {
+fn character_existence_callbacks() {
     #[derive(Default)]
     pub struct CustomCharacterRules {
-        counter: RefCell<u32>,
+        added: RefCell<u32>,
+        removed: RefCell<u32>,
     }
 
     impl<R: BattleRules + 'static> CharacterRules<R> for CustomCharacterRules {
@@ -595,7 +596,19 @@ fn character_added_callback() {
             _entropy: &mut Entropy<R>,
             _metrics: &mut WriteMetrics<R>,
         ) {
-            *self.counter.borrow_mut() += 1;
+            *self.added.borrow_mut() += 1;
+        }
+
+        fn on_character_transmuted(
+            &self,
+            _state: &BattleState<R>,
+            _character: &dyn Character<R>,
+            _transmutation: Transmutation,
+            _event_queue: &mut Option<EventQueue<R>>,
+            _entropy: &mut Entropy<R>,
+            _metrics: &mut WriteMetrics<R>,
+        ) {
+            *self.removed.borrow_mut() += 1;
         }
     }
 
@@ -605,8 +618,17 @@ fn character_added_callback() {
     util::team(&mut server, TEAM_1_ID);
     util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, ());
     // Check that the callback was invoked.
+    assert_eq!(*server.battle().rules().character_rules().added.borrow(), 1);
+    // Remove the creature.
     assert_eq!(
-        *server.battle().rules().character_rules().counter.borrow(),
+        RemoveCreature::trigger(&mut server, CREATURE_1_ID)
+            .fire()
+            .err(),
+        None
+    );
+    // Check that the callback was invoked.
+    assert_eq!(
+        *server.battle().rules().character_rules().removed.borrow(),
         1
     );
 }
