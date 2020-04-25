@@ -410,7 +410,7 @@ fn remove_creature() {
             _: &mut Entropy<CustomRules>,
             _: &mut WriteMetrics<CustomRules>,
         ) {
-            model.push(actor.entity_id().clone());
+            model.push(*actor.entity_id());
         }
     }
 
