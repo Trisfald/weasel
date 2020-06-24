@@ -35,12 +35,17 @@ pub type EmptyAbility = EmptyStat;
 /// An empty status that does nothing.
 pub type EmptyStatus = EmptyStat;
 
+/// An empty power having no data nor behavior.
+pub type EmptyPower = EmptyStat;
+
 /// Minimalistic implementation of team rules, doing no-op for everything.
 #[derive(Default)]
 pub struct EmptyTeamRules {}
 
 impl<R: BattleRules> TeamRules<R> for EmptyTeamRules {
     type Id = u32;
+    type Power = EmptyPower;
+    type PowerSeed = ();
     type ObjectivesSeed = ();
     type Objectives = ();
 }

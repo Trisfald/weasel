@@ -23,6 +23,8 @@ struct CustomTeamRules {
 
 impl<R: BattleRules> TeamRules<R> for CustomTeamRules {
     type Id = u32;
+    type Power = EmptyPower;
+    type PowerSeed = ();
     type ObjectivesSeed = ();
     type Objectives = ();
 
@@ -513,6 +515,8 @@ fn reset_objectives() {
 
     impl<R: BattleRules> TeamRules<R> for CustomTeamRules {
         type Id = u32;
+        type Power = EmptyPower;
+        type PowerSeed = ();
         type ObjectivesSeed = u32;
         type Objectives = u32;
 
@@ -633,6 +637,8 @@ fn check_objectives() {
 
     impl TeamRules<CustomRules> for CustomTeamRules {
         type Id = u32;
+        type Power = EmptyPower;
+        type PowerSeed = ();
         type ObjectivesSeed = ();
         type Objectives = ();
 

@@ -87,6 +87,16 @@ pub trait TeamRules<R: BattleRules> {
     /// See [ObjectivesSeed](type.ObjectivesSeed.html).
     type ObjectivesSeed: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
+    /// See [Power](type.Power.html).
+    type Power: Id + 'static;
+
+    #[cfg(not(feature = "serialization"))]
+    /// See [PowerSeed](type.PowerSeed.html).
+    type PowerSeed: Clone + Debug;
+    #[cfg(feature = "serialization")]
+    /// See [PowerSeed](type.PowerSeed.html).
+    type PowerSeed: Clone + Debug + Serialize + for<'a> Deserialize<'a>;
+
     /// See [Objectives](type.Objectives.html).
     type Objectives: Default;
 
@@ -142,6 +152,15 @@ pub trait TeamRules<R: BattleRules> {
         None
     }
 }
+
+/// Type to represent a special power of a team.
+///
+/// Powers are both a statistic and an ability. Thus, they can be used to give a team
+/// a certain property and/or an activable skill.
+pub type Power<R> = <<R as BattleRules>::TR as TeamRules<R>>::Power;
+
+/// Type to drive the generation of the powers for a given team.
+pub type PowerSeed<R> = <<R as BattleRules>::TR as TeamRules<R>>::PowerSeed;
 
 /// Type to drive the generation of the objectives for a given team.
 ///
