@@ -6,7 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- New associated types `Power` and `PowerSeed` in `TeamRules`.
+- Added team powers.
+- New associated types `Power`, `PowersSeed` and `PowersAlteration` in `TeamRules`.
+- New methods `generate_powers` and `alter_powers` in `TeamRules`.
 
 ## [0.10.0] - 2020-08-22
 ### Fixed

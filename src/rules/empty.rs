@@ -45,7 +45,8 @@ pub struct EmptyTeamRules {}
 impl<R: BattleRules> TeamRules<R> for EmptyTeamRules {
     type Id = u32;
     type Power = EmptyPower;
-    type PowerSeed = ();
+    type PowersSeed = ();
+    type PowersAlteration = ();
     type ObjectivesSeed = ();
     type Objectives = ();
 }
