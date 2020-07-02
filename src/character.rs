@@ -31,7 +31,7 @@ pub trait CharacterRules<R: BattleRules> {
     type ObjectId: Hash + Eq + Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     /// See [Statistic](type.Statistic.html).
-    type Statistic: Id + 'static;
+    type Statistic: Id + 'static + Send;
 
     #[cfg(not(feature = "serialization"))]
     /// See [StatisticsSeed](type.StatisticsSeed.html).
@@ -48,7 +48,7 @@ pub trait CharacterRules<R: BattleRules> {
     type StatisticsAlteration: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     /// See [Status](../status/type.Status.html).
-    type Status: Id + 'static;
+    type Status: Id + 'static + Send;
 
     #[cfg(not(feature = "serialization"))]
     /// See [StatusesAlteration](../status/type.StatusesAlteration.html).

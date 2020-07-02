@@ -88,7 +88,7 @@ pub trait TeamRules<R: BattleRules> {
     type ObjectivesSeed: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     /// See [Objectives](type.Objectives.html).
-    type Objectives: Default;
+    type Objectives: Default + Send;
 
     /// Checks if the addition of a new entity in the given team is allowed.
     ///
