@@ -31,11 +31,11 @@ macro_rules! bad_cast {
 macro_rules! flat_event_boxed {
     ($( $x:ident ),* $(,)?) => {
         /// Transforms this flattened event into a boxed event trait object.
-        pub fn boxed(self) -> Box<dyn Event<R>> {
+        pub fn boxed(self) -> Box<dyn Event<R> + Send> {
             // Generate a match with an arm for every concrete event type.
             match self {
                 $(FlatEvent::$x(flat) => {
-                    Box::new(flat) as Box<dyn Event<R>>
+                    Box::new(flat) as Box<dyn Event<R> + Send>
                 })*
                 FlatEvent::UserEventPackage(packer) => {
                     packer.boxed().unwrap_or_else(|err| {
@@ -51,7 +51,7 @@ macro_rules! flat_event_boxed {
 macro_rules! flat_event_flattened {
     ($( $x:ident ),* $(,)?) => {
         /// Transforms a boxed event trait object into a flattened event.
-        pub fn flattened(event: Box<dyn Event<R>>) -> FlatEvent<R> {
+        pub fn flattened(event: Box<dyn Event<R> + Send>) -> FlatEvent<R> {
             // Generate a match with an arm for every concrete event type.
             match event.kind() {
                 $(EventKind::$x => {

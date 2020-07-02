@@ -75,17 +75,17 @@ impl<R: BattleRules> Id for Team<R> {
 pub trait TeamRules<R: BattleRules> {
     #[cfg(not(feature = "serialization"))]
     /// See [TeamId](type.TeamId.html).
-    type Id: Hash + Eq + PartialOrd + Clone + Debug;
+    type Id: Hash + Eq + PartialOrd + Clone + Debug + Send;
     #[cfg(feature = "serialization")]
     /// See [TeamId](type.TeamId.html).
-    type Id: Hash + Eq + PartialOrd + Clone + Debug + Serialize + for<'a> Deserialize<'a>;
+    type Id: Hash + Eq + PartialOrd + Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     #[cfg(not(feature = "serialization"))]
     /// See [ObjectivesSeed](type.ObjectivesSeed.html).
-    type ObjectivesSeed: Clone + Debug;
+    type ObjectivesSeed: Clone + Debug + Send;
     #[cfg(feature = "serialization")]
     /// See [ObjectivesSeed](type.ObjectivesSeed.html).
-    type ObjectivesSeed: Clone + Debug + Serialize + for<'a> Deserialize<'a>;
+    type ObjectivesSeed: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     /// See [Objectives](type.Objectives.html).
     type Objectives: Default;
@@ -340,7 +340,7 @@ impl<R: BattleRules + 'static> Event<R> for CreateTeam<R> {
         EventKind::CreateTeam
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -395,7 +395,7 @@ where
     }
 
     /// Returns a `CreateTeam` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(CreateTeam {
             id: self.id.clone(),
             relations: self.relations.clone(),
@@ -575,7 +575,7 @@ impl<R: BattleRules + 'static> Event<R> for SetRelations<R> {
         EventKind::SetRelations
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -604,7 +604,7 @@ where
     }
 
     /// Returns a `SetRelations` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(SetRelations {
             relations: self.relations.clone(),
         })
@@ -718,7 +718,7 @@ impl<R: BattleRules + 'static> Event<R> for ConcludeObjectives<R> {
         EventKind::ConcludeObjectives
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -748,7 +748,7 @@ where
     }
 
     /// Returns a `ConcludeObjectives` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(ConcludeObjectives {
             id: self.id.clone(),
             conclusion: self.conclusion,
@@ -872,7 +872,7 @@ impl<R: BattleRules + 'static> Event<R> for ResetObjectives<R> {
         EventKind::ResetObjectives
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -914,7 +914,7 @@ where
     }
 
     /// Returns a `ResetObjectives` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(ResetObjectives {
             id: self.id.clone(),
             seed: self.seed.clone(),
@@ -1013,7 +1013,7 @@ impl<R: BattleRules + 'static> Event<R> for RemoveTeam<R> {
         EventKind::RemoveTeam
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -1042,7 +1042,7 @@ where
     }
 
     /// Returns a `RemoveTeam` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(RemoveTeam {
             id: self.id.clone(),
         })

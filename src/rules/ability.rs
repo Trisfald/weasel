@@ -14,7 +14,7 @@ pub struct SimpleAbility<I, V> {
     power: V,
 }
 
-impl<I, V: Copy> SimpleAbility<I, V> {
+impl<I: Send, V: Copy> SimpleAbility<I, V> {
     /// Creates a new `SimpleAbility`.
     pub fn new(id: I, power: V) -> SimpleAbility<I, V> {
         SimpleAbility { id, power }
@@ -34,7 +34,7 @@ impl<I, V: Copy> SimpleAbility<I, V> {
 #[cfg(not(feature = "serialization"))]
 impl<I, V> Id for SimpleAbility<I, V>
 where
-    I: Debug + Hash + Eq + Clone,
+    I: Debug + Hash + Eq + Clone + Send,
 {
     type Id = I;
     fn id(&self) -> &Self::Id {
@@ -45,7 +45,7 @@ where
 #[cfg(feature = "serialization")]
 impl<I, V> Id for SimpleAbility<I, V>
 where
-    I: Debug + Hash + Eq + Clone + Serialize + for<'a> Deserialize<'a>,
+    I: Debug + Hash + Eq + Clone + Send + Serialize + for<'a> Deserialize<'a>,
 {
     type Id = I;
     fn id(&self) -> &Self::Id {

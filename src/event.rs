@@ -139,7 +139,7 @@ pub trait Event<R: BattleRules>: Debug {
     fn kind(&self) -> EventKind;
 
     /// Clones this event as a trait object.
-    fn box_clone(&self) -> Box<dyn Event<R>>;
+    fn box_clone(&self) -> Box<dyn Event<R> + Send>;
 
     /// Returns an `Any` reference this event.
     fn as_any(&self) -> &dyn Any;
@@ -152,14 +152,14 @@ pub trait Event<R: BattleRules>: Debug {
     }
 }
 
-impl<R: BattleRules> Clone for Box<dyn Event<R>> {
-    fn clone(&self) -> Box<dyn Event<R>> {
+impl<R: BattleRules> Clone for Box<dyn Event<R> + Send> {
+    fn clone(&self) -> Box<dyn Event<R> + Send> {
         self.box_clone()
     }
 }
 
-impl<R: BattleRules> PartialEq<Box<dyn Event<R>>> for Box<dyn Event<R>> {
-    fn eq(&self, other: &Box<dyn Event<R>>) -> bool {
+impl<R: BattleRules> PartialEq<Box<dyn Event<R> + Send>> for Box<dyn Event<R> + Send> {
+    fn eq(&self, other: &Box<dyn Event<R> + Send>) -> bool {
         self.kind() == other.kind()
     }
 }
@@ -171,7 +171,7 @@ pub struct EventWrapper<R: BattleRules> {
     /// Id of the event that generated this one.
     origin: Option<EventId>,
     /// The actual event wrapped inside this struct.
-    pub(crate) event: Box<dyn Event<R>>,
+    pub(crate) event: Box<dyn Event<R> + Send>,
 }
 
 impl<R: BattleRules> Clone for EventWrapper<R> {
@@ -185,7 +185,7 @@ impl<R: BattleRules> EventWrapper<R> {
     pub(crate) fn new(
         id: EventId,
         origin: Option<EventId>,
-        event: Box<dyn Event<R>>,
+        event: Box<dyn Event<R> + Send>,
     ) -> EventWrapper<R> {
         EventWrapper { id, origin, event }
     }
@@ -202,7 +202,7 @@ impl<R: BattleRules> EventWrapper<R> {
 
     /// Returns the event.
     #[allow(clippy::borrowed_box)]
-    pub fn event(&self) -> &Box<dyn Event<R>> {
+    pub fn event(&self) -> &Box<dyn Event<R> + Send> {
         &self.event
     }
 
@@ -213,7 +213,7 @@ impl<R: BattleRules> EventWrapper<R> {
 }
 
 impl<R: BattleRules> Deref for EventWrapper<R> {
-    type Target = Box<dyn Event<R>>;
+    type Target = Box<dyn Event<R> + Send>;
 
     fn deref(&self) -> &Self::Target {
         &self.event
@@ -266,14 +266,14 @@ pub struct EventPrototype<R: BattleRules> {
     /// Id of the event that generated this one.
     origin: Option<EventId>,
     /// The actual event wrapped inside this struct.
-    event: Box<dyn Event<R>>,
+    event: Box<dyn Event<R> + Send>,
     /// Condition that must be satisfied for this prototype to be valid.
     condition: Option<Condition<R>>,
 }
 
 impl<R: BattleRules> EventPrototype<R> {
     /// Creates a new EventPrototype.
-    pub(crate) fn new(event: Box<dyn Event<R>>) -> EventPrototype<R> {
+    pub(crate) fn new(event: Box<dyn Event<R> + Send>) -> EventPrototype<R> {
         EventPrototype {
             origin: None,
             event,
@@ -297,7 +297,7 @@ impl<R: BattleRules> EventPrototype<R> {
 
     /// Returns the event.
     #[allow(clippy::borrowed_box)]
-    pub fn event(&self) -> &Box<dyn Event<R>> {
+    pub fn event(&self) -> &Box<dyn Event<R> + Send> {
         &self.event
     }
 
@@ -322,7 +322,7 @@ impl<R: BattleRules> EventPrototype<R> {
 }
 
 impl<R: BattleRules> Deref for EventPrototype<R> {
-    type Target = Box<dyn Event<R>>;
+    type Target = Box<dyn Event<R> + Send>;
 
     fn deref(&self) -> &Self::Target {
         &self.event
@@ -345,7 +345,7 @@ pub struct ClientEventPrototype<R: BattleRules> {
     /// Id of the event that generated this one.
     origin: Option<EventId>,
     /// The actual event wrapped inside this struct.
-    pub(crate) event: Box<dyn Event<R>>,
+    pub(crate) event: Box<dyn Event<R> + Send>,
     /// Version of `BattleRules` that generated this event.
     pub(crate) version: Version<R>,
     /// Id of the player who fired this event.
@@ -356,7 +356,7 @@ impl<R: BattleRules> ClientEventPrototype<R> {
     /// Creates a new ClientEventPrototype.
     pub(crate) fn new(
         origin: Option<EventId>,
-        event: Box<dyn Event<R>>,
+        event: Box<dyn Event<R> + Send>,
         version: Version<R>,
         player: Option<PlayerId>,
     ) -> ClientEventPrototype<R> {
@@ -380,7 +380,7 @@ impl<R: BattleRules> ClientEventPrototype<R> {
 
     /// Returns the event.
     #[allow(clippy::borrowed_box)]
-    pub fn event(&self) -> &Box<dyn Event<R>> {
+    pub fn event(&self) -> &Box<dyn Event<R> + Send> {
         &self.event
     }
 
@@ -408,7 +408,7 @@ impl<R: BattleRules> ClientEventPrototype<R> {
 }
 
 impl<R: BattleRules> Deref for ClientEventPrototype<R> {
-    type Target = Box<dyn Event<R>>;
+    type Target = Box<dyn Event<R> + Send>;
 
     fn deref(&self) -> &Self::Target {
         &self.event
@@ -464,7 +464,7 @@ pub trait EventTrigger<'a, R: BattleRules, P: 'a + EventProcessor<R>> {
     fn processor(&'a mut self) -> &'a mut P;
 
     /// Returns the event constructed by this builder.
-    fn event(&self) -> Box<dyn Event<R>>;
+    fn event(&self) -> Box<dyn Event<R> + Send>;
 
     /// Fires the event constructed by this builder.
     fn fire(&'a mut self) -> P::ProcessOutput {
@@ -551,7 +551,7 @@ impl<R: BattleRules + 'static> Event<R> for DummyEvent<R> {
         EventKind::DummyEvent
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -584,7 +584,7 @@ where
     }
 
     /// Returns a `DummyEvent` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(DummyEvent {
             _phantom: PhantomData,
         })
@@ -796,7 +796,7 @@ where
         self.trigger.processor()
     }
 
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         self.trigger.event()
     }
 
@@ -835,7 +835,7 @@ pub trait ServerSink<R: BattleRules>: EventSink {
 
 /// A data structure to contain multiple client sinks.
 pub(crate) struct MultiClientSink<R: BattleRules> {
-    sinks: Vec<Box<dyn ClientSink<R>>>,
+    sinks: Vec<Box<dyn ClientSink<R> + Send>>,
 }
 
 impl<R: BattleRules> MultiClientSink<R> {
@@ -845,7 +845,7 @@ impl<R: BattleRules> MultiClientSink<R> {
 
     /// Adds a new sink.
     /// Returns an error if another sink with the same id already exists.
-    fn add(&mut self, sink: Box<dyn ClientSink<R>>) -> WeaselResult<(), R> {
+    fn add(&mut self, sink: Box<dyn ClientSink<R> + Send>) -> WeaselResult<(), R> {
         if self.sinks.iter().any(|e| e.id() == sink.id()) {
             Err(WeaselError::DuplicatedEventSink(sink.id()))
         } else {
@@ -903,7 +903,7 @@ impl<R: BattleRules> MultiClientSink<R> {
         }
     }
 
-    fn sinks(&self) -> impl Iterator<Item = &Box<dyn ClientSink<R>>> {
+    fn sinks(&self) -> impl Iterator<Item = &Box<dyn ClientSink<R> + Send>> {
         self.sinks.iter()
     }
 }
@@ -925,7 +925,7 @@ where
     }
 
     /// Returns an iterator over all sinks.
-    pub fn sinks(&self) -> impl Iterator<Item = &Box<dyn ClientSink<R>>> {
+    pub fn sinks(&self) -> impl Iterator<Item = &Box<dyn ClientSink<R> + Send>> {
         self.sinks.sinks()
     }
 }
@@ -953,7 +953,7 @@ where
     /// Adds a new sink.
     ///
     /// Sinks must have unique ids.
-    pub fn add_sink(&mut self, sink: Box<dyn ClientSink<R>>) -> WeaselResult<(), R> {
+    pub fn add_sink(&mut self, sink: Box<dyn ClientSink<R> + Send>) -> WeaselResult<(), R> {
         self.sinks.add(sink)
     }
 
@@ -963,7 +963,7 @@ where
     /// Sinks must have unique ids.
     pub fn add_sink_from(
         &mut self,
-        sink: Box<dyn ClientSink<R>>,
+        sink: Box<dyn ClientSink<R> + Send>,
         event_id: EventId,
     ) -> WeaselResult<(), R> {
         self.add_sink_range(
@@ -981,7 +981,7 @@ where
     /// Sinks must have unique ids.
     pub fn add_sink_range(
         &mut self,
-        sink: Box<dyn ClientSink<R>>,
+        sink: Box<dyn ClientSink<R> + Send>,
         range: Range<EventId>,
     ) -> WeaselResult<(), R> {
         let range = normalize_range(range, self.battle.history().len())?;
@@ -1006,7 +1006,7 @@ where
     }
 
     /// Returns an iterator over all sinks.
-    pub fn sinks(&self) -> impl Iterator<Item = &Box<dyn ClientSink<R>>> {
+    pub fn sinks(&self) -> impl Iterator<Item = &Box<dyn ClientSink<R> + Send>> {
         self.sinks.sinks()
     }
 }
@@ -1083,7 +1083,7 @@ where
         self.trigger.processor()
     }
 
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         self.trigger.event()
     }
 

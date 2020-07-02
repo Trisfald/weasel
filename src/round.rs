@@ -153,10 +153,10 @@ where
 pub trait RoundsRules<R: BattleRules> {
     #[cfg(not(feature = "serialization"))]
     /// See [RoundsSeed](type.RoundsSeed.html).
-    type RoundsSeed: Debug + Clone;
+    type RoundsSeed: Debug + Clone + Send;
     #[cfg(feature = "serialization")]
     /// See [RoundsSeed](type.RoundsSeed.html).
-    type RoundsSeed: Debug + Clone + Serialize + for<'a> Deserialize<'a>;
+    type RoundsSeed: Debug + Clone + Send + Serialize + for<'a> Deserialize<'a>;
 
     /// See [RoundsModel](type.RoundsModel.html).
     type RoundsModel;
@@ -400,7 +400,7 @@ impl<R: BattleRules + 'static> Event<R> for StartRound<R> {
         EventKind::StartRound
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -442,7 +442,7 @@ where
     }
 
     /// Returns an `StartRound` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(StartRound {
             ids: self.ids.clone(),
         })
@@ -567,7 +567,7 @@ impl<R: BattleRules + 'static> Event<R> for EndRound<R> {
         EventKind::EndRound
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -616,7 +616,7 @@ where
     }
 
     /// Returns an `EndRound` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(EndRound {
             _phantom: self._phantom,
         })
@@ -703,7 +703,7 @@ impl<R: BattleRules + 'static> Event<R> for ResetRounds<R> {
         EventKind::ResetRounds
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -744,7 +744,7 @@ where
     }
 
     /// Returns a `ResetRounds` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(ResetRounds {
             seed: self.seed.clone(),
         })
@@ -835,7 +835,7 @@ impl<R: BattleRules + 'static> Event<R> for EnvironmentRound<R> {
         EventKind::EnvironmentRound
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -864,7 +864,7 @@ where
     }
 
     /// Returns an `EnvironmentRound` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(EnvironmentRound {
             _phantom: self._phantom,
         })

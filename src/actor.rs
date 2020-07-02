@@ -44,33 +44,29 @@ pub trait Actor<R: BattleRules>: Character<R> {
 /// Set of rules that handle how abilities are represented and how they can alter
 /// the state of the world when activated.
 pub trait ActorRules<R: BattleRules> {
-    #[cfg(not(feature = "serialization"))]
     /// See [Ability](../ability/type.Ability.html).
     type Ability: Id + 'static;
-    #[cfg(feature = "serialization")]
-    /// See [Ability](../ability/type.Ability.html).
-    type Ability: Id + 'static + Serialize + for<'a> Deserialize<'a>;
 
     #[cfg(not(feature = "serialization"))]
     /// See [AbilitiesSeed](../ability/type.AbilitiesSeed.html).
-    type AbilitiesSeed: Clone + Debug;
+    type AbilitiesSeed: Clone + Debug + Send;
     #[cfg(feature = "serialization")]
     /// See [AbilitiesSeed](../ability/type.AbilitiesSeed.html).
-    type AbilitiesSeed: Clone + Debug + Serialize + for<'a> Deserialize<'a>;
+    type AbilitiesSeed: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     #[cfg(not(feature = "serialization"))]
     /// See [Activation](../ability/type.Activation.html).
-    type Activation: Clone + Debug;
+    type Activation: Clone + Debug + Send;
     #[cfg(feature = "serialization")]
     /// See [Activation](../ability/type.Activation.html).
-    type Activation: Clone + Debug + Serialize + for<'a> Deserialize<'a>;
+    type Activation: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     #[cfg(not(feature = "serialization"))]
     /// See [AbilitiesAlteration](../ability/type.AbilitiesAlteration.html).
-    type AbilitiesAlteration: Clone + Debug;
+    type AbilitiesAlteration: Clone + Debug + Send;
     #[cfg(feature = "serialization")]
     /// See [AbilitiesAlteration](../ability/type.AbilitiesAlteration.html).
-    type AbilitiesAlteration: Clone + Debug + Serialize + for<'a> Deserialize<'a>;
+    type AbilitiesAlteration: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     /// Generates all abilities of an actor.
     /// Abilities should have unique ids, otherwise only the last entry will be persisted.
@@ -298,7 +294,7 @@ impl<R: BattleRules + 'static> Event<R> for AlterAbilities<R> {
         EventKind::AlterAbilities
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -328,7 +324,7 @@ where
     }
 
     /// Returns an `AlterAbilities` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(AlterAbilities {
             id: self.id.clone(),
             alteration: self.alteration.clone(),
@@ -483,7 +479,7 @@ impl<R: BattleRules + 'static> Event<R> for RegenerateAbilities<R> {
         EventKind::RegenerateAbilities
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -528,7 +524,7 @@ where
     }
 
     /// Returns a `RegenerateAbilities` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(RegenerateAbilities {
             id: self.id.clone(),
             seed: self.seed.clone(),

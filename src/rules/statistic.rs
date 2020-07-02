@@ -18,7 +18,7 @@ pub struct SimpleStatistic<I, V> {
     value: V,
 }
 
-impl<I, V: Copy + Default> SimpleStatistic<I, V> {
+impl<I: Send, V: Copy + Default> SimpleStatistic<I, V> {
     /// Creates a new `SimpleStatistic` with `value` equal to `max`
     /// and `min` equal to `V::default()`.
     pub fn new(id: I, max: V) -> SimpleStatistic<I, V> {
@@ -36,7 +36,7 @@ impl<I, V: Copy + Default> SimpleStatistic<I, V> {
     }
 }
 
-impl<I, V> SimpleStatistic<I, V>
+impl<I: Send, V> SimpleStatistic<I, V>
 where
     V: Copy + PartialOrd + Add<Output = V>,
 {
@@ -74,7 +74,7 @@ where
 #[cfg(not(feature = "serialization"))]
 impl<I, V> Id for SimpleStatistic<I, V>
 where
-    I: Debug + Hash + Eq + Clone,
+    I: Debug + Hash + Eq + Clone + Send,
 {
     type Id = I;
     fn id(&self) -> &Self::Id {
@@ -85,7 +85,7 @@ where
 #[cfg(feature = "serialization")]
 impl<I, V> Id for SimpleStatistic<I, V>
 where
-    I: Debug + Hash + Eq + Clone + Serialize + for<'a> Deserialize<'a>,
+    I: Debug + Hash + Eq + Clone + Send + Serialize + for<'a> Deserialize<'a>,
 {
     type Id = I;
     fn id(&self) -> &Self::Id {

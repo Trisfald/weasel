@@ -17,14 +17,17 @@ use crate::player::PlayerId;
 /// the server are propagated to these sinks.
 pub struct Client<R: BattleRules> {
     battle: Battle<R>,
-    server_sink: Box<dyn ServerSink<R>>,
+    server_sink: Box<dyn ServerSink<R> + Send>,
     client_sinks: MultiClientSink<R>,
     player: Option<PlayerId>,
 }
 
 impl<R: BattleRules + 'static> Client<R> {
     /// Returns a client builder.
-    pub fn builder(battle: Battle<R>, server_sink: Box<dyn ServerSink<R>>) -> ClientBuilder<R> {
+    pub fn builder(
+        battle: Battle<R>,
+        server_sink: Box<dyn ServerSink<R> + Send>,
+    ) -> ClientBuilder<R> {
         ClientBuilder {
             battle,
             server_sink,
@@ -50,12 +53,12 @@ impl<R: BattleRules + 'static> Client<R> {
     /// Returns a reference to the server sink to which all event prototypes
     /// initiated by this client are sent.
     #[allow(clippy::borrowed_box)]
-    pub fn server_sink(&self) -> &Box<dyn ServerSink<R>> {
+    pub fn server_sink(&self) -> &Box<dyn ServerSink<R> + Send> {
         &self.server_sink
     }
 
     /// Disconnects the current server sink and sets a new one.
-    pub fn set_server_sink(&mut self, sink: Box<dyn ServerSink<R>>) {
+    pub fn set_server_sink(&mut self, sink: Box<dyn ServerSink<R> + Send>) {
         self.server_sink.on_disconnect();
         self.server_sink = sink;
     }
@@ -109,7 +112,7 @@ impl<R: BattleRules + 'static> EventReceiver<R> for Client<R> {
 /// A builder object to create a client.
 pub struct ClientBuilder<R: BattleRules> {
     battle: Battle<R>,
-    server_sink: Box<dyn ServerSink<R>>,
+    server_sink: Box<dyn ServerSink<R> + Send>,
     player: Option<PlayerId>,
 }
 

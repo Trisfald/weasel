@@ -10,10 +10,10 @@ use std::hash::Hash;
 pub trait Id {
     #[cfg(not(feature = "serialization"))]
     /// Type of the id value.
-    type Id: Hash + Eq + Clone + Debug;
+    type Id: Hash + Eq + Clone + Debug + Send;
     #[cfg(feature = "serialization")]
     /// Type of the id value.
-    type Id: Hash + Eq + Clone + Debug + Serialize + for<'a> Deserialize<'a>;
+    type Id: Hash + Eq + Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     /// Returns a reference to the current id.
     fn id(&self) -> &Self::Id;

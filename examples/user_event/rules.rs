@@ -66,7 +66,7 @@ impl Event<CustomRules> for MakePizza {
         EventKind::UserEvent(0)
     }
 
-    fn box_clone(&self) -> Box<dyn Event<CustomRules>> {
+    fn box_clone(&self) -> Box<dyn Event<CustomRules> + Send> {
         Box::new(self.clone())
     }
 
@@ -93,7 +93,7 @@ where
     }
 
     /// Returns a `MakePizza` event.
-    fn event(&self) -> Box<dyn Event<CustomRules>> {
+    fn event(&self) -> Box<dyn Event<CustomRules> + Send> {
         Box::new(MakePizza {
             name: self.name.clone(),
         })
@@ -108,15 +108,17 @@ pub(crate) enum EventPackage {
 
 impl UserEventPacker<CustomRules> for EventPackage {
     /// In this method we extract an event trait object out of a packaged user event.
-    fn boxed(self) -> WeaselResult<Box<dyn Event<CustomRules>>, CustomRules> {
+    fn boxed(self) -> WeaselResult<Box<dyn Event<CustomRules> + Send>, CustomRules> {
         let event = match self {
-            EventPackage::MakePizza(event) => (Box::new(event) as Box<dyn Event<CustomRules>>),
+            EventPackage::MakePizza(event) => {
+                (Box::new(event) as Box<dyn Event<CustomRules> + Send>)
+            }
         };
         Ok(event)
     }
 
     /// This method packages a boxed user event into an instance of EventPackage.
-    fn flattened(event: Box<dyn Event<CustomRules>>) -> WeaselResult<Self, CustomRules> {
+    fn flattened(event: Box<dyn Event<CustomRules> + Send>) -> WeaselResult<Self, CustomRules> {
         match event.as_any().downcast_ref::<MakePizza>() {
             Some(event) => Ok(EventPackage::MakePizza(event.clone())),
             None => Err(WeaselError::UserEventPackingError(

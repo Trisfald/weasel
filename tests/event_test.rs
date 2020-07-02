@@ -101,7 +101,7 @@ where
         EventKind::UserEvent(0)
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -132,7 +132,7 @@ where
     }
 
     /// Returns a `MyEvent` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(MyEvent {
             data: self.data.clone(),
             _phantom: self._phantom,
@@ -302,14 +302,14 @@ fn user_event_serde() {
     }
 
     impl UserEventPacker<CustomRules> for Package {
-        fn boxed(self) -> WeaselResult<Box<dyn Event<CustomRules>>, CustomRules> {
+        fn boxed(self) -> WeaselResult<Box<dyn Event<CustomRules> + Send>, CustomRules> {
             let event = match self {
-                Package::MyEvent(event) => (Box::new(event) as Box<dyn Event<CustomRules>>),
+                Package::MyEvent(event) => (Box::new(event) as Box<dyn Event<CustomRules> + Send>),
             };
             Ok(event)
         }
 
-        fn flattened(event: Box<dyn Event<CustomRules>>) -> WeaselResult<Self, CustomRules> {
+        fn flattened(event: Box<dyn Event<CustomRules> + Send>) -> WeaselResult<Self, CustomRules> {
             match event.as_any().downcast_ref::<MyEvent<CustomRules>>() {
                 Some(event) => Ok(Package::MyEvent(event.clone())),
                 None => Err(WeaselError::UserEventPackingError(
@@ -356,7 +356,7 @@ macro_rules! events_vec {
         const OBJECT_1_ID: u32 = 1;
         const STATUS_1_ID: u32 = 1;
         // Collect all events into a vector.
-        let mut events: Vec<Box<dyn Event<CustomRules>>> = Vec::new();
+        let mut events: Vec<Box<dyn Event<CustomRules> + Send>> = Vec::new();
         events.push(DummyEvent::trigger(&mut ()).event());
         events.push(CreateTeam::trigger(&mut (), TEAM_1_ID).event());
         events.push(CreateCreature::trigger(&mut (), TEAM_1_ID, CREATURE_1_ID, ()).event());

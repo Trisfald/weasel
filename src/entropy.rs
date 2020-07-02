@@ -69,10 +69,10 @@ impl<R: BattleRules> Entropy<R> {
 pub trait EntropyRules {
     #[cfg(not(feature = "serialization"))]
     /// See [EntropySeed](type.EntropySeed.html).
-    type EntropySeed: Clone + Debug;
+    type EntropySeed: Clone + Debug + Send;
     #[cfg(feature = "serialization")]
     /// See [EntropySeed](type.EntropySeed.html).
-    type EntropySeed: Clone + Debug + Serialize + for<'a> Deserialize<'a>;
+    type EntropySeed: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     /// See [EntropyModel](type.EntropyModel.html).
     type EntropyModel;
@@ -180,7 +180,7 @@ impl<R: BattleRules + 'static> Event<R> for ResetEntropy<R> {
         EventKind::ResetEntropy
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -221,7 +221,7 @@ where
     }
 
     /// Returns a `ResetEntropy` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(ResetEntropy {
             seed: self.seed.clone(),
         })

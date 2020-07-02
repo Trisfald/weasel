@@ -276,7 +276,7 @@ impl<R: BattleRules + 'static> Event<R> for CreateObject<R> {
         EventKind::CreateObject
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -322,7 +322,7 @@ where
     }
 
     /// Returns a `CreateObject` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(CreateObject {
             id: self.id.clone(),
             position: self.position.clone(),
@@ -434,7 +434,7 @@ impl<R: BattleRules + 'static> Event<R> for RemoveObject<R> {
         EventKind::RemoveObject
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -463,7 +463,7 @@ where
     }
 
     /// Returns a `RemoveObject` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(RemoveObject {
             id: self.id.clone(),
         })
