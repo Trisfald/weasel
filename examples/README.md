@@ -33,3 +33,7 @@ An example to show how to define simple passive abilities.
 ## [Status](status/)
 
 Example to demonstrate the usage of status effects and how to write rules for them.
+
+## [King of the hill](king_of_the_hill/)
+
+Example of a multiplayer card game.
