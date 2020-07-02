@@ -390,7 +390,7 @@ impl<R: BattleRules + 'static> Event<R> for CreateCreature<R> {
         EventKind::CreateCreature
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -447,7 +447,7 @@ where
     }
 
     /// Returns a `CreateCreature` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(CreateCreature {
             id: self.id.clone(),
             team_id: self.team_id.clone(),
@@ -607,7 +607,7 @@ impl<R: BattleRules + 'static> Event<R> for ConvertCreature<R> {
         EventKind::ConvertCreature
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -637,7 +637,7 @@ where
     }
 
     /// Returns a `ConvertCreature` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(ConvertCreature {
             creature_id: self.creature_id.clone(),
             team_id: self.team_id.clone(),
@@ -786,7 +786,7 @@ impl<R: BattleRules + 'static> Event<R> for RemoveCreature<R> {
         EventKind::RemoveCreature
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -815,7 +815,7 @@ where
     }
 
     /// Returns a `RemoveCreature` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(RemoveCreature {
             id: self.id.clone(),
         })

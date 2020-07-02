@@ -16,7 +16,7 @@ pub struct SimpleStatus<I, V> {
     max_duration: Option<StatusDuration>,
 }
 
-impl<I, V: Copy> SimpleStatus<I, V> {
+impl<I: Send, V: Copy> SimpleStatus<I, V> {
     /// Creates a new `SimpleStatus`.
     pub fn new(id: I, effect: V, max_duration: Option<StatusDuration>) -> SimpleStatus<I, V> {
         SimpleStatus {
@@ -46,7 +46,7 @@ impl<I, V: Copy> SimpleStatus<I, V> {
 #[cfg(not(feature = "serialization"))]
 impl<I, V> Id for SimpleStatus<I, V>
 where
-    I: Debug + Hash + Eq + Clone,
+    I: Debug + Hash + Eq + Clone + Send,
 {
     type Id = I;
     fn id(&self) -> &Self::Id {
@@ -57,7 +57,7 @@ where
 #[cfg(feature = "serialization")]
 impl<I, V> Id for SimpleStatus<I, V>
 where
-    I: Debug + Hash + Eq + Clone + Serialize + for<'a> Deserialize<'a>,
+    I: Debug + Hash + Eq + Clone + Send + Serialize + for<'a> Deserialize<'a>,
 {
     type Id = I;
     fn id(&self) -> &Self::Id {

@@ -17,17 +17,17 @@ use std::fmt::Debug;
 pub trait FightRules<R: BattleRules> {
     #[cfg(not(feature = "serialization"))]
     /// See [Impact](type.Impact.html).
-    type Impact: Clone + Debug;
+    type Impact: Clone + Debug + Send;
     #[cfg(feature = "serialization")]
     /// See [Impact](type.Impact.html).
-    type Impact: Clone + Debug + Serialize + for<'a> Deserialize<'a>;
+    type Impact: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     #[cfg(not(feature = "serialization"))]
     /// See [Potency](../status/type.Potency.html).
-    type Potency: Clone + Debug;
+    type Potency: Clone + Debug + Send;
     #[cfg(feature = "serialization")]
     /// See [Potency](../status/type.Potency.html).
-    type Potency: Clone + Debug + Serialize + for<'a> Deserialize<'a>;
+    type Potency: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     /// Takes an impact and generates one or more events to change the state of creatures or
     /// other objects.
@@ -192,7 +192,7 @@ impl<R: BattleRules + 'static> Event<R> for ApplyImpact<R> {
         EventKind::ApplyImpact
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -221,7 +221,7 @@ where
     }
 
     /// Returns an `ApplyImpact` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(ApplyImpact {
             impact: self.impact.clone(),
         })

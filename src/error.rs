@@ -27,7 +27,7 @@ pub type WeaselErrorType<R> = WeaselError<
     AbilityId<R>,
     StatusId<R>,
     MetricIdType<R>,
-    Box<dyn Event<R>>,
+    Box<dyn Event<R> + Send>,
 >;
 
 /// Alias for a `Result` returning a `WeaselError`.

@@ -76,24 +76,24 @@ impl<R: BattleRules> Space<R> {
 pub trait SpaceRules<R: BattleRules> {
     #[cfg(not(feature = "serialization"))]
     /// See [Position](type.Position.html).
-    type Position: Eq + Clone + Debug;
+    type Position: Eq + Clone + Debug + Send;
     #[cfg(feature = "serialization")]
     /// See [Position](type.Position.html).
-    type Position: Eq + Clone + Debug + Serialize + for<'a> Deserialize<'a>;
+    type Position: Eq + Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     #[cfg(not(feature = "serialization"))]
     /// See [SpaceSeed](type.SpaceSeed.html).
-    type SpaceSeed: Clone + Debug;
+    type SpaceSeed: Clone + Debug + Send;
     #[cfg(feature = "serialization")]
     /// See [SpaceSeed](type.SpaceSeed.html).
-    type SpaceSeed: Clone + Debug + Serialize + for<'a> Deserialize<'a>;
+    type SpaceSeed: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     #[cfg(not(feature = "serialization"))]
     /// See [SpaceAlteration](type.SpaceAlteration.html).
-    type SpaceAlteration: Clone + Debug;
+    type SpaceAlteration: Clone + Debug + Send;
     #[cfg(feature = "serialization")]
     /// See [SpaceAlteration](type.SpaceAlteration.html).
-    type SpaceAlteration: Clone + Debug + Serialize + for<'a> Deserialize<'a>;
+    type SpaceAlteration: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     /// See [SpaceModel](type.SpaceModel.html).
     type SpaceModel;
@@ -338,7 +338,7 @@ impl<R: BattleRules + 'static> Event<R> for MoveEntity<R> {
         EventKind::MoveEntity
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -368,7 +368,7 @@ where
     }
 
     /// Returns a `MoveEntity` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(MoveEntity {
             id: self.id.clone(),
             position: self.position.clone(),
@@ -464,7 +464,7 @@ impl<R: BattleRules + 'static> Event<R> for ResetSpace<R> {
         EventKind::ResetSpace
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -505,7 +505,7 @@ where
     }
 
     /// Returns a `ResetSpace` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(ResetSpace {
             seed: self.seed.clone(),
         })
@@ -602,7 +602,7 @@ impl<R: BattleRules + 'static> Event<R> for AlterSpace<R> {
         EventKind::AlterSpace
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -631,7 +631,7 @@ where
     }
 
     /// Returns a `AlterSpace` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(AlterSpace {
             alteration: self.alteration.clone(),
         })

@@ -212,7 +212,7 @@ impl<R: BattleRules + 'static> Event<R> for ActivateAbility<R> {
         EventKind::ActivateAbility
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -269,7 +269,7 @@ where
     }
 
     /// Returns an `ActivateAbility` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(ActivateAbility {
             entity_id: self.entity_id.clone(),
             ability_id: self.ability_id.clone(),

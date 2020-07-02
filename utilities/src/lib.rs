@@ -19,7 +19,7 @@ pub fn server<R: BattleRules + 'static>(rules: R) -> Server<R> {
 pub fn client<R, S>(rules: R, server_sink: S) -> Client<R>
 where
     R: BattleRules + 'static,
-    S: ServerSink<R> + 'static,
+    S: ServerSink<R> + 'static + Send,
 {
     let battle = Battle::builder(rules).build();
     Client::builder(battle, Box::new(server_sink)).build()

@@ -350,7 +350,7 @@ impl<R: BattleRules + 'static> Event<R> for InflictStatus<R> {
         EventKind::InflictStatus
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -393,7 +393,7 @@ where
     }
 
     /// Returns an `InflictStatus` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(InflictStatus {
             entity_id: self.entity_id.clone(),
             status_id: self.status_id.clone(),
@@ -559,7 +559,7 @@ impl<R: BattleRules + 'static> Event<R> for ClearStatus<R> {
         EventKind::ClearStatus
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -589,7 +589,7 @@ where
     }
 
     /// Returns a `ClearStatus` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(ClearStatus {
             entity_id: self.entity_id.clone(),
             status_id: self.status_id.clone(),
@@ -721,7 +721,7 @@ impl<R: BattleRules + 'static> Event<R> for AlterStatuses<R> {
         EventKind::AlterStatuses
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -751,7 +751,7 @@ where
     }
 
     /// Returns an `AlterStatuses` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(AlterStatuses {
             id: self.id.clone(),
             alteration: self.alteration.clone(),

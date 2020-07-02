@@ -18,44 +18,44 @@ use std::hash::Hash;
 pub trait CharacterRules<R: BattleRules> {
     #[cfg(not(feature = "serialization"))]
     /// See [CreatureId](../creature/type.CreatureId.html).
-    type CreatureId: Hash + Eq + Clone + Debug;
+    type CreatureId: Hash + Eq + Clone + Debug + Send;
     #[cfg(feature = "serialization")]
     /// See [CreatureId](../creature/type.CreatureId.html).
-    type CreatureId: Hash + Eq + Clone + Debug + Serialize + for<'a> Deserialize<'a>;
+    type CreatureId: Hash + Eq + Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     #[cfg(not(feature = "serialization"))]
     /// See [ObjectId](../object/type.ObjectId.html).
-    type ObjectId: Hash + Eq + Clone + Debug;
+    type ObjectId: Hash + Eq + Clone + Debug + Send;
     #[cfg(feature = "serialization")]
     /// See [ObjectId](../object/type.ObjectId.html).
-    type ObjectId: Hash + Eq + Clone + Debug + Serialize + for<'a> Deserialize<'a>;
+    type ObjectId: Hash + Eq + Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     /// See [Statistic](type.Statistic.html).
     type Statistic: Id + 'static;
 
     #[cfg(not(feature = "serialization"))]
     /// See [StatisticsSeed](type.StatisticsSeed.html).
-    type StatisticsSeed: Clone + Debug;
+    type StatisticsSeed: Clone + Debug + Send;
     #[cfg(feature = "serialization")]
     /// See [StatisticsSeed](type.StatisticsSeed.html).
-    type StatisticsSeed: Clone + Debug + Serialize + for<'a> Deserialize<'a>;
+    type StatisticsSeed: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     #[cfg(not(feature = "serialization"))]
     /// See [StatisticsAlteration](type.StatisticsAlteration.html).
-    type StatisticsAlteration: Clone + Debug;
+    type StatisticsAlteration: Clone + Debug + Send;
     #[cfg(feature = "serialization")]
     /// See [StatisticsAlteration](type.StatisticsAlteration.html).
-    type StatisticsAlteration: Clone + Debug + Serialize + for<'a> Deserialize<'a>;
+    type StatisticsAlteration: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     /// See [Status](../status/type.Status.html).
     type Status: Id + 'static;
 
     #[cfg(not(feature = "serialization"))]
     /// See [StatusesAlteration](../status/type.StatusesAlteration.html).
-    type StatusesAlteration: Clone + Debug;
+    type StatusesAlteration: Clone + Debug + Send;
     #[cfg(feature = "serialization")]
     /// See [StatusesAlteration](../status/type.StatusesAlteration.html).
-    type StatusesAlteration: Clone + Debug + Serialize + for<'a> Deserialize<'a>;
+    type StatusesAlteration: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     /// Generates all statistics of a character.
     /// Statistics should have unique ids, otherwise only the last entry will be persisted.
@@ -332,7 +332,7 @@ impl<R: BattleRules + 'static> Event<R> for AlterStatistics<R> {
         EventKind::AlterStatistics
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -362,7 +362,7 @@ where
     }
 
     /// Returns an `AlterStatistics` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(AlterStatistics {
             id: self.id.clone(),
             alteration: self.alteration.clone(),
@@ -521,7 +521,7 @@ impl<R: BattleRules + 'static> Event<R> for RegenerateStatistics<R> {
         EventKind::RegenerateStatistics
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -566,7 +566,7 @@ where
     }
 
     /// Returns a `RegenerateStatistics` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(RegenerateStatistics {
             id: self.id.clone(),
             seed: self.seed.clone(),

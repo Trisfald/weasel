@@ -31,7 +31,7 @@ use std::ops::Range;
 /// taken just after the event has been applied.\
 /// `EventQueue` is an event processor that can be used to fire events.
 pub type EventCallback<R> =
-    Box<dyn FnMut(&EventWrapper<R>, &BattleState<R>, &mut Option<EventQueue<R>>)>;
+    Box<dyn FnMut(&EventWrapper<R>, &BattleState<R>, &mut Option<EventQueue<R>>) + Send>;
 
 /// Represent the in-game world from the point of view of the tactical combat system.
 ///
@@ -58,7 +58,7 @@ impl<R: BattleRules + 'static> Battle<R> {
 
     /// Verifies the consistency of an event.
     #[allow(clippy::borrowed_box)]
-    pub(crate) fn verify_event(&self, event: &Box<dyn Event<R>>) -> WeaselResult<(), R> {
+    pub(crate) fn verify_event(&self, event: &Box<dyn Event<R> + Send>) -> WeaselResult<(), R> {
         if self.phase() == BattlePhase::Ended {
             Err(WeaselError::BattleEnded)
         } else {
@@ -325,7 +325,7 @@ pub enum BattlePhase {
 /// It's a trait that uses composition to gather all other subsystem rules in a single place.
 ///
 /// All rules must be deterministic, otherwise the consistency of events is not guaranteed.
-pub trait BattleRules: std::marker::Sized {
+pub trait BattleRules: Sized + Send {
     /// Type defining the `TeamRules`.
     type TR: TeamRules<Self>;
     /// Type defining the `CharacterRules`.
@@ -345,10 +345,10 @@ pub trait BattleRules: std::marker::Sized {
 
     #[cfg(not(feature = "serialization"))]
     /// See [Version](type.Version.html).
-    type Version: PartialEq + Debug + Clone;
+    type Version: PartialEq + Debug + Clone + Send;
     #[cfg(feature = "serialization")]
     /// See [Version](type.Version.html).
-    type Version: PartialEq + Debug + Clone + Serialize + for<'a> Deserialize<'a>;
+    type Version: PartialEq + Debug + Clone + Send + Serialize + for<'a> Deserialize<'a>;
 
     /// Returns a reference to the team rules.
     fn team_rules(&self) -> &Self::TR;
@@ -474,7 +474,7 @@ impl<R: BattleRules + 'static> Event<R> for EndBattle<R> {
         EventKind::EndBattle
     }
 
-    fn box_clone(&self) -> Box<dyn Event<R>> {
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
         Box::new(self.clone())
     }
 
@@ -503,7 +503,7 @@ where
     }
 
     /// Returns an `EndBattle` event.
-    fn event(&self) -> Box<dyn Event<R>> {
+    fn event(&self) -> Box<dyn Event<R> + Send> {
         Box::new(EndBattle {
             _phantom: self._phantom,
         })
