@@ -199,6 +199,16 @@ pub enum PositionClaim<'a, R: BattleRules> {
     Movement(&'a dyn Entity<R>),
 }
 
+impl<R: BattleRules> PositionClaim<'_, R> {
+    /// Returns the id of the entity behind this claim.
+    pub fn entity_id(&self) -> &EntityId<R> {
+        match self {
+            PositionClaim::Spawn(id) => id,
+            PositionClaim::Movement(entity) => entity.entity_id(),
+        }
+    }
+}
+
 /// An event to move an entity from its position to a new one.
 ///
 /// # Examples
