@@ -1,6 +1,6 @@
 use weasel::ability::ActivateAbility;
 use weasel::actor::{Action, ActorRules};
-use weasel::battle::{BattlePhase, BattleRules, BattleState, EndBattle};
+use weasel::battle::{BattleController, BattlePhase, BattleRules, BattleState, EndBattle};
 use weasel::battle_rules_with_actor;
 use weasel::entity::EntityId;
 use weasel::entropy::Entropy;

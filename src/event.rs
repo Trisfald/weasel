@@ -495,7 +495,7 @@ impl<R: BattleRules> EventProcessor<R> for EventQueue<R> {
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::event::{EventTrigger, DummyEvent, EventKind};
 /// use weasel::{Server, battle_rules, rules::empty::*};
 ///
@@ -1030,7 +1030,7 @@ fn normalize_range<R: BattleRules>(
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::event::{EventTrigger, DummyEvent, Originated};
 /// use weasel::{Server, battle_rules, rules::empty::*};
 ///

@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::collections::HashSet;
 use weasel::ability::AbilityId;
 use weasel::actor::{Actor, ActorRules, RegenerateAbilities};
-use weasel::battle::{BattleRules, BattleState};
+use weasel::battle::{BattleController, BattleRules, BattleState};
 use weasel::character::{
     AlterStatistics, Character, CharacterRules, RegenerateStatistics, StatisticId,
 };

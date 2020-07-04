@@ -1,4 +1,4 @@
-use weasel::battle::BattleRules;
+use weasel::battle::{BattleController, BattleRules};
 use weasel::entity::{Entity, EntityId};
 use weasel::{battle_rules, rules::empty::*, WeaselError};
 

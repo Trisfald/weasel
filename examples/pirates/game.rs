@@ -5,7 +5,7 @@ use std::fs::{self, File};
 use std::time::SystemTime;
 use std::{env, io::Read};
 use weasel::ability::ActivateAbility;
-use weasel::battle::{Battle, BattleState, EndBattle};
+use weasel::battle::{Battle, BattleController, BattleState, EndBattle};
 use weasel::character::{AlterStatistics, Character};
 use weasel::creature::{CreateCreature, CreatureId, RemoveCreature};
 use weasel::entity::EntityId;

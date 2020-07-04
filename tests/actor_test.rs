@@ -1,5 +1,5 @@
 use weasel::actor::{Actor, ActorRules, AlterAbilities};
-use weasel::battle::{BattleRules, BattleState};
+use weasel::battle::{BattleController, BattleRules, BattleState};
 use weasel::battle_rules_with_actor;
 use weasel::entity::EntityId;
 use weasel::entropy::Entropy;

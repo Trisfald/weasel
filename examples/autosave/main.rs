@@ -2,7 +2,7 @@ use crate::sink::AutosaveSink;
 use std::convert::TryInto;
 use std::fs::File;
 use std::{env, io::BufRead, io::BufReader, io::Read};
-use weasel::battle::{Battle, BattleRules};
+use weasel::battle::{Battle, BattleController, BattleRules};
 use weasel::creature::CreateCreature;
 use weasel::event::{EventReceiver, EventSinkId, EventTrigger};
 use weasel::serde::FlatVersionedEvent;

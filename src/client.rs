@@ -1,6 +1,6 @@
 //! A battle client.
 
-use crate::battle::{Battle, BattleRules, EventCallback};
+use crate::battle::{Battle, BattleController, BattleRules, EventCallback};
 use crate::error::WeaselResult;
 use crate::event::{
     EventProcessor, EventPrototype, EventReceiver, MultiClientSink, MultiClientSinkHandle,
@@ -35,11 +35,6 @@ impl<R: BattleRules + 'static> Client<R> {
         }
     }
 
-    /// Returns a reference to the battle.
-    pub fn battle(&self) -> &Battle<R> {
-        &self.battle
-    }
-
     /// Returns whether or not client events authentication is enabled.
     pub fn authentication(&self) -> bool {
         self.player.is_some()
@@ -72,15 +67,18 @@ impl<R: BattleRules + 'static> Client<R> {
     pub fn client_sinks_mut(&mut self) -> MultiClientSinkHandleMut<'_, R> {
         MultiClientSinkHandleMut::new(&mut self.client_sinks, &self.battle)
     }
+}
 
-    /// Returns the current event callback set to this client's battle.
-    pub fn event_callback(&self) -> &Option<EventCallback<R>> {
+impl<R: BattleRules> BattleController<R> for Client<R> {
+    fn battle(&self) -> &Battle<R> {
+        &self.battle
+    }
+
+    fn event_callback(&self) -> &Option<EventCallback<R>> {
         &self.battle.event_callback
     }
 
-    /// Sets a new event callback for this client's battle.
-    /// The current callback is discarded.
-    pub fn set_event_callback(&mut self, callback: Option<EventCallback<R>>) {
+    fn set_event_callback(&mut self, callback: Option<EventCallback<R>>) {
         self.battle.event_callback = callback;
     }
 }

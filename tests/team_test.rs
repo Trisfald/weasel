@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use weasel::ability::ActivateAbility;
 use weasel::actor::{Action, Actor, ActorRules};
-use weasel::battle::{BattleRules, BattleState};
+use weasel::battle::{BattleController, BattleRules, BattleState};
 use weasel::battle_rules_with_team;
 use weasel::creature::{ConvertCreature, CreateCreature, RemoveCreature};
 use weasel::entity::EntityId;

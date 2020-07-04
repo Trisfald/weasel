@@ -1,6 +1,6 @@
 //! A battle server.
 
-use crate::battle::{Battle, BattleRules, EventCallback};
+use crate::battle::{Battle, BattleController, BattleRules, EventCallback};
 use crate::error::{WeaselError, WeaselResult};
 use crate::event::{
     ClientEventPrototype, EventProcessor, EventPrototype, EventQueue, EventReceiver, EventRights,
@@ -32,11 +32,6 @@ impl<R: BattleRules + 'static> Server<R> {
         }
     }
 
-    /// Returns a reference to the battle.
-    pub fn battle(&self) -> &Battle<R> {
-        &self.battle
-    }
-
     /// Returns true if the client events authentication is enforced.
     pub fn authentication(&self) -> bool {
         self.authentication
@@ -60,17 +55,6 @@ impl<R: BattleRules + 'static> Server<R> {
     /// Returns a mutable handle to manage the client sinks of this server.
     pub fn client_sinks_mut(&mut self) -> MultiClientSinkHandleMut<'_, R> {
         MultiClientSinkHandleMut::new(&mut self.client_sinks, &self.battle)
-    }
-
-    /// Returns the current event callback set to this server's battle.
-    pub fn event_callback(&self) -> &Option<EventCallback<R>> {
-        &self.battle.event_callback
-    }
-
-    /// Sets a new event callback for this server's battle.
-    /// The current callback is discarded.
-    pub fn set_event_callback(&mut self, callback: Option<EventCallback<R>>) {
-        self.battle.event_callback = callback;
     }
 
     /// Applies an event. The event must be valid.
@@ -114,6 +98,20 @@ impl<R: BattleRules + 'static> Server<R> {
         } else {
             Ok(())
         }
+    }
+}
+
+impl<R: BattleRules> BattleController<R> for Server<R> {
+    fn battle(&self) -> &Battle<R> {
+        &self.battle
+    }
+
+    fn event_callback(&self) -> &Option<EventCallback<R>> {
+        &self.battle.event_callback
+    }
+
+    fn set_event_callback(&mut self, callback: Option<EventCallback<R>>) {
+        self.battle.event_callback = callback;
     }
 }
 

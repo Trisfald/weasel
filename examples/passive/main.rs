@@ -1,6 +1,6 @@
 use crate::rules::*;
 use weasel::actor::Actor;
-use weasel::battle::Battle;
+use weasel::battle::{Battle, BattleController};
 use weasel::creature::{CreateCreature, CreatureId};
 use weasel::entity::{Entity, EntityId};
 use weasel::event::EventTrigger;

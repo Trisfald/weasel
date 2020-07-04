@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use weasel::battle::{Battle, BattleRules, BattleState};
+use weasel::battle::{Battle, BattleController, BattleRules, BattleState};
 use weasel::character::{AlterStatistics, Character, CharacterRules};
 use weasel::entity::{EntityId, Transmutation};
 use weasel::entropy::Entropy;

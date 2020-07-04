@@ -1,6 +1,6 @@
 use crate::rules::*;
 use rules::BattlefieldSeed;
-use weasel::battle::Battle;
+use weasel::battle::{Battle, BattleController};
 use weasel::creature::{CreateCreature, CreatureId};
 use weasel::event::EventTrigger;
 use weasel::space::{AlterSpace, ResetSpace};

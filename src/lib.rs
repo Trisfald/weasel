@@ -13,7 +13,7 @@
 //!
 //! ```
 //! use weasel::{Server, battle_rules, rules::empty::*};
-//! use weasel::battle::{Battle, BattleRules};
+//! use weasel::battle::{Battle, BattleController, BattleRules};
 //! use weasel::team::CreateTeam;
 //! use weasel::event::EventTrigger;
 //!

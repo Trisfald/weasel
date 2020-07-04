@@ -168,7 +168,7 @@ pub type TeamId<R> = <<R as BattleRules>::TR as TeamRules<R>>::Id;
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::event::EventTrigger;
 /// use weasel::team::CreateTeam;
 /// use weasel::{Server, battle_rules, rules::empty::*};
@@ -471,7 +471,7 @@ impl<R: BattleRules> Hash for RelationshipPair<R> {
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::event::EventTrigger;
 /// use weasel::team::{CreateTeam, Relation, SetRelations};
 /// use weasel::{Server, battle_rules, rules::empty::*};
@@ -626,7 +626,7 @@ pub enum Conclusion {
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::event::EventTrigger;
 /// use weasel::team::{CreateTeam, ConcludeObjectives, Conclusion};
 /// use weasel::{Server, battle_rules, rules::empty::*};
@@ -761,7 +761,7 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::event::EventTrigger;
 /// use weasel::team::{CreateTeam, ConcludeObjectives, Conclusion, ResetObjectives};
 /// use weasel::{Server, battle_rules, rules::empty::*};
@@ -927,7 +927,7 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::event::EventTrigger;
 /// use weasel::team::{CreateTeam, RemoveTeam};
 /// use weasel::{Server, battle_rules, rules::empty::*};

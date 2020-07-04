@@ -1,7 +1,7 @@
 use crate::rules::*;
 use std::io::Read;
 use weasel::ability::ActivateAbility;
-use weasel::battle::Battle;
+use weasel::battle::{Battle, BattleController};
 use weasel::creature::{CreateCreature, CreatureId};
 use weasel::entity::EntityId;
 use weasel::event::{EventKind, EventReceiver, EventTrigger, VersionedEventWrapper};

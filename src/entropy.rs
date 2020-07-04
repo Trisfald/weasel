@@ -110,7 +110,7 @@ pub type EntropyOutput<R> = <<R as BattleRules>::ER as EntropyRules>::EntropyOut
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::entropy::ResetEntropy;
 /// use weasel::event::{EventTrigger, EventKind};
 /// use weasel::{Server, battle_rules, rules::empty::*};

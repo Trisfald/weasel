@@ -1,5 +1,5 @@
 use crate::rules::*;
-use weasel::battle::Battle;
+use weasel::battle::{Battle, BattleController};
 use weasel::creature::{CreateCreature, CreatureId};
 use weasel::entity::EntityId;
 use weasel::event::{EventKind, EventTrigger};

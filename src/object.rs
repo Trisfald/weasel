@@ -118,7 +118,7 @@ impl<R: BattleRules> Character<R> for Object<R> {
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::event::EventTrigger;
 /// use weasel::object::CreateObject;
 /// use weasel::{Server, battle_rules, rules::empty::*};
@@ -337,7 +337,7 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::event::EventTrigger;
 /// use weasel::object::{CreateObject, RemoveObject};
 /// use weasel::{Server, battle_rules, rules::empty::*};

@@ -1,5 +1,5 @@
 use std::convert::TryInto;
-use weasel::battle::BattleRules;
+use weasel::battle::{BattleController, BattleRules};
 use weasel::entropy::ResetEntropy;
 use weasel::event::{EventId, EventKind, EventTrigger};
 use weasel::round::EndRound;

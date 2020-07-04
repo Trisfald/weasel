@@ -4,7 +4,7 @@ use std::any::Any;
 use std::marker::PhantomData;
 use weasel::ability::ActivateAbility;
 use weasel::actor::{Action, Actor, ActorRules, AlterAbilities, RegenerateAbilities};
-use weasel::battle::{Battle, BattleRules, BattleState, EndBattle};
+use weasel::battle::{Battle, BattleController, BattleRules, BattleState, EndBattle};
 use weasel::character::{AlterStatistics, RegenerateStatistics};
 use weasel::creature::{ConvertCreature, CreateCreature, RemoveCreature};
 use weasel::entity::EntityId;

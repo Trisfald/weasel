@@ -1,6 +1,6 @@
 use weasel::ability::ActivateAbility;
 use weasel::actor::{Action, Actor, ActorRules, AlterAbilities};
-use weasel::battle::{BattleRules, BattleState};
+use weasel::battle::{BattleController, BattleRules, BattleState};
 use weasel::character::{AlterStatistics, Character, CharacterRules};
 use weasel::entity::{EntityId, Transmutation};
 use weasel::entropy::Entropy;

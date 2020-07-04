@@ -1,6 +1,6 @@
 use std::ops::Range;
 use std::sync::{Arc, Mutex};
-use weasel::battle::{Battle, BattleRules};
+use weasel::battle::{Battle, BattleController, BattleRules};
 use weasel::entity::EntityId;
 use weasel::event::{
     ClientEventPrototype, ClientSink, DummyEvent, EventKind, EventReceiver, EventServer, EventSink,

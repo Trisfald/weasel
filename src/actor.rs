@@ -175,7 +175,7 @@ impl<'a, R: BattleRules> Action<'a, R> {
 /// # Examples
 /// ```
 /// use weasel::actor::AlterAbilities;
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::creature::CreateCreature;
 /// use weasel::entity::EntityId;
 /// use weasel::event::{EventTrigger, EventKind};
@@ -343,7 +343,7 @@ where
 /// # Examples
 /// ```
 /// use weasel::actor::RegenerateAbilities;
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::creature::CreateCreature;
 /// use weasel::entity::EntityId;
 /// use weasel::event::{EventTrigger, EventKind};

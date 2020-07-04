@@ -204,7 +204,7 @@ pub trait Character<R: BattleRules>: Entity<R> {
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::character::AlterStatistics;
 /// use weasel::creature::CreateCreature;
 /// use weasel::entity::EntityId;
@@ -380,7 +380,7 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::character::RegenerateStatistics;
 /// use weasel::creature::CreateCreature;
 /// use weasel::entity::EntityId;

@@ -164,7 +164,7 @@ impl<R: BattleRules> Actor<R> for Creature<R> {
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::creature::CreateCreature;
 /// use weasel::event::EventTrigger;
 /// use weasel::team::CreateTeam;
@@ -463,7 +463,7 @@ where
 /// # Examples
 /// ```
 /// use weasel::actor::Actor;
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::creature::{ConvertCreature, CreateCreature};
 /// use weasel::event::EventTrigger;
 /// use weasel::team::CreateTeam;
@@ -652,7 +652,7 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::creature::{CreateCreature, RemoveCreature};
 /// use weasel::event::EventTrigger;
 /// use weasel::team::CreateTeam;

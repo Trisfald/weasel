@@ -1,6 +1,6 @@
 use weasel::ability::ActivateAbility;
 use weasel::actor::{Action, ActorRules};
-use weasel::battle::{Battle, BattleRules, BattleState};
+use weasel::battle::{Battle, BattleController, BattleRules, BattleState};
 use weasel::entity::EntityId;
 use weasel::entropy::Entropy;
 use weasel::event::{DummyEvent, EventKind, EventQueue, EventRights, EventServer, EventTrigger};

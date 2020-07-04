@@ -1,4 +1,4 @@
-use weasel::battle::BattleRules;
+use weasel::battle::{BattleController, BattleRules};
 use weasel::character::{AlterStatistics, Character};
 use weasel::entity::EntityId;
 use weasel::event::EventTrigger;

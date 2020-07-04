@@ -382,6 +382,19 @@ pub trait BattleRules: Sized + Send {
 /// It is used to verify each event. You can use `()` to disable versioning.
 pub type Version<R> = <R as BattleRules>::Version;
 
+/// A trait for types having control of a battle.
+pub trait BattleController<R: BattleRules> {
+    /// Returns a reference to the battle.
+    fn battle(&self) -> &Battle<R>;
+
+    /// Returns the current event callback set to the battle.
+    fn event_callback(&self) -> &Option<EventCallback<R>>;
+
+    /// Sets a new event callback for the battle.
+    /// The current callback is discarded.
+    fn set_event_callback(&mut self, callback: Option<EventCallback<R>>);
+}
+
 /// A builder object to create a battle.
 pub struct BattleBuilder<R: BattleRules> {
     rules: R,
@@ -418,7 +431,7 @@ impl<R: BattleRules> BattleBuilder<R> {
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattlePhase, BattleRules, EndBattle};
+/// use weasel::battle::{Battle, BattleController, BattlePhase, BattleRules, EndBattle};
 /// use weasel::event::{EventTrigger, EventKind};
 /// use weasel::{Server, battle_rules, rules::empty::*};
 ///

@@ -1,5 +1,5 @@
 use weasel::actor::{Actor, ActorRules};
-use weasel::battle::{Battle, BattleRules};
+use weasel::battle::{Battle, BattleController, BattleRules};
 use weasel::character::{Character, CharacterRules};
 use weasel::entropy::{Entropy, ResetEntropy};
 use weasel::event::EventTrigger;

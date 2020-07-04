@@ -1,6 +1,6 @@
 use crate::rules::*;
 use std::time::SystemTime;
-use weasel::battle::Battle;
+use weasel::battle::{Battle, BattleController};
 use weasel::creature::{CreateCreature, RemoveCreature};
 use weasel::entropy::ResetEntropy;
 use weasel::event::EventTrigger;

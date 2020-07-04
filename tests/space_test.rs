@@ -1,5 +1,5 @@
 use std::collections::HashSet;
-use weasel::battle::BattleRules;
+use weasel::battle::{BattleController, BattleRules};
 use weasel::battle_rules_with_space;
 use weasel::creature::CreateCreature;
 use weasel::entity::{Entities, Entity, EntityId};

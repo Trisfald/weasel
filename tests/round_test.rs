@@ -2,7 +2,7 @@ use indexmap::indexset;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
 use weasel::actor::Actor;
-use weasel::battle::{Battle, BattleRules};
+use weasel::battle::{Battle, BattleController, BattleRules};
 use weasel::entity::{Entities, EntityId};
 use weasel::entropy::Entropy;
 use weasel::event::{EventProcessor, EventRights, EventServer, EventTrigger};

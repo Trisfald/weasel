@@ -241,7 +241,7 @@ pub type RoundsModel<R> = <<R as BattleRules>::RR as RoundsRules<R>>::RoundsMode
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::creature::CreateCreature;
 /// use weasel::entity::EntityId;
 /// use weasel::event::EventTrigger;
@@ -453,7 +453,7 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::creature::CreateCreature;
 /// use weasel::entity::EntityId;
 /// use weasel::event::EventTrigger;
@@ -629,7 +629,7 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::event::{EventTrigger, EventKind};
 /// use weasel::round::ResetRounds;
 /// use weasel::{Server, battle_rules, rules::empty::*};
@@ -756,7 +756,7 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::event::EventTrigger;
 /// use weasel::metric::system::ROUNDS_STARTED;
 /// use weasel::round::{EnvironmentRound};

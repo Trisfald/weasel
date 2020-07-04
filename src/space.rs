@@ -203,7 +203,7 @@ pub enum PositionClaim<'a, R: BattleRules> {
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::creature::CreateCreature;
 /// use weasel::entity::EntityId;
 /// use weasel::event::{EventTrigger, EventKind};
@@ -380,7 +380,7 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::event::{EventTrigger, EventKind};
 /// use weasel::space::ResetSpace;
 /// use weasel::{Server, battle_rules, rules::empty::*};
@@ -519,7 +519,7 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::event::{EventTrigger, EventKind};
 /// use weasel::space::AlterSpace;
 /// use weasel::{Server, battle_rules, rules::empty::*};

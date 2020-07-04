@@ -170,7 +170,7 @@ pub(crate) fn update_statuses<R: BattleRules + 'static>(
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::creature::CreateCreature;
 /// use weasel::entity::EntityId;
 /// use weasel::event::{EventTrigger, EventKind};
@@ -601,7 +601,7 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
+/// use weasel::battle::{Battle, BattleController, BattleRules};
 /// use weasel::creature::CreateCreature;
 /// use weasel::entity::EntityId;
 /// use weasel::event::{EventTrigger, EventKind};
