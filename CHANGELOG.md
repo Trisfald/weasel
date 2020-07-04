@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Client and Server implements a new trait, `BattleController`.
 - Multiplayer example 'King of the hill'.
 - Added accessors to flat event structures.
+- Removed metric `ROUNDS_STARTED`. Added counters for rounds and turns in `Rounds`. Added also an `EndTurn` event.
+
+### Fixed
+- Ambiguous metric ids for `CREATURES_CREATED` and `OBJECTS_CREATED`.
 
 ## [0.7.0] - 2020-03-30
 ### Added

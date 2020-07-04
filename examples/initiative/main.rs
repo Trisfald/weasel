@@ -49,12 +49,7 @@ fn round(server: &mut Server<CustomRules>) {
     // Display in which round we are.
     println!(
         "Round {} - Initiative table:",
-        server
-            .battle()
-            .metrics()
-            .system_u64(weasel::metric::system::ROUNDS_STARTED)
-            .unwrap_or_default()
-            + 1
+        server.battle().rounds().completed_rounds() + 1
     );
     println!();
     // Display the order of initiative.

@@ -35,6 +35,8 @@ pub enum EventKind {
     StartRound,
     /// End the current round.
     EndRound,
+    /// End the current turn.
+    EndTurn,
     /// Perform a round for the environment.
     EnvironmentRound,
     /// Activate an actor's ability.

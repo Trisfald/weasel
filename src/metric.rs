@@ -205,10 +205,8 @@ pub mod system {
     //! Contains the id of all system metrics.
     use super::*;
 
-    /// Number of rounds since the start of the battle.
-    pub const ROUNDS_STARTED: SystemMetricId = 0;
     /// Number of creatures created.
-    pub const CREATURES_CREATED: SystemMetricId = 1;
+    pub const CREATURES_CREATED: SystemMetricId = 0;
     /// Number of objects created.
     pub const OBJECTS_CREATED: SystemMetricId = 1;
     /// Number of teams created.

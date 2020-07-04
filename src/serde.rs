@@ -13,7 +13,7 @@ use crate::event::{
 use crate::fight::ApplyImpact;
 use crate::object::{CreateObject, RemoveObject};
 use crate::player::PlayerId;
-use crate::round::{EndRound, EnvironmentRound, ResetRounds, StartRound};
+use crate::round::{EndRound, EndTurn, EnvironmentRound, ResetRounds, StartRound};
 use crate::space::{AlterSpace, MoveEntity, ResetSpace};
 use crate::status::{AlterStatuses, ClearStatus, InflictStatus};
 use crate::team::{ConcludeObjectives, CreateTeam, RemoveTeam, ResetObjectives, SetRelations};
@@ -109,6 +109,7 @@ flat_event! {
     MoveEntity, "MoveEntity<R>: Serialize", "MoveEntity<R>: Deserialize<'de>",
     StartRound, "StartRound<R>: Serialize", "StartRound<R>: Deserialize<'de>",
     EndRound, "EndRound<R>: Serialize", "EndRound<R>: Deserialize<'de>",
+    EndTurn, "EndTurn<R>: Serialize", "EndTurn<R>: Deserialize<'de>",
     EnvironmentRound, "EnvironmentRound<R>: Serialize", "EnvironmentRound<R>: Deserialize<'de>",
     ActivateAbility, "ActivateAbility<R>: Serialize", "ActivateAbility<R>: Deserialize<'de>",
     ApplyImpact, "ApplyImpact<R>: Serialize", "ApplyImpact<R>: Deserialize<'de>",
