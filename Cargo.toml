@@ -67,3 +67,8 @@ name = "passive"
 
 [[example]]
 name = "status"
+
+[[example]]
+name = "king"
+path = "examples/king_of_the_hill/main.rs"
+required-features = ["random", "serialization"]

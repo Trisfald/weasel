@@ -154,6 +154,28 @@ pub struct FlatVersionedEvent<R: BattleRules> {
     version: Version<R>,
 }
 
+impl<R: BattleRules> FlatVersionedEvent<R> {
+    /// Returns the id of this event.
+    pub fn id(&self) -> EventId {
+        self.id
+    }
+
+    /// Returns the origin of this event.
+    pub fn origin(&self) -> Option<EventId> {
+        self.origin
+    }
+
+    /// Returns the inner `FlatEvent`.
+    pub fn event(&self) -> &FlatEvent<R> {
+        &self.event
+    }
+
+    /// Returns the rules' version under which this event was created.
+    pub fn version(&self) -> &Version<R> {
+        &self.version
+    }
+}
+
 impl<R: BattleRules + 'static> From<VersionedEventWrapper<R>> for FlatVersionedEvent<R> {
     fn from(event: VersionedEventWrapper<R>) -> Self {
         FlatVersionedEvent {
@@ -193,6 +215,28 @@ pub struct FlatClientEvent<R: BattleRules> {
     version: Version<R>,
 
     player: Option<PlayerId>,
+}
+
+impl<R: BattleRules> FlatClientEvent<R> {
+    /// Returns the origin of this event.
+    pub fn origin(&self) -> Option<EventId> {
+        self.origin
+    }
+
+    /// Returns the inner `FlatEvent`.
+    pub fn event(&self) -> &FlatEvent<R> {
+        &self.event
+    }
+
+    /// Returns the rules' version under which this event was created.
+    pub fn version(&self) -> &Version<R> {
+        &self.version
+    }
+
+    /// Returns the player to which this event belongs.
+    pub fn player(&self) -> Option<PlayerId> {
+        self.player
+    }
 }
 
 impl<R: BattleRules + 'static> From<ClientEventPrototype<R>> for FlatClientEvent<R> {

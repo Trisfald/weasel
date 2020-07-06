@@ -7,7 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - New methods `on_character_added` and `on_character_transmuted` in `CharacterRules`.
-- Client and server are now `Send`. For this to happen some types requires `Send` as well.
 - `Client` and `Server` are now `Send`. For this to happen some types requires `Send` as well.
 - Client and Server implements a new trait, `BattleController`.
 - Multiplayer example 'King of the hill'.
