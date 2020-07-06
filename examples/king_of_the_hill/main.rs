@@ -14,7 +14,7 @@ use weasel::event::{EventKind, EventProcessor, EventQueue, EventTrigger, EventWr
 use weasel::round::{EndRound, EndTurn, StartRound, TurnsCount};
 use weasel::team::{CreateTeam, ResetObjectives, TeamId};
 use weasel::util::Id;
-use weasel::{Client, Server};
+use weasel::Server;
 
 mod rules;
 mod tcp;
@@ -123,7 +123,17 @@ fn client_game_loop(mut client: TcpClient) {
                         key.to_digit(10).unwrap(),
                         client.id,
                     ) {
-                        client_end_turn(&mut client.game_client, turn);
+                        // Wait for the turn completion.
+                        wait(|| {
+                            client
+                                .game_client
+                                .lock()
+                                .unwrap()
+                                .battle()
+                                .rounds()
+                                .completed_turns()
+                                > turn
+                        });
                         game_status(client.game_client.lock().unwrap().battle(), client.id);
                     }
                 }
@@ -180,6 +190,7 @@ where
             return false;
         }
     };
+    println!("Waiting for all players to make their move...");
     // Wait for our turn.
     wait(|| {
         // We have defined the rounds model to be equal to the id of the player who should act.
@@ -209,8 +220,6 @@ where
 }
 
 fn server_end_turn(server: &mut Arc<Mutex<Server<CustomRules>>>) {
-    // Wait for all players to have made their play.
-    println!("Waiting for all players to make their move...");
     wait(|| server.lock().unwrap().battle().rounds().completed_rounds() % 3 == 0);
     // Decide the winner.
     let winner = winner(server);
@@ -242,14 +251,6 @@ fn server_end_turn(server: &mut Arc<Mutex<Server<CustomRules>>>) {
     EndTurn::trigger(&mut *server.lock().unwrap())
         .fire()
         .unwrap();
-}
-
-fn client_end_turn(client: &mut Arc<Mutex<Client<CustomRules>>>, turn: TurnsCount) {
-    // Wait for the turn completion.
-    println!("Waiting for all players to make their move...");
-    wait(|| client.lock().unwrap().battle().rounds().completed_turns() > turn);
-    // // Print the outcome.
-    // turn_results(client);
 }
 
 /// Returns the number of completed turns.
