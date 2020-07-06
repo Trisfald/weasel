@@ -203,12 +203,7 @@ impl TcpServer {
             println!("A client connected");
             // Find out the id of the newly connected player.
             let mut server = game_server.lock().unwrap();
-            let id = if server
-                .client_sinks()
-                .sinks()
-                .find(|s| s.id() == 1)
-                .is_some()
-            {
+            let id = if server.client_sinks().sinks().any(|s| s.id() == 1) {
                 2 as u8
             } else {
                 1 as u8
@@ -219,7 +214,7 @@ impl TcpServer {
             id
         };
         // Send the ready signal to the client.
-        if let Err(_) = stream.write_all(&[READY_BYTE, id, DELIMITER]) {
+        if stream.write_all(&[READY_BYTE, id, DELIMITER]).is_err() {
             println!(
                 "An error occurred, terminating connection with {}",
                 stream.peer_addr().unwrap()
@@ -382,7 +377,7 @@ impl TcpClient {
             }
         });
         TcpClient {
-            id: id.into(),
+            id,
             game_client,
             thread: Some(thread),
             running,

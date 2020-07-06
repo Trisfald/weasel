@@ -229,7 +229,7 @@ fn server_end_turn(server: &mut Arc<Mutex<Server<CustomRules>>>) {
         .fire()
         .unwrap();
     // Remove all played cards.
-    let cards = server.lock().unwrap().battle().space().model().clone();
+    let cards = *server.lock().unwrap().battle().space().model();
     for card in cards.iter() {
         RemoveCreature::trigger(
             &mut *server.lock().unwrap(),
@@ -294,16 +294,13 @@ fn event_callback(
     _: &BattleState<CustomRules>,
     _: &mut Option<EventQueue<CustomRules>>,
 ) {
-    match event.kind() {
-        EventKind::ResetObjectives => {
-            let event: &ResetObjectives<CustomRules> =
-                match event.as_any().downcast_ref::<ResetObjectives<_>>() {
-                    Some(e) => e,
-                    None => panic!("incorrect cast!"),
-                };
-            println!("Player {} won a turn!", event.id() + 1);
-        }
-        _ => {} // Do nothing.
+    if let EventKind::ResetObjectives = event.kind() {
+        let event: &ResetObjectives<CustomRules> =
+            match event.as_any().downcast_ref::<ResetObjectives<_>>() {
+                Some(e) => e,
+                None => panic!("incorrect cast!"),
+            };
+        println!("Player {} won a turn!", event.id() + 1);
     }
 }
 
