@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.8.0] - 2020-07-06
 ### Added
 - New methods `on_character_added` and `on_character_transmuted` in `CharacterRules`.
 - `Client` and `Server` are now `Send`. For this to happen some types requires `Send` as well.
@@ -12,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multiplayer example 'King of the hill'.
 - Added accessors to flat event structures.
 - Removed metric `ROUNDS_STARTED`. Added counters for rounds and turns in `Rounds`. Added also an `EndTurn` event.
+- Introduced `BattleController` trait.
 
 ### Fixed
 - Ambiguous metric ids for `CREATURES_CREATED` and `OBJECTS_CREATED`.

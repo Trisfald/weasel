@@ -233,7 +233,7 @@ impl<R: BattleRules> FlatClientEvent<R> {
         &self.version
     }
 
-    /// Returns the player to which this event belongs.
+    /// Returns the player to whom this event belongs.
     pub fn player(&self) -> Option<PlayerId> {
         self.player
     }

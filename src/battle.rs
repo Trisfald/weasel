@@ -382,7 +382,7 @@ pub trait BattleRules: Sized + Send {
 /// It is used to verify each event. You can use `()` to disable versioning.
 pub type Version<R> = <R as BattleRules>::Version;
 
-/// A trait for types having control of a battle.
+/// A trait for types that have control over a battle.
 pub trait BattleController<R: BattleRules> {
     /// Returns a reference to the battle.
     fn battle(&self) -> &Battle<R>;

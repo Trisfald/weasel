@@ -896,7 +896,7 @@ where
 
 /// Event to trigger the end of the current turn.
 ///
-/// A turn is a logical separator between rounds, and it can contain any
+/// A turn is a logical separator between rounds and it can contain any
 /// number of these.\
 /// Managing turns is optional and not required in order to start or end rounds.
 ///

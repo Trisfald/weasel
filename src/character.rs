@@ -126,7 +126,7 @@ pub trait CharacterRules<R: BattleRules> {
     ) {
     }
 
-    /// Invoked when a character is transmuted during the the battle.
+    /// Invoked when a character is transmuted during the battle.
     ///
     /// The provided implementation does nothing.    
     fn on_character_transmuted(
