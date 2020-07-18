@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Event trigger `RemoveEntityTrigger` that can fire either a `RemoveCreature` or a `RemoveObject`.
+
 ## [0.8.0] - 2020-07-06
 ### Added
 - New methods `on_character_added` and `on_character_transmuted` in `CharacterRules`.

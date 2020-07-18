@@ -7,7 +7,7 @@ use weasel::character::{
     AlterStatistics, Character, CharacterRules, RegenerateStatistics, StatisticId,
 };
 use weasel::creature::{CreateCreature, RemoveCreature};
-use weasel::entity::{EntityId, Transmutation};
+use weasel::entity::{EntityId, RemoveEntity, Transmutation};
 use weasel::entropy::Entropy;
 use weasel::event::{EventQueue, EventTrigger};
 use weasel::metric::{system::*, WriteMetrics};
@@ -631,4 +631,22 @@ fn character_existence_callbacks() {
         *server.battle().rules().character_rules().removed.borrow(),
         1
     );
+}
+
+#[test]
+fn remove_entity() {
+    battle_rules! {}
+    const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
+    // Create a battle with one creature.
+    let mut server = util::server(CustomRules::new());
+    util::team(&mut server, TEAM_1_ID);
+    util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, ());
+    // Remove the entity.
+    assert_eq!(
+        RemoveEntity::trigger(&mut server, ENTITY_1_ID).fire().err(),
+        None
+    );
+    // Check that the creature was removed.
+    let entities = server.battle().entities();
+    assert!(entities.creature(&CREATURE_1_ID).is_none());
 }
