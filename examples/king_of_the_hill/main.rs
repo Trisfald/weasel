@@ -8,8 +8,8 @@ use weasel::ability::ActivateAbility;
 use weasel::actor::Actor;
 use weasel::battle::{Battle, BattleController, BattleState};
 use weasel::character::Character;
-use weasel::creature::{CreateCreature, Creature, RemoveCreature};
-use weasel::entity::EntityId;
+use weasel::creature::{CreateCreature, Creature};
+use weasel::entity::{EntityId, RemoveEntity};
 use weasel::event::{EventKind, EventProcessor, EventQueue, EventTrigger, EventWrapper};
 use weasel::round::{EndRound, EndTurn, StartRound, TurnsCount};
 use weasel::team::{CreateTeam, ResetObjectives, TeamId};
@@ -240,12 +240,9 @@ fn server_end_turn(server: &mut Arc<Mutex<Server<CustomRules>>>) {
     // Remove all played cards.
     let cards = *server.lock().unwrap().battle().space().model();
     for card in cards.iter() {
-        RemoveCreature::trigger(
-            &mut *server.lock().unwrap(),
-            card.unwrap().creature().unwrap(),
-        )
-        .fire()
-        .unwrap();
+        RemoveEntity::trigger(&mut *server.lock().unwrap(), card.unwrap())
+            .fire()
+            .unwrap();
     }
     // Close the turn.
     EndTurn::trigger(&mut *server.lock().unwrap())
