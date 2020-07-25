@@ -5,7 +5,7 @@ use crate::battle::BattleRules;
 use crate::character::Character;
 use crate::creature::{Creature, CreatureId, RemoveCreature};
 use crate::error::{WeaselError, WeaselResult};
-use crate::event::{EventProcessor, EventTrigger};
+use crate::event::{Event, EventProcessor, EventTrigger};
 use crate::object::{Object, ObjectId, RemoveObject};
 use crate::space::Position;
 use crate::team::{Conclusion, Relation, RelationshipPair, Team, TeamId};
@@ -15,6 +15,7 @@ use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Debug, Display, Formatter, Result};
 use std::hash::{Hash, Hasher};
+use std::marker::PhantomData;
 
 /// An entity represents any being existing in the game world.
 pub trait Entity<R: BattleRules> {
@@ -527,6 +528,77 @@ impl<R: BattleRules> Entities<R> {
             .remove(id)
             .ok_or_else(|| WeaselError::TeamNotFound(id.clone()))?;
         Ok(team)
+    }
+}
+
+/// Helper to get an event trigger capable of removing an entity from the battle.\
+/// It delegates the actual work to a `RemoveCreature` or a `RemoveObject`.
+///
+/// # Examples
+/// ```
+/// use weasel::battle::{Battle, BattleController, BattleRules};
+/// use weasel::creature::CreateCreature;
+/// use weasel::entity::{EntityId, RemoveEntity};
+/// use weasel::event::EventTrigger;
+/// use weasel::team::CreateTeam;
+/// use weasel::{Server, battle_rules, rules::empty::*};
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let team_id = 1;
+/// CreateTeam::trigger(&mut server, team_id).fire().unwrap();
+/// let creature_id = 1;
+/// let entity_id = EntityId::Creature(creature_id);
+/// let position = ();
+/// CreateCreature::trigger(&mut server, creature_id, team_id, position)
+///     .fire()
+///     .unwrap();
+///
+/// RemoveEntity::trigger(&mut server, entity_id).fire().unwrap();
+/// assert_eq!(server.battle().entities().creatures().count(), 0);
+/// ```
+pub struct RemoveEntity<R> {
+    _phantom: PhantomData<R>,
+}
+
+impl<R: BattleRules> RemoveEntity<R> {
+    /// Returns a trigger for this event helper.
+    pub fn trigger<P: EventProcessor<R>>(
+        processor: &mut P,
+        id: EntityId<R>,
+    ) -> RemoveEntityTrigger<R, P> {
+        RemoveEntityTrigger { processor, id }
+    }
+}
+
+/// Trigger to build and a fire the correct event to remove an entity.
+pub struct RemoveEntityTrigger<'a, R, P>
+where
+    R: BattleRules,
+    P: EventProcessor<R>,
+{
+    processor: &'a mut P,
+    id: EntityId<R>,
+}
+
+impl<'a, R, P> EventTrigger<'a, R, P> for RemoveEntityTrigger<'a, R, P>
+where
+    R: BattleRules + 'static,
+    P: EventProcessor<R>,
+{
+    fn processor(&'a mut self) -> &'a mut P {
+        self.processor
+    }
+
+    /// Returns the event able to remove the entity.
+    fn event(&self) -> Box<dyn Event<R> + Send> {
+        match &self.id {
+            EntityId::Creature(id) => RemoveCreature::trigger(&mut (), id.clone()).event(),
+            EntityId::Object(id) => RemoveObject::trigger(&mut (), id.clone()).event(),
+        }
     }
 }
 

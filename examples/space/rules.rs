@@ -2,8 +2,7 @@
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter, Result};
 use weasel::battle::BattleRules;
-use weasel::creature::RemoveCreature;
-use weasel::entity::{Entities, Entity, EntityId};
+use weasel::entity::{Entities, Entity, EntityId, RemoveEntity};
 use weasel::event::{EventQueue, EventTrigger};
 use weasel::metric::WriteMetrics;
 use weasel::round::Rounds;
@@ -93,7 +92,7 @@ impl SpaceRules<CustomRules> for CustomSpaceRules {
             model.place_trap(trap_position);
             // Remove any creature standing on a trap.
             if let Some(entity_id) = model.get(trap_position) {
-                RemoveCreature::trigger(event_queue, entity_id.creature().unwrap()).fire();
+                RemoveEntity::trigger(event_queue, entity_id).fire();
             }
         }
     }
