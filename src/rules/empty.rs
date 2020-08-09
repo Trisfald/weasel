@@ -114,4 +114,4 @@ impl<R: BattleRules> UserRules<R> for EmptyUserRules {
 }
 
 /// Entropy rules that do not have randomness. They just return the average value.
-pub type EmptyEntropyRules = FixedAverage<i32>;
+pub type EmptyEntropyRules = FixedAverage;

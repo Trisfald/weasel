@@ -1,7 +1,7 @@
 //! Predefined rules for entropy.
 
-use crate::entropy::EntropyRules;
-use num_traits::{Num, One};
+use crate::entropy::{EntropyRules, EntropyNum};
+use num_traits::One;
 #[cfg(feature = "random")]
 use rand::distributions::uniform::SampleUniform;
 #[cfg(feature = "random")]
@@ -9,52 +9,48 @@ use rand::{Rng, SeedableRng};
 #[cfg(feature = "random")]
 use rand_pcg::Lcg64Xsh32;
 use std::fmt::Debug;
-use std::marker::PhantomData;
 
 /// A deterministic rule that always returns the lowest value.
 #[derive(Debug, Default, Clone, Copy)]
-pub struct FixedLow<T> {
-    _phantom: PhantomData<T>,
+pub struct FixedLow {
 }
 
-impl<T: PartialOrd + Copy + Num + Debug> EntropyRules for FixedLow<T> {
+impl EntropyRules for FixedLow {
     type EntropySeed = ();
     type EntropyModel = ();
-    type EntropyOutput = T;
 
     fn generate_model(&self, _seed: &Option<Self::EntropySeed>) -> Self::EntropyModel {}
 
     /// Always returns `low`.
-    fn generate(
+    fn generate<T: EntropyNum>(
         &self,
         _: &mut Self::EntropyModel,
-        low: Self::EntropyOutput,
-        _high: Self::EntropyOutput,
-    ) -> Self::EntropyOutput {
+        low: T,
+        _high: T,
+    ) -> T
+    {
         low
     }
 }
 
 /// A deterministic rule that always generates an average result.
 #[derive(Debug, Default, Clone, Copy)]
-pub struct FixedAverage<T> {
-    _phantom: PhantomData<T>,
+pub struct FixedAverage {
 }
 
-impl<T: PartialOrd + Copy + Num + Debug> EntropyRules for FixedAverage<T> {
+impl EntropyRules for FixedAverage {
     type EntropySeed = ();
     type EntropyModel = ();
-    type EntropyOutput = T;
 
     fn generate_model(&self, _seed: &Option<Self::EntropySeed>) -> Self::EntropyModel {}
 
-    fn generate(
+    fn generate<T: EntropyNum>(
         &self,
         _: &mut Self::EntropyModel,
-        low: Self::EntropyOutput,
-        high: Self::EntropyOutput,
+        low: T,
+        high: T,
     ) -> T {
-        let one: Self::EntropyOutput = One::one();
+        let one: T = One::one();
         (high + low) / (one + one)
     }
 }
@@ -65,29 +61,25 @@ impl<T: PartialOrd + Copy + Num + Debug> EntropyRules for FixedAverage<T> {
 /// A seed is required to ensure a good level of entropy.
 #[cfg(feature = "random")]
 #[derive(Debug, Default, Clone, Copy)]
-pub struct UniformDistribution<T> {
-    _phantom: PhantomData<T>,
+pub struct UniformDistribution {
 }
 
 #[cfg(feature = "random")]
-impl<T> EntropyRules for UniformDistribution<T>
-where
-    T: PartialOrd + Copy + Num + Debug + SampleUniform,
+impl EntropyRules for UniformDistribution
 {
     type EntropySeed = u64;
     type EntropyModel = Lcg64Xsh32;
-    type EntropyOutput = T;
 
     fn generate_model(&self, seed: &Option<Self::EntropySeed>) -> Self::EntropyModel {
         Lcg64Xsh32::seed_from_u64(seed.unwrap_or(0))
     }
 
-    fn generate(
+    fn generate<T: EntropyNum + SampleUniform>(
         &self,
         model: &mut Self::EntropyModel,
-        low: Self::EntropyOutput,
-        high: Self::EntropyOutput,
-    ) -> Self::EntropyOutput {
+        low: T,
+        high: T,
+    ) -> T {
         model.gen_range(low, high)
     }
 }

@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Event trigger `RemoveEntityTrigger` that can fire either a `RemoveCreature` or a `RemoveObject`.
+- Simplified `EntropyRules`: removed the associated type `EntropyOutput` since now `generate()` is a generic function.
 
 ## [0.8.0] - 2020-07-06
 ### Added
