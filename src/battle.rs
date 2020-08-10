@@ -57,8 +57,7 @@ impl<R: BattleRules + 'static> Battle<R> {
     }
 
     /// Verifies the consistency of an event.
-    #[allow(clippy::borrowed_box)]
-    pub(crate) fn verify_event(&self, event: &Box<dyn Event<R> + Send>) -> WeaselResult<(), R> {
+    pub(crate) fn verify_event(&self, event: &(dyn Event<R> + Send)) -> WeaselResult<(), R> {
         if self.phase() == BattlePhase::Ended {
             Err(WeaselError::BattleEnded)
         } else {
@@ -75,7 +74,7 @@ impl<R: BattleRules + 'static> Battle<R> {
             }
         }
         // Verify event.
-        self.verify_event(event)
+        self.verify_event(&***event)
     }
 
     /// Verifies the consistency of a `VersionedEventWrapper`.
@@ -91,7 +90,7 @@ impl<R: BattleRules + 'static> Battle<R> {
         // Verify timeline consistency.
         self.history.verify_event(event.wrapper())?;
         // Verify event.
-        self.verify_event(event.wrapper())
+        self.verify_event(&****event)
     }
 
     pub(crate) fn verify_client(&self, event: &ClientEventPrototype<R>) -> WeaselResult<(), R> {
@@ -104,7 +103,7 @@ impl<R: BattleRules + 'static> Battle<R> {
             ));
         }
         // Verify event.
-        self.verify_event(event)
+        self.verify_event(&***event)
     }
 
     /// Promotes an `EventPrototype` into an `EventWrapper`.
