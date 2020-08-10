@@ -47,9 +47,8 @@ impl<R: BattleRules + 'static> Client<R> {
 
     /// Returns a reference to the server sink to which all event prototypes
     /// initiated by this client are sent.
-    #[allow(clippy::borrowed_box)]
-    pub fn server_sink(&self) -> &Box<dyn ServerSink<R> + Send> {
-        &self.server_sink
+    pub fn server_sink(&self) -> &(dyn ServerSink<R> + Send) {
+        &*self.server_sink
     }
 
     /// Disconnects the current server sink and sets a new one.
