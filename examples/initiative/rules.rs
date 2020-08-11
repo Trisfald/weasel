@@ -1,15 +1,11 @@
 use std::fmt::{Display, Formatter, Result};
-use weasel::actor::Actor;
-use weasel::battle::BattleRules;
-use weasel::character::{CharacterRules, StatisticId};
-use weasel::entity::{Entities, EntityId};
-use weasel::entropy::Entropy;
-use weasel::metric::WriteMetrics;
-use weasel::round::RoundsRules;
+use weasel::character::StatisticId;
 use weasel::rules::entropy::UniformDistribution;
 use weasel::rules::statistic::SimpleStatistic;
-use weasel::space::Space;
-use weasel::{battle_rules, rules::empty::*};
+use weasel::{
+    battle_rules, rules::empty::*, Actor, BattleRules, CharacterRules, Entities, EntityId, Entropy,
+    RoundsRules, Space, WriteMetrics,
+};
 
 static SPEED: StatisticId<CustomRules> = 0;
 

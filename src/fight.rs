@@ -112,10 +112,10 @@ pub type Impact<R> = <<R as BattleRules>::FR as FightRules<R>>::Impact;
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleController, BattleRules};
-/// use weasel::event::{EventTrigger, EventKind};
-/// use weasel::fight::ApplyImpact;
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, rules::empty::*, ApplyImpact, Battle, BattleController, BattleRules,
+///     EventKind, EventTrigger, Server,
+/// };
 ///
 /// battle_rules! {}
 ///

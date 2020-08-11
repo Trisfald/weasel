@@ -4,17 +4,14 @@ use rand::Rng;
 use std::fs::{self, File};
 use std::time::SystemTime;
 use std::{env, io::Read};
-use weasel::ability::ActivateAbility;
-use weasel::battle::{Battle, BattleController, BattleState, EndBattle};
-use weasel::character::{AlterStatistics, Character};
-use weasel::creature::{CreateCreature, CreatureId, RemoveCreature};
-use weasel::entity::EntityId;
-use weasel::entropy::ResetEntropy;
-use weasel::event::{EventKind, EventQueue, EventReceiver, EventTrigger, EventWrapper};
-use weasel::round::{EndRound, StartRound};
-use weasel::serde::FlatVersionedEvent;
-use weasel::team::{CreateTeam, TeamId};
-use weasel::Server;
+use weasel::creature::CreatureId;
+use weasel::team::TeamId;
+use weasel::{
+    ActivateAbility, AlterStatistics, Battle, BattleController, BattleState, Character,
+    CreateCreature, CreateTeam, EndBattle, EndRound, EntityId, EventKind, EventQueue,
+    EventReceiver, EventTrigger, EventWrapper, FlatVersionedEvent, RemoveCreature, ResetEntropy,
+    Server, StartRound,
+};
 
 // Constants to identify teams.
 const PLAYER_TEAM: &str = "player";

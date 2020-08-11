@@ -170,13 +170,10 @@ pub(crate) fn update_statuses<R: BattleRules + 'static>(
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleController, BattleRules};
-/// use weasel::creature::CreateCreature;
-/// use weasel::entity::EntityId;
-/// use weasel::event::{EventTrigger, EventKind};
-/// use weasel::status::InflictStatus;
-/// use weasel::team::CreateTeam;
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, rules::empty::*, Battle, BattleController, BattleRules, CreateCreature,
+///     CreateTeam, EntityId, EventKind, EventTrigger, InflictStatus, Server,
+/// };
 ///
 /// battle_rules! {}
 ///
@@ -406,13 +403,10 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleRules};
-/// use weasel::creature::CreateCreature;
-/// use weasel::entity::EntityId;
-/// use weasel::event::{EventTrigger, EventKind};
-/// use weasel::status::ClearStatus;
-/// use weasel::team::CreateTeam;
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, rules::empty::*, Battle, BattleRules, ClearStatus, CreateCreature,
+///     CreateTeam, EntityId, EventKind, EventTrigger, Server,
+/// };
 ///
 /// battle_rules! {}
 ///
@@ -601,13 +595,10 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleController, BattleRules};
-/// use weasel::creature::CreateCreature;
-/// use weasel::entity::EntityId;
-/// use weasel::event::{EventTrigger, EventKind};
-/// use weasel::status::AlterStatuses;
-/// use weasel::team::CreateTeam;
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, rules::empty::*, AlterStatuses, Battle, BattleController, BattleRules,
+///     CreateCreature, CreateTeam, EntityId, EventKind, EventTrigger, Server,
+/// };
 ///
 /// battle_rules! {}
 ///

@@ -1,13 +1,11 @@
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
 use weasel::ability::AbilityId;
-use weasel::actor::{Actor, ActorRules, AlterAbilities};
-use weasel::battle::{BattleRules, BattleState};
-use weasel::entropy::Entropy;
-use weasel::event::{EventQueue, EventTrigger};
-use weasel::metric::WriteMetrics;
 use weasel::rules::ability::SimpleAbility;
-use weasel::{battle_rules, battle_rules_with_actor, rules::empty::*};
+use weasel::{
+    battle_rules, battle_rules_with_actor, rules::empty::*, Actor, ActorRules, AlterAbilities,
+    BattleRules, BattleState, Entropy, EventQueue, EventTrigger, WriteMetrics,
+};
 
 /// Id for the active ability 'punch'.
 pub(crate) static PUNCH: AbilityId<CustomRules> = 1;

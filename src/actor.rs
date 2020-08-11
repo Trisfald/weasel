@@ -174,13 +174,10 @@ impl<'a, R: BattleRules> Action<'a, R> {
 ///
 /// # Examples
 /// ```
-/// use weasel::actor::AlterAbilities;
-/// use weasel::battle::{Battle, BattleController, BattleRules};
-/// use weasel::creature::CreateCreature;
-/// use weasel::entity::EntityId;
-/// use weasel::event::{EventTrigger, EventKind};
-/// use weasel::team::CreateTeam;
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, rules::empty::*, AlterAbilities, Battle, BattleController, BattleRules,
+///     CreateCreature, CreateTeam, EntityId, EventKind, EventTrigger, Server,
+/// };
 ///
 /// battle_rules! {}
 ///
@@ -342,13 +339,10 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::actor::RegenerateAbilities;
-/// use weasel::battle::{Battle, BattleController, BattleRules};
-/// use weasel::creature::CreateCreature;
-/// use weasel::entity::EntityId;
-/// use weasel::event::{EventTrigger, EventKind};
-/// use weasel::team::CreateTeam;
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, rules::empty::*, Battle, BattleController, BattleRules, CreateCreature,
+///     CreateTeam, EntityId, EventKind, EventTrigger, RegenerateAbilities, Server,
+/// };
 ///
 /// battle_rules! {}
 ///

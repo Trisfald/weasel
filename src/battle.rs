@@ -430,9 +430,10 @@ impl<R: BattleRules> BattleBuilder<R> {
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleController, BattlePhase, BattleRules, EndBattle};
-/// use weasel::event::{EventTrigger, EventKind};
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, rules::empty::*, battle::BattlePhase, Battle, BattleController,
+///     BattleRules, EndBattle, EventKind, EventTrigger, Server,
+/// };
 ///
 /// battle_rules! {}
 ///

@@ -4,17 +4,13 @@ use rand::{seq::SliceRandom, thread_rng};
 use std::convert::TryInto;
 use std::sync::{Arc, Mutex};
 use std::{io::Read, thread, time};
-use weasel::ability::ActivateAbility;
-use weasel::actor::Actor;
-use weasel::battle::{Battle, BattleController, BattleState};
-use weasel::character::Character;
-use weasel::creature::{CreateCreature, Creature};
-use weasel::entity::{EntityId, RemoveEntity};
-use weasel::event::{EventKind, EventProcessor, EventQueue, EventTrigger, EventWrapper};
-use weasel::round::{EndRound, EndTurn, StartRound, TurnsCount};
-use weasel::team::{CreateTeam, ResetObjectives, TeamId};
-use weasel::util::Id;
-use weasel::Server;
+use weasel::round::TurnsCount;
+use weasel::team::TeamId;
+use weasel::{
+    ActivateAbility, Actor, Battle, BattleController, BattleState, Character, CreateCreature,
+    CreateTeam, Creature, EndRound, EndTurn, EntityId, EventKind, EventProcessor, EventQueue,
+    EventTrigger, EventWrapper, Id, RemoveEntity, ResetObjectives, Server, StartRound,
+};
 
 mod rules;
 mod tcp;

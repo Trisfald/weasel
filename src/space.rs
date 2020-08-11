@@ -213,13 +213,10 @@ impl<R: BattleRules> PositionClaim<'_, R> {
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleController, BattleRules};
-/// use weasel::creature::CreateCreature;
-/// use weasel::entity::EntityId;
-/// use weasel::event::{EventTrigger, EventKind};
-/// use weasel::space::MoveEntity;
-/// use weasel::team::CreateTeam;
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, rules::empty::*, Battle, BattleController, BattleRules, CreateCreature,
+///     CreateTeam, EntityId, EventKind, EventTrigger, MoveEntity, Server,
+/// };
 ///
 /// battle_rules! {}
 ///
@@ -390,10 +387,10 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleController, BattleRules};
-/// use weasel::event::{EventTrigger, EventKind};
-/// use weasel::space::ResetSpace;
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, rules::empty::*, Battle, BattleController, BattleRules, EventKind,
+///     EventTrigger, ResetSpace, Server,
+/// };
 ///
 /// battle_rules! {}
 ///
@@ -529,10 +526,10 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleController, BattleRules};
-/// use weasel::event::{EventTrigger, EventKind};
-/// use weasel::space::AlterSpace;
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, rules::empty::*, AlterSpace, Battle, BattleController, BattleRules,
+///     EventKind, EventTrigger, Server,
+/// };
 ///
 /// battle_rules! {}
 ///

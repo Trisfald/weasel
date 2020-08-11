@@ -12,10 +12,10 @@
 //! ## Examples
 //!
 //! ```
-//! use weasel::{Server, battle_rules, rules::empty::*};
-//! use weasel::battle::{Battle, BattleController, BattleRules};
-//! use weasel::team::CreateTeam;
-//! use weasel::event::EventTrigger;
+//! use weasel::{
+//!     battle_rules, rules::empty::*, Battle, BattleController, BattleRules, CreateTeam,
+//!     EventTrigger, Server,
+//! };
 //!
 //! battle_rules! {}
 //!
@@ -121,32 +121,88 @@
 //! - `random`: enables built-in entropy rules that use a pseudorandom number generator.
 //! - `serialization`: enables serialization and deserialization of events.
 
-pub use crate::client::Client;
-pub use crate::error::{WeaselError, WeaselResult};
-pub use crate::server::Server;
-
 pub mod ability;
+pub use crate::ability::ActivateAbility;
+
 pub mod actor;
+pub use crate::actor::{Action, Actor, ActorRules, AlterAbilities, RegenerateAbilities};
+
 pub mod battle;
+pub use crate::battle::{
+    Battle, BattleController, BattleRules, BattleState, EndBattle, EventCallback, Version,
+};
+
 pub mod character;
+pub use crate::character::{AlterStatistics, Character, CharacterRules, RegenerateStatistics};
+
 pub mod client;
+pub use crate::client::Client;
+
 pub mod creature;
+pub use crate::creature::{ConvertCreature, CreateCreature, Creature, RemoveCreature};
+
 pub mod entity;
+pub use crate::entity::{Entities, Entity, EntityId, RemoveEntity, Transmutation};
+
 pub mod entropy;
+pub use crate::entropy::{Entropy, EntropyRules, ResetEntropy};
+
 pub mod error;
+pub use crate::error::{WeaselError, WeaselResult};
+
 pub mod event;
+pub use crate::event::{
+    ClientEventPrototype, Event, EventId, EventKind, EventProcessor, EventPrototype, EventQueue,
+    EventReceiver, EventRights, EventServer, EventTrigger, EventWrapper, LinkedQueue,
+    VersionedEventWrapper,
+};
+
 pub mod fight;
+pub use crate::fight::{ApplyImpact, FightRules};
+
 pub mod history;
+pub use crate::history::History;
+
 pub mod metric;
+pub use crate::metric::{Metric, MetricId, ReadMetrics, SystemMetricId, WriteMetrics};
+
 pub mod object;
+pub use crate::object::{CreateObject, Object, RemoveObject};
+
 pub mod player;
+pub use crate::player::PlayerId;
+
 pub mod round;
+pub use crate::round::{
+    EndRound, EndTurn, EnvironmentRound, ResetRounds, Rounds, RoundsRules, StartRound,
+};
+
 pub mod rules;
+
 #[cfg(feature = "serialization")]
 pub mod serde;
+#[cfg(feature = "serialization")]
+pub use crate::serde::{FlatClientEvent, FlatEvent, FlatVersionedEvent};
+
 pub mod server;
+pub use crate::server::Server;
+
 pub mod space;
+pub use crate::space::{AlterSpace, MoveEntity, PositionClaim, ResetSpace, Space, SpaceRules};
+
 pub mod status;
+pub use crate::status::{AlterStatuses, Application, AppliedStatus, ClearStatus, InflictStatus};
+
 pub mod team;
+pub use crate::team::{
+    ConcludeObjectives, Conclusion, CreateTeam, EntityAddition, Relation, RemoveTeam,
+    ResetObjectives, SetRelations, Team, TeamRules,
+};
+
 pub mod user;
+#[cfg(feature = "serialization")]
+pub use crate::user::UserEventPacker;
+pub use crate::user::{UserEventId, UserRules};
+
 pub mod util;
+pub use crate::util::Id;

@@ -2,14 +2,12 @@
 use serde::{Deserialize, Serialize};
 use std::convert::TryInto;
 use std::fmt::{Display, Formatter, Result};
-use weasel::actor::{Action, ActorRules};
-use weasel::battle::{BattleRules, BattleState};
-use weasel::entropy::Entropy;
-use weasel::event::{EventQueue, EventTrigger};
-use weasel::metric::WriteMetrics;
 use weasel::rules::ability::SimpleAbility;
-use weasel::space::{MoveEntity, PositionClaim, SpaceRules};
-use weasel::{battle_rules, rules::empty::*, WeaselError, WeaselResult};
+use weasel::{
+    battle_rules, rules::empty::*, Action, ActorRules, BattleRules, BattleState, Entropy,
+    EventQueue, EventTrigger, MoveEntity, PositionClaim, SpaceRules, WeaselError, WeaselResult,
+    WriteMetrics,
+};
 
 /// Length of each dimension of the battlefield.
 const BATTLEFIELD_LENGTH: usize = 5;

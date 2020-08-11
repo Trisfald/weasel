@@ -1,14 +1,10 @@
-use weasel::battle::{BattleRules, BattleState};
-use weasel::character::{AlterStatistics, Character, CharacterRules};
-use weasel::entity::Transmutation;
-use weasel::entropy::Entropy;
-use weasel::event::{EventQueue, EventTrigger, LinkedQueue};
-use weasel::fight::FightRules;
-use weasel::metric::WriteMetrics;
 use weasel::rules::{statistic::SimpleStatistic, status::SimpleStatus};
 use weasel::status::{Application, AppliedStatus, Potency, Status, StatusDuration, StatusId};
-use weasel::util::Id;
-use weasel::{battle_rules, rules::empty::*};
+use weasel::{
+    battle_rules, rules::empty::*, AlterStatistics, BattleRules, BattleState, Character,
+    CharacterRules, Entropy, EventQueue, EventTrigger, FightRules, Id, LinkedQueue, Transmutation,
+    WriteMetrics,
+};
 
 pub(crate) const HEALTH: u8 = 0;
 /// Id of the status that increases HEALTH.
