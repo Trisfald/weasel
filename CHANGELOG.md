@@ -6,9 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] - 2020-08-12
 ### Added
 - Event trigger `RemoveEntityTrigger` that can fire either a `RemoveCreature` or a `RemoveObject`.
 - Re-exported the most used names.
+
+### Fixed
+- Fixed the incorrect name `ConcludeMissionTrigger`. It is now `ConcludeObjectivesTrigger`.
 
 ## [0.8.0] - 2020-07-06
 ### Added
