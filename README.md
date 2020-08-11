@@ -16,8 +16,8 @@ weasel is a customizable battle system for turn-based games.
 
 ```rust
 use weasel::{
-    battle_rules, rules::empty::*, Battle, BattleController, BattleRules, CreateTeam,
-    EventTrigger, Server,
+    battle_rules, rules::empty::*, Battle, BattleController,
+    BattleRules, CreateTeam, EventTrigger, Server,
 };
 
 battle_rules! {}

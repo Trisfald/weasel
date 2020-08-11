@@ -13,8 +13,8 @@
 //!
 //! ```
 //! use weasel::{
-//!     battle_rules, rules::empty::*, Battle, BattleController, BattleRules, CreateTeam,
-//!     EventTrigger, Server,
+//!     battle_rules, rules::empty::*, Battle, BattleController,
+//!     BattleRules, CreateTeam, EventTrigger, Server,
 //! };
 //!
 //! battle_rules! {}
