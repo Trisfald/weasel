@@ -19,8 +19,8 @@ pub(crate) struct Rights<R: BattleRules> {
 }
 
 impl<R: BattleRules> Rights<R> {
-    pub(crate) fn new() -> Rights<R> {
-        Rights { data: Vec::new() }
+    pub(crate) fn new() -> Self {
+        Self { data: Vec::new() }
     }
 
     /// Removes all players without any rights.
@@ -101,8 +101,8 @@ impl<'a, R> RightsHandle<'a, R>
 where
     R: BattleRules,
 {
-    pub(crate) fn new(rights: &'a Rights<R>) -> RightsHandle<'a, R> {
-        RightsHandle { rights }
+    pub(crate) fn new(rights: &'a Rights<R>) -> Self {
+        Self { rights }
     }
 
     /// Returns an iterator over all players' rights.
@@ -132,8 +132,8 @@ where
     R: BattleRules,
     I: Iterator<Item = &'a TeamId<R>>,
 {
-    pub(crate) fn new(rights: &'a mut Rights<R>, teams: I) -> RightsHandleMut<'a, R, I> {
-        RightsHandleMut { rights, teams }
+    pub(crate) fn new(rights: &'a mut Rights<R>, teams: I) -> Self {
+        Self { rights, teams }
     }
 
     /// Add rights to control the team with the given id to `player`. The team must exist.

@@ -161,8 +161,8 @@ impl<'a, R: BattleRules> Action<'a, R> {
         actor: &'a dyn Actor<R>,
         ability: &'a Ability<R>,
         activation: &'a Option<Activation<R>>,
-    ) -> Action<'a, R> {
-        Action {
+    ) -> Self {
+        Self {
             actor,
             ability,
             activation,
@@ -262,7 +262,7 @@ impl<R: BattleRules> Debug for AlterAbilities<R> {
 
 impl<R: BattleRules> Clone for AlterAbilities<R> {
     fn clone(&self) -> Self {
-        AlterAbilities {
+        Self {
             id: self.id.clone(),
             alteration: self.alteration.clone(),
         }
@@ -428,7 +428,7 @@ impl<R: BattleRules> Debug for RegenerateAbilities<R> {
 
 impl<R: BattleRules> Clone for RegenerateAbilities<R> {
     fn clone(&self) -> Self {
-        RegenerateAbilities {
+        Self {
             id: self.id.clone(),
             seed: self.seed.clone(),
         }
@@ -505,10 +505,7 @@ where
     P: EventProcessor<R>,
 {
     /// Adds a seed to drive the regeneration of this actor's abilities.
-    pub fn seed(
-        &'a mut self,
-        seed: AbilitiesSeed<R>,
-    ) -> &'a mut RegenerateAbilitiesTrigger<'a, R, P> {
+    pub fn seed(&'a mut self, seed: AbilitiesSeed<R>) -> &'a mut Self {
         self.seed = Some(seed);
         self
     }

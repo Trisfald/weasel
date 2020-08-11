@@ -101,21 +101,21 @@ pub struct Square {
 impl Square {
     /// Returns another square which represents the same position after taking one step in
     /// the given direction.
-    fn one_step_towards(self, dir: Direction) -> Square {
+    fn one_step_towards(self, dir: Direction) -> Self {
         match dir {
-            Direction::Up => Square {
+            Direction::Up => Self {
                 x: self.x,
                 y: self.y + 1,
             },
-            Direction::Down => Square {
+            Direction::Down => Self {
                 x: self.x,
                 y: self.y - 1,
             },
-            Direction::Right => Square {
+            Direction::Right => Self {
                 x: self.x + 1,
                 y: self.y,
             },
-            Direction::Left => Square {
+            Direction::Left => Self {
                 x: self.x - 1,
                 y: self.y,
             },
@@ -143,8 +143,8 @@ pub struct Battlefield {
 
 impl Battlefield {
     /// Creates a battlefield.
-    fn new() -> Battlefield {
-        Battlefield {
+    fn new() -> Self {
+        Self {
             squares: [[false; BATTLEFIELD_LENGTH]; BATTLEFIELD_LENGTH],
         }
     }

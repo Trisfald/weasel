@@ -193,7 +193,7 @@ pub struct ServerBuilder<R: BattleRules> {
 impl<R: BattleRules> ServerBuilder<R> {
     /// Enforce authentication on all events sent by clients.
     /// Clients must present a valid `PlayerId` each time they want to send an event.
-    pub fn enforce_authentication(mut self) -> ServerBuilder<R> {
+    pub fn enforce_authentication(mut self) -> Self {
         self.authentication = true;
         self
     }

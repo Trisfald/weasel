@@ -110,7 +110,7 @@ impl UserEventPacker<CustomRules> for EventPackage {
     /// In this method we extract an event trait object out of a packaged user event.
     fn boxed(self) -> WeaselResult<Box<dyn Event<CustomRules> + Send>, CustomRules> {
         let event = match self {
-            EventPackage::MakePizza(event) => Box::new(event) as Box<dyn Event<CustomRules> + Send>,
+            Self::MakePizza(event) => Box::new(event) as Box<dyn Event<CustomRules> + Send>,
         };
         Ok(event)
     }
@@ -118,7 +118,7 @@ impl UserEventPacker<CustomRules> for EventPackage {
     /// This method packages a boxed user event into an instance of EventPackage.
     fn flattened(event: Box<dyn Event<CustomRules> + Send>) -> WeaselResult<Self, CustomRules> {
         match event.as_any().downcast_ref::<MakePizza>() {
-            Some(event) => Ok(EventPackage::MakePizza(event.clone())),
+            Some(event) => Ok(Self::MakePizza(event.clone())),
             None => Err(WeaselError::UserEventPackingError(
                 event.clone(),
                 "bad cast".into(),

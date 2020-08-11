@@ -136,66 +136,64 @@ pub(crate) enum Battlefield {
 
 impl Battlefield {
     /// Creates a battlefield from a seed.
-    fn from_seed(seed: Option<BattlefieldSeed>) -> Battlefield {
+    fn from_seed(seed: Option<BattlefieldSeed>) -> Self {
         if let Some(seed) = seed {
             match seed {
                 BattlefieldSeed::OneDimension => {
-                    Battlefield::OneDimension([BattlefieldCell::default(); BATTLEFIELD_LENGTH])
+                    Self::OneDimension([BattlefieldCell::default(); BATTLEFIELD_LENGTH])
                 }
-                BattlefieldSeed::TwoDimensions => Battlefield::TwoDimensions(
+                BattlefieldSeed::TwoDimensions => Self::TwoDimensions(
                     [[BattlefieldCell::default(); BATTLEFIELD_LENGTH]; BATTLEFIELD_LENGTH],
                 ),
             }
         } else {
-            Battlefield::Empty
+            Self::Empty
         }
     }
 
     /// Returns true if the given position is free.
     fn is_free(&self, position: &Square) -> bool {
         match self {
-            Battlefield::Empty => false,
+            Self::Empty => false,
             // For one dimensional battlefields we only care about the first dimension.
-            Battlefield::OneDimension(squares) => squares[position.x].entity.is_none(),
-            Battlefield::TwoDimensions(squares) => squares[position.y][position.x].entity.is_none(),
+            Self::OneDimension(squares) => squares[position.x].entity.is_none(),
+            Self::TwoDimensions(squares) => squares[position.y][position.x].entity.is_none(),
         }
     }
 
     /// Inserts the id of `entity` into `position`.
     fn insert(&mut self, position: &Square, entity: EntityId<CustomRules>) {
         match self {
-            Battlefield::Empty => {}
-            Battlefield::OneDimension(squares) => squares[position.x].entity = Some(entity),
-            Battlefield::TwoDimensions(squares) => {
-                squares[position.y][position.x].entity = Some(entity)
-            }
+            Self::Empty => {}
+            Self::OneDimension(squares) => squares[position.x].entity = Some(entity),
+            Self::TwoDimensions(squares) => squares[position.y][position.x].entity = Some(entity),
         }
     }
 
     /// Frees a position in the battlefield.
     fn free(&mut self, position: &Square) {
         match self {
-            Battlefield::Empty => {}
-            Battlefield::OneDimension(squares) => squares[position.x].entity = None,
-            Battlefield::TwoDimensions(squares) => squares[position.y][position.x].entity = None,
+            Self::Empty => {}
+            Self::OneDimension(squares) => squares[position.x].entity = None,
+            Self::TwoDimensions(squares) => squares[position.y][position.x].entity = None,
         }
     }
 
     /// Places a trap on the battlefield.
     fn place_trap(&mut self, position: &Square) {
         match self {
-            Battlefield::Empty => {}
-            Battlefield::OneDimension(squares) => squares[position.x].trap = true,
-            Battlefield::TwoDimensions(squares) => squares[position.y][position.x].trap = true,
+            Self::Empty => {}
+            Self::OneDimension(squares) => squares[position.x].trap = true,
+            Self::TwoDimensions(squares) => squares[position.y][position.x].trap = true,
         }
     }
 
     /// Get the entity on the given square.
     fn get(&self, position: &Square) -> Option<EntityId<CustomRules>> {
         match self {
-            Battlefield::Empty => None,
-            Battlefield::OneDimension(squares) => squares[position.x].entity,
-            Battlefield::TwoDimensions(squares) => squares[position.y][position.x].entity,
+            Self::Empty => None,
+            Self::OneDimension(squares) => squares[position.x].entity,
+            Self::TwoDimensions(squares) => squares[position.y][position.x].entity,
         }
     }
 }
@@ -203,8 +201,8 @@ impl Battlefield {
 impl Display for Battlefield {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match self {
-            Battlefield::Empty => write!(f, "[]"),
-            Battlefield::OneDimension(squares) => {
+            Self::Empty => write!(f, "[]"),
+            Self::OneDimension(squares) => {
                 // Iterate over the array and print entities' ids and traps.
                 for col in squares {
                     write!(f, "|")?;
@@ -220,7 +218,7 @@ impl Display for Battlefield {
                 writeln!(f)?;
                 Ok(())
             }
-            Battlefield::TwoDimensions(squares) => {
+            Self::TwoDimensions(squares) => {
                 // Iterate over the arrays and print entities' ids and traps.
                 for (_, row) in squares.iter().rev().enumerate() {
                     for (_, col) in row.iter().enumerate() {

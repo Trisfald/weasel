@@ -33,8 +33,8 @@ pub struct Rounds<R: BattleRules> {
 }
 
 impl<R: BattleRules> Rounds<R> {
-    pub(crate) fn new(seed: Option<RoundsSeed<R>>, rules: R::RR) -> Rounds<R> {
-        Rounds {
+    pub(crate) fn new(seed: Option<RoundsSeed<R>>, rules: R::RR) -> Self {
+        Self {
             state: RoundState::Ready,
             model: rules.generate_model(&seed),
             rules,
@@ -167,7 +167,7 @@ where
 {
     /// Returns true if the round state is `Started` and the entity is one of its actors.
     pub fn has_actor(&self, entity_id: &EI) -> bool {
-        if let RoundState::Started(actors) = self {
+        if let Self::Started(actors) = self {
             actors.contains(entity_id)
         } else {
             false
@@ -352,7 +352,7 @@ impl<R: BattleRules> Debug for StartRound<R> {
 
 impl<R: BattleRules> Clone for StartRound<R> {
     fn clone(&self) -> Self {
-        StartRound {
+        Self {
             ids: self.ids.clone(),
         }
     }
@@ -529,7 +529,7 @@ impl<R> Debug for EndRound<R> {
 
 impl<R> Clone for EndRound<R> {
     fn clone(&self) -> Self {
-        EndRound {
+        Self {
             _phantom: PhantomData,
         }
     }
@@ -707,7 +707,7 @@ impl<R: BattleRules> Debug for ResetRounds<R> {
 
 impl<R: BattleRules> Clone for ResetRounds<R> {
     fn clone(&self) -> Self {
-        ResetRounds {
+        Self {
             seed: self.seed.clone(),
         }
     }
@@ -823,7 +823,7 @@ impl<R> Debug for EnvironmentRound<R> {
 
 impl<R> Clone for EnvironmentRound<R> {
     fn clone(&self) -> Self {
-        EnvironmentRound {
+        Self {
             _phantom: PhantomData,
         }
     }
@@ -944,7 +944,7 @@ impl<R> Debug for EndTurn<R> {
 
 impl<R> Clone for EndTurn<R> {
     fn clone(&self) -> Self {
-        EndTurn {
+        Self {
             _phantom: PhantomData,
         }
     }

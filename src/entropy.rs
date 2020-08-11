@@ -18,8 +18,8 @@ pub struct Entropy<R: BattleRules> {
 
 impl<R: BattleRules> Entropy<R> {
     /// Creates a new entropy object.
-    pub(crate) fn new(seed: Option<EntropySeed<R>>, rules: R::ER) -> Entropy<R> {
-        Entropy {
+    pub(crate) fn new(seed: Option<EntropySeed<R>>, rules: R::ER) -> Self {
+        Self {
             model: rules.generate_model(&seed),
             rules,
         }
@@ -161,7 +161,7 @@ impl<R: BattleRules> std::fmt::Debug for ResetEntropy<R> {
 
 impl<R: BattleRules> Clone for ResetEntropy<R> {
     fn clone(&self) -> Self {
-        ResetEntropy {
+        Self {
             seed: self.seed.clone(),
         }
     }

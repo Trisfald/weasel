@@ -45,8 +45,8 @@ pub struct AppliedStatus<R: BattleRules> {
 
 impl<R: BattleRules> AppliedStatus<R> {
     /// Creates a new `AppliedStatus` without any origin.
-    pub fn new(status: Status<R>) -> AppliedStatus<R> {
-        AppliedStatus {
+    pub fn new(status: Status<R>) -> Self {
+        Self {
             status,
             origin: None,
             duration: 0,
@@ -54,8 +54,8 @@ impl<R: BattleRules> AppliedStatus<R> {
     }
 
     /// Creates a new `AppliedStatus` with an origin.
-    pub fn with_origin(status: Status<R>, origin: EventId) -> AppliedStatus<R> {
-        AppliedStatus {
+    pub fn with_origin(status: Status<R>, origin: EventId) -> Self {
+        Self {
             status,
             origin: Some(origin),
             duration: 0,
@@ -273,7 +273,7 @@ impl<R: BattleRules> Debug for InflictStatus<R> {
 
 impl<R: BattleRules> Clone for InflictStatus<R> {
     fn clone(&self) -> Self {
-        InflictStatus {
+        Self {
             entity_id: self.entity_id.clone(),
             status_id: self.status_id.clone(),
             potency: self.potency.clone(),
@@ -492,7 +492,7 @@ impl<R: BattleRules> Debug for ClearStatus<R> {
 
 impl<R: BattleRules> Clone for ClearStatus<R> {
     fn clone(&self) -> Self {
-        ClearStatus {
+        Self {
             entity_id: self.entity_id.clone(),
             status_id: self.status_id.clone(),
         }
@@ -689,7 +689,7 @@ impl<R: BattleRules> Debug for AlterStatuses<R> {
 
 impl<R: BattleRules> Clone for AlterStatuses<R> {
     fn clone(&self) -> Self {
-        AlterStatuses {
+        Self {
             id: self.id.clone(),
             alteration: self.alteration.clone(),
         }

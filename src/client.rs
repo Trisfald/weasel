@@ -116,7 +116,7 @@ pub struct ClientBuilder<R: BattleRules> {
 impl<R: BattleRules> ClientBuilder<R> {
     /// Enable authentication on the new client.
     /// All produced events will be authenticated with `player`.
-    pub fn enable_authentication(mut self, player: PlayerId) -> ClientBuilder<R> {
+    pub fn enable_authentication(mut self, player: PlayerId) -> Self {
         self.player = Some(player);
         self
     }

@@ -402,7 +402,7 @@ pub struct BattleBuilder<R: BattleRules> {
 
 impl<R: BattleRules> BattleBuilder<R> {
     /// Sets an event callback that will be invoked each time an event is applied to the world.
-    pub fn event_callback(mut self, event_callback: EventCallback<R>) -> BattleBuilder<R> {
+    pub fn event_callback(mut self, event_callback: EventCallback<R>) -> Self {
         self.event_callback = Some(event_callback);
         self
     }
@@ -466,7 +466,7 @@ impl<R> std::fmt::Debug for EndBattle<R> {
 
 impl<R> Clone for EndBattle<R> {
     fn clone(&self) -> Self {
-        EndBattle {
+        Self {
             _phantom: PhantomData,
         }
     }

@@ -141,124 +141,111 @@ where
     E: Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use WeaselError::*;
         match self {
-            WeaselError::GenericError => write!(f, "generic error"),
-            WeaselError::DuplicatedCreature(id) => {
-                write!(f, "duplicated creature with id {:?}", id)
-            }
-            WeaselError::DuplicatedObject(id) => write!(f, "duplicated object with id {:?}", id),
-            WeaselError::DuplicatedTeam(id) => write!(f, "duplicated team with id {:?}", id),
-            WeaselError::TeamNotFound(id) => write!(f, "team {:?} not found", id),
-            WeaselError::CreatureNotFound(id) => write!(f, "creature {:?} not found", id),
-            WeaselError::ObjectNotFound(id) => write!(f, "object {:?} not found", id),
-            WeaselError::NewCreatureUnaccepted(id, error) => write!(
+            GenericError => write!(f, "generic error"),
+            DuplicatedCreature(id) => write!(f, "duplicated creature with id {:?}", id),
+            DuplicatedObject(id) => write!(f, "duplicated object with id {:?}", id),
+            DuplicatedTeam(id) => write!(f, "duplicated team with id {:?}", id),
+            TeamNotFound(id) => write!(f, "team {:?} not found", id),
+            CreatureNotFound(id) => write!(f, "creature {:?} not found", id),
+            ObjectNotFound(id) => write!(f, "object {:?} not found", id),
+            NewCreatureUnaccepted(id, error) => write!(
                 f,
                 "team {:?} does not accept new creatures due to {:?}",
                 id, error
             ),
-            WeaselError::ConvertedCreatureUnaccepted(team_id, creature_id, error) => write!(
+            ConvertedCreatureUnaccepted(team_id, creature_id, error) => write!(
                 f,
                 "team {:?} does not welcome the creature {:?} due to {:?}",
                 team_id, creature_id, error
             ),
-            WeaselError::InvalidCreatureConversion(team_id, creature_id) => write!(
+            InvalidCreatureConversion(team_id, creature_id) => write!(
                 f,
                 "creature {:?} is already part of team {:?}",
                 creature_id, team_id
             ),
-            WeaselError::TeamNotEmpty(id) => write!(f, "team {:?} has at least one creature", id),
-            WeaselError::PositionError(source, destination, error) => write!(
+            TeamNotEmpty(id) => write!(f, "team {:?} has at least one creature", id),
+            PositionError(source, destination, error) => write!(
                 f,
                 "can't move entity from position {:?} to position {:?} due to {:?}",
                 source, destination, error
             ),
-            WeaselError::EntityNotFound(id) => write!(f, "entity {:?} not found", id),
-            WeaselError::NonContiguousEventId(id, expected) => {
+            EntityNotFound(id) => write!(f, "entity {:?} not found", id),
+            NonContiguousEventId(id, expected) => {
                 write!(f, "event has id {:?}, expected {:?}", id, expected)
             }
-            WeaselError::RoundInProgress => write!(f, "a round is already in progress"),
-            WeaselError::NoRoundInProgress => write!(f, "no round is in progress"),
-            WeaselError::ActorNotEligible(id) => {
+            RoundInProgress => write!(f, "a round is already in progress"),
+            NoRoundInProgress => write!(f, "no round is in progress"),
+            ActorNotEligible(id) => {
                 write!(f, "actor {:?} is not eligible to start a new round", id)
             }
-            WeaselError::ActorNotReady(id) => {
-                write!(f, "actor {:?} can't act outside of his round", id)
-            }
-            WeaselError::AbilityNotKnown(actor_id, ability_id) => write!(
+            ActorNotReady(id) => write!(f, "actor {:?} can't act outside of his round", id),
+            AbilityNotKnown(actor_id, ability_id) => write!(
                 f,
                 "actor {:?} doesn't known ability {:?}",
                 actor_id, ability_id
             ),
-            WeaselError::AbilityNotActivable(actor_id, ability_id, error) => write!(
+            AbilityNotActivable(actor_id, ability_id, error) => write!(
                 f,
                 "actor {:?} can't activate ability {:?} due to {:?}",
                 actor_id, ability_id, error
             ),
-            WeaselError::StatusNotPresent(character_id, status_id) => write!(
+            StatusNotPresent(character_id, status_id) => write!(
                 f,
                 "character {:?} is not afflicted by status {:?}",
                 character_id, status_id
             ),
-            WeaselError::NotACharacter(id) => write!(f, "entity {:?} is not a character", id),
-            WeaselError::NotAnActor(id) => write!(f, "entity {:?} is not an actor", id),
-            WeaselError::NotACreature(id) => write!(f, "entity {:?} is not a creature", id),
-            WeaselError::NotAnObject(id) => write!(f, "entity {:?} is not an object", id),
-            WeaselError::EmptyEventProcessor => {
-                write!(f, "() is not a valid event processor to process events")
-            }
-            WeaselError::KinshipRelation => write!(f, "kinship relation can't be explicitly set"),
-            WeaselError::SelfRelation => {
-                write!(f, "a team can't explicitly set a relation towards itself")
-            }
-            WeaselError::IncompatibleVersions(client, server) => write!(
+            NotACharacter(id) => write!(f, "entity {:?} is not a character", id),
+            NotAnActor(id) => write!(f, "entity {:?} is not an actor", id),
+            NotACreature(id) => write!(f, "entity {:?} is not a creature", id),
+            NotAnObject(id) => write!(f, "entity {:?} is not an object", id),
+            EmptyEventProcessor => write!(f, "() is not a valid event processor to process events"),
+            KinshipRelation => write!(f, "kinship relation can't be explicitly set"),
+            SelfRelation => write!(f, "a team can't explicitly set a relation towards itself"),
+            IncompatibleVersions(client, server) => write!(
                 f,
                 "client version {:?} is different from server version {:?}",
                 client, server
             ),
-            WeaselError::BattleEnded => write!(f, "the battle has ended"),
-            WeaselError::WrongMetricType(id) => write!(
+            BattleEnded => write!(f, "the battle has ended"),
+            WrongMetricType(id) => write!(
                 f,
                 "metric {:?} exists already with a different counter type",
                 id
             ),
-            WeaselError::ConditionUnsatisfied => write!(
+            ConditionUnsatisfied => write!(
                 f,
                 "the condition to apply this event prototype is not satisfied"
             ),
-            WeaselError::DuplicatedEventSink(id) => {
-                write!(f, "duplicated event sink with id {:?}", id)
-            }
-            WeaselError::InvalidEventRange(range, history_len) => write!(
+            DuplicatedEventSink(id) => write!(f, "duplicated event sink with id {:?}", id),
+            InvalidEventRange(range, history_len) => write!(
                 f,
                 "event history (0..{}) doesn't contain the event range {:?}",
                 history_len, range
             ),
-            WeaselError::EventSinkNotFound(id) => write!(f, "event sink {:?} not found", id),
-            WeaselError::AuthenticationError(player, team) => write!(
+            EventSinkNotFound(id) => write!(f, "event sink {:?} not found", id),
+            AuthenticationError(player, team) => write!(
                 f,
                 "player {:?} doesn't have control over team {:?}",
                 player, team
             ),
-            WeaselError::MissingAuthentication => write!(f, "event is not linked to any player"),
-            WeaselError::ServerOnlyEvent => write!(f, "event can be fired only by the server"),
-            WeaselError::UserEventPackingError(event, error) => {
+            MissingAuthentication => write!(f, "event is not linked to any player"),
+            ServerOnlyEvent => write!(f, "event can be fired only by the server"),
+            UserEventPackingError(event, error) => {
                 write!(f, "failed to pack user event {:?}: {}", event, error)
             }
-            WeaselError::UserEventUnpackingError(error) => {
-                write!(f, "failed to unpack user event: {}", error)
-            }
-            WeaselError::InvalidEvent(event, error) => {
-                write!(f, "{:?} failed due to {:?}, ", event, error)
-            }
-            WeaselError::MultiError(v) => {
+            UserEventUnpackingError(error) => write!(f, "failed to unpack user event: {}", error),
+            InvalidEvent(event, error) => write!(f, "{:?} failed due to {:?}, ", event, error),
+            MultiError(v) => {
                 write!(f, "[")?;
                 for err in v {
                     write!(f, "{:?}, ", err)?;
                 }
                 write!(f, "]")
             }
-            WeaselError::UserError(msg) => write!(f, "user error: {}", msg),
-            WeaselError::EventSinkError(msg) => write!(f, "sink error: {}", msg),
+            UserError(msg) => write!(f, "user error: {}", msg),
+            EventSinkError(msg) => write!(f, "sink error: {}", msg),
         }
     }
 }
@@ -303,9 +290,9 @@ impl<V, TI, EI, CI, OI, PI, AI, SI, MI, E> WeaselError<V, TI, EI, CI, OI, PI, AI
     /// ```
     pub fn unfold(self) -> Self {
         match self {
-            WeaselError::InvalidEvent(_, inner) => inner.unfold(),
-            WeaselError::MultiError(v) => {
-                WeaselError::MultiError(v.into_iter().map(|err| err.unfold()).collect())
+            Self::InvalidEvent(_, inner) => inner.unfold(),
+            Self::MultiError(v) => {
+                Self::MultiError(v.into_iter().map(|err| err.unfold()).collect())
             }
             _ => self,
         }
@@ -350,10 +337,10 @@ impl<V, TI, EI, CI, OI, PI, AI, SI, MI, E> WeaselError<V, TI, EI, CI, OI, PI, AI
             Ok(())
         } else {
             match self {
-                WeaselError::InvalidEvent(event, error) => {
+                Self::InvalidEvent(event, error) => {
                     let new_error = error.filter(op);
                     if new_error.is_err() {
-                        Err(WeaselError::InvalidEvent(
+                        Err(Self::InvalidEvent(
                             event,
                             Box::new(new_error.err().unwrap()),
                         ))
@@ -361,7 +348,7 @@ impl<V, TI, EI, CI, OI, PI, AI, SI, MI, E> WeaselError<V, TI, EI, CI, OI, PI, AI
                         Ok(())
                     }
                 }
-                WeaselError::MultiError(v) => {
+                Self::MultiError(v) => {
                     let mut new_errors = Vec::new();
                     for error in v {
                         let new_error = error.filter(op);
@@ -374,7 +361,7 @@ impl<V, TI, EI, CI, OI, PI, AI, SI, MI, E> WeaselError<V, TI, EI, CI, OI, PI, AI
                     } else if new_errors.len() == 1 {
                         Err(new_errors.pop().unwrap())
                     } else {
-                        Err(WeaselError::MultiError(new_errors))
+                        Err(Self::MultiError(new_errors))
                     }
                 }
                 _ => Err(self),
@@ -389,7 +376,7 @@ where
 {
     type Error = WeaselErrorType<R>;
 
-    fn ok() -> WeaselResult<(), R> {
+    fn ok() -> Self {
         Ok(())
     }
 

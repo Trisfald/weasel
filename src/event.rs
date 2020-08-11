@@ -99,11 +99,12 @@ pub enum EventRights<'a, R: BattleRules> {
 
 impl<'a, R: BattleRules> Debug for EventRights<'a, R> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        use EventRights::*;
         match self {
-            EventRights::None => write!(f, "EventRights::None"),
-            EventRights::Server => write!(f, "EventRights::Server"),
-            EventRights::Team(id) => write!(f, "EventRights::Team {{ {:?} }}", id),
-            EventRights::Teams(ids) => write!(f, "EventRights::Teams {{ {:?} }}", ids),
+            None => write!(f, "EventRights::None"),
+            Server => write!(f, "EventRights::Server"),
+            Team(id) => write!(f, "EventRights::Team {{ {:?} }}", id),
+            Teams(ids) => write!(f, "EventRights::Teams {{ {:?} }}", ids),
         }
     }
 }
@@ -177,8 +178,8 @@ pub struct EventWrapper<R: BattleRules> {
 }
 
 impl<R: BattleRules> Clone for EventWrapper<R> {
-    fn clone(&self) -> EventWrapper<R> {
-        EventWrapper::new(self.id, self.origin, self.event.clone())
+    fn clone(&self) -> Self {
+        Self::new(self.id, self.origin, self.event.clone())
     }
 }
 
@@ -188,8 +189,8 @@ impl<R: BattleRules> EventWrapper<R> {
         id: EventId,
         origin: Option<EventId>,
         event: Box<dyn Event<R> + Send>,
-    ) -> EventWrapper<R> {
-        EventWrapper { id, origin, event }
+    ) -> Self {
+        Self { id, origin, event }
     }
 
     /// Returns this event's id.
@@ -229,15 +230,15 @@ pub struct VersionedEventWrapper<R: BattleRules> {
 }
 
 impl<R: BattleRules> Clone for VersionedEventWrapper<R> {
-    fn clone(&self) -> VersionedEventWrapper<R> {
-        VersionedEventWrapper::new(self.wrapper.clone(), self.version.clone())
+    fn clone(&self) -> Self {
+        Self::new(self.wrapper.clone(), self.version.clone())
     }
 }
 
 impl<R: BattleRules> VersionedEventWrapper<R> {
     /// Creates a new VersionedEventWrapper.
-    pub(crate) fn new(wrapper: EventWrapper<R>, version: Version<R>) -> VersionedEventWrapper<R> {
-        VersionedEventWrapper { wrapper, version }
+    pub(crate) fn new(wrapper: EventWrapper<R>, version: Version<R>) -> Self {
+        Self { wrapper, version }
     }
 
     /// Returns the `EventWrapper` contained in this object.
@@ -275,8 +276,8 @@ pub struct EventPrototype<R: BattleRules> {
 
 impl<R: BattleRules> EventPrototype<R> {
     /// Creates a new EventPrototype.
-    pub(crate) fn new(event: Box<dyn Event<R> + Send>) -> EventPrototype<R> {
-        EventPrototype {
+    pub(crate) fn new(event: Box<dyn Event<R> + Send>) -> Self {
+        Self {
             origin: None,
             event,
             condition: None,
@@ -333,7 +334,7 @@ impl<R: BattleRules> Deref for EventPrototype<R> {
 
 impl<R: BattleRules> Clone for EventPrototype<R> {
     fn clone(&self) -> Self {
-        EventPrototype {
+        Self {
             origin: self.origin,
             event: self.event.clone(),
             condition: self.condition.clone(),
@@ -361,8 +362,8 @@ impl<R: BattleRules> ClientEventPrototype<R> {
         event: Box<dyn Event<R> + Send>,
         version: Version<R>,
         player: Option<PlayerId>,
-    ) -> ClientEventPrototype<R> {
-        ClientEventPrototype {
+    ) -> Self {
+        Self {
             origin,
             event,
             version,
@@ -419,7 +420,7 @@ impl<R: BattleRules> Deref for ClientEventPrototype<R> {
 
 impl<R: BattleRules> Clone for ClientEventPrototype<R> {
     fn clone(&self) -> Self {
-        ClientEventPrototype {
+        Self {
             origin: self.origin,
             event: self.event.clone(),
             version: self.version.clone(),
@@ -536,7 +537,7 @@ impl<R> Debug for DummyEvent<R> {
 
 impl<R> Clone for DummyEvent<R> {
     fn clone(&self) -> Self {
-        DummyEvent {
+        Self {
             _phantom: PhantomData,
         }
     }
@@ -670,8 +671,8 @@ pub struct Prioritized<'a, R: BattleRules> {
 
 impl<'a, R: BattleRules> Prioritized<'a, R> {
     /// Creates a new Prioritized decorator for the given `event_queue`.
-    pub fn new(event_queue: &'a mut EventQueue<R>) -> Prioritized<R> {
-        Prioritized { event_queue }
+    pub fn new(event_queue: &'a mut EventQueue<R>) -> Self {
+        Self { event_queue }
     }
 }
 
@@ -709,8 +710,8 @@ pub struct LinkedQueue<'a, R: BattleRules> {
 
 impl<'a, R: BattleRules> LinkedQueue<'a, R> {
     /// Creates a new LinkedQueue decorator for the given `event_queue`.
-    pub fn new(event_queue: &'a mut EventQueue<R>, origin: Option<EventId>) -> LinkedQueue<R> {
-        LinkedQueue {
+    pub fn new(event_queue: &'a mut EventQueue<R>, origin: Option<EventId>) -> Self {
+        Self {
             event_queue,
             origin,
         }
@@ -778,8 +779,8 @@ where
     Condition<R>: Clone,
 {
     /// Creates a new `Conditional` decorator for an `EventTrigger`.
-    pub fn new(trigger: T, condition: Condition<R>) -> Conditional<'a, R, T, P> {
-        Conditional {
+    pub fn new(trigger: T, condition: Condition<R>) -> Self {
+        Self {
             trigger,
             condition,
             _phantom: PhantomData,
@@ -841,8 +842,8 @@ pub(crate) struct MultiClientSink<R: BattleRules> {
 }
 
 impl<R: BattleRules> MultiClientSink<R> {
-    pub(crate) fn new() -> MultiClientSink<R> {
-        MultiClientSink { sinks: Vec::new() }
+    pub(crate) fn new() -> Self {
+        Self { sinks: Vec::new() }
     }
 
     /// Adds a new sink.
@@ -922,8 +923,8 @@ impl<'a, R> MultiClientSinkHandle<'a, R>
 where
     R: BattleRules + 'static,
 {
-    pub(crate) fn new(sinks: &'a MultiClientSink<R>) -> MultiClientSinkHandle<'a, R> {
-        MultiClientSinkHandle { sinks }
+    pub(crate) fn new(sinks: &'a MultiClientSink<R>) -> Self {
+        Self { sinks }
     }
 
     /// Returns an iterator over all sinks.
@@ -945,11 +946,8 @@ impl<'a, R> MultiClientSinkHandleMut<'a, R>
 where
     R: BattleRules + 'static,
 {
-    pub(crate) fn new(
-        sinks: &'a mut MultiClientSink<R>,
-        battle: &'a Battle<R>,
-    ) -> MultiClientSinkHandleMut<'a, R> {
-        MultiClientSinkHandleMut { sinks, battle }
+    pub(crate) fn new(sinks: &'a mut MultiClientSink<R>, battle: &'a Battle<R>) -> Self {
+        Self { sinks, battle }
     }
 
     /// Adds a new sink.
@@ -1065,8 +1063,8 @@ where
     P: 'a + EventProcessor<R>,
 {
     /// Creates a new decorator to change an event's origin.
-    pub fn new(trigger: T, origin: EventId) -> Originated<'a, R, T, P> {
-        Originated {
+    pub fn new(trigger: T, origin: EventId) -> Self {
+        Self {
             trigger,
             origin,
             _phantom: PhantomData,

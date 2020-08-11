@@ -178,7 +178,7 @@ impl<R: BattleRules> Debug for CreateObject<R> {
 
 impl<R: BattleRules> Clone for CreateObject<R> {
     fn clone(&self) -> Self {
-        CreateObject {
+        Self {
             id: self.id.clone(),
             position: self.position.clone(),
             statistics_seed: self.statistics_seed.clone(),
@@ -391,7 +391,7 @@ impl<R: BattleRules> Debug for RemoveObject<R> {
 
 impl<R: BattleRules> Clone for RemoveObject<R> {
     fn clone(&self) -> Self {
-        RemoveObject {
+        Self {
             id: self.id.clone(),
         }
     }

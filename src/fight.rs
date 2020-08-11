@@ -164,7 +164,7 @@ impl<R: BattleRules> std::fmt::Debug for ApplyImpact<R> {
 
 impl<R: BattleRules> Clone for ApplyImpact<R> {
     fn clone(&self) -> Self {
-        ApplyImpact {
+        Self {
             impact: self.impact.clone(),
         }
     }

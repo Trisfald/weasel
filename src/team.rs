@@ -227,7 +227,7 @@ impl<R: BattleRules> Debug for CreateTeam<R> {
 
 impl<R: BattleRules> Clone for CreateTeam<R> {
     fn clone(&self) -> Self {
-        CreateTeam {
+        Self {
             id: self.id.clone(),
             relations: self.relations.clone(),
             objectives_seed: self.objectives_seed.clone(),
@@ -434,8 +434,8 @@ impl<R: BattleRules> Debug for RelationshipPair<R> {
 }
 
 impl<R: BattleRules> RelationshipPair<R> {
-    pub(crate) fn new(first: TeamId<R>, second: TeamId<R>) -> RelationshipPair<R> {
-        RelationshipPair { first, second }
+    pub(crate) fn new(first: TeamId<R>, second: TeamId<R>) -> Self {
+        Self { first, second }
     }
 
     pub(crate) fn values(&self) -> impl Iterator<Item = TeamId<R>> {
@@ -515,7 +515,7 @@ impl<R: BattleRules> Debug for SetRelations<R> {
 
 impl<R: BattleRules> Clone for SetRelations<R> {
     fn clone(&self) -> Self {
-        SetRelations {
+        Self {
             relations: self.relations.clone(),
         }
     }
@@ -686,8 +686,8 @@ impl<R: BattleRules> ConcludeObjectives<R> {
         processor: &'a mut P,
         id: TeamId<R>,
         conclusion: Conclusion,
-    ) -> ConcludeMissionTrigger<'a, R, P> {
-        ConcludeMissionTrigger {
+    ) -> ConcludeObjectivesTrigger<'a, R, P> {
+        ConcludeObjectivesTrigger {
             processor,
             id,
             conclusion,
@@ -728,7 +728,7 @@ impl<R: BattleRules + 'static> Event<R> for ConcludeObjectives<R> {
 }
 
 /// Trigger to build and fire a `ConcludeObjectives` event.
-pub struct ConcludeMissionTrigger<'a, R, P>
+pub struct ConcludeObjectivesTrigger<'a, R, P>
 where
     R: BattleRules,
     P: EventProcessor<R>,
@@ -738,7 +738,7 @@ where
     conclusion: Conclusion,
 }
 
-impl<'a, R, P> EventTrigger<'a, R, P> for ConcludeMissionTrigger<'a, R, P>
+impl<'a, R, P> EventTrigger<'a, R, P> for ConcludeObjectivesTrigger<'a, R, P>
 where
     R: BattleRules + 'static,
     P: EventProcessor<R>,
@@ -840,7 +840,7 @@ impl<R: BattleRules> Debug for ResetObjectives<R> {
 
 impl<R: BattleRules> Clone for ResetObjectives<R> {
     fn clone(&self) -> Self {
-        ResetObjectives {
+        Self {
             id: self.id.clone(),
             seed: self.seed.clone(),
         }
@@ -978,7 +978,7 @@ impl<R: BattleRules> Debug for RemoveTeam<R> {
 
 impl<R: BattleRules> Clone for RemoveTeam<R> {
     fn clone(&self) -> Self {
-        RemoveTeam {
+        Self {
             id: self.id.clone(),
         }
     }

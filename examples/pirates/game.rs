@@ -28,7 +28,7 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new() -> Game {
+    pub fn new() -> Self {
         // Create a battle object with our game rules.
         // We attach a callback to the battle, so that we can display a brief commentary
         // when certain events happen!
@@ -69,7 +69,7 @@ impl Game {
             .fire()
             .unwrap();
         // Return a game object.
-        Game { server }
+        Self { server }
     }
 
     pub fn fire_cannonball(&mut self) {
