@@ -168,10 +168,10 @@ pub type TeamId<R> = <<R as BattleRules>::TR as TeamRules<R>>::Id;
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleController, BattleRules};
-/// use weasel::event::EventTrigger;
-/// use weasel::team::CreateTeam;
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, rules::empty::*, Battle, BattleController, BattleRules, CreateTeam,
+///     EventTrigger, Server,
+/// };
 ///
 /// battle_rules! {}
 ///
@@ -471,10 +471,10 @@ impl<R: BattleRules> Hash for RelationshipPair<R> {
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleController, BattleRules};
-/// use weasel::event::EventTrigger;
-/// use weasel::team::{CreateTeam, Relation, SetRelations};
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, rules::empty::*, Battle, BattleController, BattleRules, CreateTeam,
+///     EventTrigger, Relation, Server, SetRelations,
+/// };
 ///
 /// battle_rules! {}
 ///
@@ -626,10 +626,10 @@ pub enum Conclusion {
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleController, BattleRules};
-/// use weasel::event::EventTrigger;
-/// use weasel::team::{CreateTeam, ConcludeObjectives, Conclusion};
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, rules::empty::*, Battle, BattleController, BattleRules, ConcludeObjectives,
+///     Conclusion, CreateTeam, EventTrigger, Server,
+/// };
 ///
 /// battle_rules! {}
 ///
@@ -761,10 +761,10 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleController, BattleRules};
-/// use weasel::event::EventTrigger;
-/// use weasel::team::{CreateTeam, ConcludeObjectives, Conclusion, ResetObjectives};
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, rules::empty::*, Battle, BattleController, BattleRules, ConcludeObjectives,
+///     Conclusion, CreateTeam, EventTrigger, ResetObjectives, Server,
+/// };
 ///
 /// battle_rules! {}
 ///
@@ -927,10 +927,10 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleController, BattleRules};
-/// use weasel::event::EventTrigger;
-/// use weasel::team::{CreateTeam, RemoveTeam};
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, rules::empty::*, Battle, BattleController, BattleRules, CreateTeam,
+///     EventTrigger, RemoveTeam, Server,
+/// };
 ///
 /// battle_rules! {}
 ///

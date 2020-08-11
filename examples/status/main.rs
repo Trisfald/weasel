@@ -1,14 +1,11 @@
 use crate::rules::*;
-use weasel::battle::{Battle, BattleController};
-use weasel::creature::{CreateCreature, CreatureId};
-use weasel::entity::EntityId;
-use weasel::event::{EventKind, EventTrigger};
-use weasel::object::{CreateObject, ObjectId};
-use weasel::round::{EndRound, EnvironmentRound, StartRound};
-use weasel::status::{ClearStatus, InflictStatus};
-use weasel::team::{CreateTeam, TeamId};
-use weasel::util::Id;
-use weasel::Server;
+use weasel::creature::CreatureId;
+use weasel::object::ObjectId;
+use weasel::team::TeamId;
+use weasel::{
+    Battle, BattleController, ClearStatus, CreateCreature, CreateObject, CreateTeam, EndRound,
+    EntityId, EnvironmentRound, EventKind, EventTrigger, Id, InflictStatus, Server, StartRound,
+};
 
 mod rules;
 

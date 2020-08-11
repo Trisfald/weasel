@@ -1,11 +1,11 @@
 use crate::rules::*;
 use rules::BattlefieldSeed;
-use weasel::battle::{Battle, BattleController};
-use weasel::creature::{CreateCreature, CreatureId};
-use weasel::event::EventTrigger;
-use weasel::space::{AlterSpace, ResetSpace};
-use weasel::team::{CreateTeam, TeamId};
-use weasel::Server;
+use weasel::creature::CreatureId;
+use weasel::team::TeamId;
+use weasel::{
+    AlterSpace, Battle, BattleController, CreateCreature, CreateTeam, EventTrigger, ResetSpace,
+    Server,
+};
 
 mod rules;
 

@@ -276,10 +276,10 @@ impl<V, TI, EI, CI, OI, PI, AI, SI, MI, E> WeaselError<V, TI, EI, CI, OI, PI, AI
     ///
     /// # Examples
     /// ```
-    /// use weasel::event::{EventTrigger, DummyEvent};
-    /// use weasel::error::{WeaselErrorType, WeaselError};
-    /// use weasel::battle::BattleRules;
-    /// use weasel::{battle_rules, rules::empty::*};
+    /// use weasel::{
+    ///     battle_rules, error::WeaselErrorType, event::DummyEvent, rules::empty::*, BattleRules,
+    ///     EventTrigger, WeaselError,
+    /// };
     ///
     /// battle_rules! {}
     /// let mut processor = ();
@@ -306,10 +306,10 @@ impl<V, TI, EI, CI, OI, PI, AI, SI, MI, E> WeaselError<V, TI, EI, CI, OI, PI, AI
     ///
     /// # Examples
     /// ```
-    /// use weasel::event::{EventTrigger, DummyEvent};
-    /// use weasel::error::{WeaselErrorType, WeaselError};
-    /// use weasel::battle::BattleRules;
-    /// use weasel::{battle_rules, rules::empty::*};
+    /// use weasel::{
+    ///     battle_rules, error::WeaselErrorType, event::DummyEvent, rules::empty::*, BattleRules,
+    ///     EventTrigger, WeaselError,
+    /// };
     ///
     /// battle_rules! {}
     /// let mut processor = ();

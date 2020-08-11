@@ -3,14 +3,12 @@ use std::io::{BufRead, BufReader, Write};
 use std::net::{Shutdown, TcpListener, TcpStream};
 use std::sync::{Arc, Mutex};
 use std::{io, thread, thread::JoinHandle, time};
-use weasel::battle::{Battle, BattleRules};
-use weasel::event::{
-    ClientEventPrototype, ClientSink, EventReceiver, EventServer, EventSink, EventSinkId,
-    ServerSink, VersionedEventWrapper,
-};
-use weasel::serde::{FlatClientEvent, FlatVersionedEvent};
+use weasel::event::{ClientSink, EventSink, EventSinkId, ServerSink};
 use weasel::team::TeamId;
-use weasel::{Client, Server, WeaselResult};
+use weasel::{
+    Battle, BattleRules, Client, ClientEventPrototype, EventReceiver, EventServer, FlatClientEvent,
+    FlatVersionedEvent, Server, VersionedEventWrapper, WeaselResult,
+};
 
 const REMOTE_CLIENTS: usize = 2;
 /// Shutdown byte.

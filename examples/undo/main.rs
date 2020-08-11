@@ -1,13 +1,11 @@
 use crate::rules::*;
 use std::io::Read;
-use weasel::ability::ActivateAbility;
-use weasel::battle::{Battle, BattleController};
-use weasel::creature::{CreateCreature, CreatureId};
-use weasel::entity::EntityId;
-use weasel::event::{EventKind, EventReceiver, EventTrigger, VersionedEventWrapper};
-use weasel::round::{EndRound, StartRound};
-use weasel::team::{CreateTeam, TeamId};
-use weasel::Server;
+use weasel::creature::CreatureId;
+use weasel::team::TeamId;
+use weasel::{
+    ActivateAbility, Battle, BattleController, CreateCreature, CreateTeam, EndRound, EntityId,
+    EventKind, EventReceiver, EventTrigger, Server, StartRound, VersionedEventWrapper,
+};
 
 mod rules;
 

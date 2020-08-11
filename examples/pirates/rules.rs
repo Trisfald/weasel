@@ -1,18 +1,11 @@
-use weasel::actor::{Action, ActorRules};
-use weasel::battle::{BattleRules, BattleState};
-use weasel::character::{
-    AlterStatistics, Character, CharacterRules, StatisticId, StatisticsAlteration,
-};
-use weasel::entity::{EntityId, Transmutation};
-use weasel::entropy::Entropy;
-use weasel::event::{EventQueue, EventTrigger};
-use weasel::fight::{ApplyImpact, FightRules};
-use weasel::metric::{ReadMetrics, WriteMetrics};
+use weasel::character::{StatisticId, StatisticsAlteration};
 use weasel::rules::entropy::UniformDistribution;
 use weasel::rules::{ability::SimpleAbility, statistic::SimpleStatistic};
-use weasel::team::{Conclusion, Team, TeamRules};
-use weasel::util::Id;
-use weasel::{battle_rules, rules::empty::*};
+use weasel::{
+    battle_rules, rules::empty::*, Action, ActorRules, AlterStatistics, ApplyImpact, BattleRules,
+    BattleState, Character, CharacterRules, Conclusion, EntityId, Entropy, EventQueue,
+    EventTrigger, FightRules, Id, ReadMetrics, Team, TeamRules, Transmutation, WriteMetrics,
+};
 
 // Constants to identify statistics (of ships).
 pub(crate) static STAT_HULL: StatisticId<PiratesRules> = 0;

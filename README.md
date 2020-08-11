@@ -15,14 +15,14 @@ weasel is a customizable battle system for turn-based games.
 ## Examples
 
 ```rust
-use weasel::{Server, battle_rules, rules::empty::*};
-use weasel::battle::{Battle, BattleRules};
-use weasel::team::CreateTeam;
-use weasel::event::EventTrigger;
+use weasel::{
+    battle_rules, rules::empty::*, Battle, BattleController, BattleRules, CreateTeam,
+    EventTrigger, Server,
+};
 
 battle_rules! {}
 
-let battle = Battle::builder(CustomRules::new()).build(); 
+let battle = Battle::builder(CustomRules::new()).build();
 let mut server = Server::builder(battle).build();
 
 CreateTeam::trigger(&mut server, 1).fire().unwrap();

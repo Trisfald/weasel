@@ -1,12 +1,10 @@
 use crate::rules::*;
 use std::time::SystemTime;
-use weasel::battle::{Battle, BattleController};
-use weasel::creature::{CreateCreature, RemoveCreature};
-use weasel::entropy::ResetEntropy;
-use weasel::event::EventTrigger;
-use weasel::round::{EndRound, StartRound};
-use weasel::team::{CreateTeam, TeamId};
-use weasel::Server;
+use weasel::team::TeamId;
+use weasel::{
+    Battle, BattleController, CreateCreature, CreateTeam, EndRound, EventTrigger, RemoveCreature,
+    ResetEntropy, Server, StartRound,
+};
 
 mod rules;
 

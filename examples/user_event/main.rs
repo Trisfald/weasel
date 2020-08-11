@@ -1,8 +1,5 @@
 use crate::rules::*;
-use weasel::battle::{Battle, BattleController};
-use weasel::event::EventTrigger;
-use weasel::serde::FlatVersionedEvent;
-use weasel::Server;
+use weasel::{Battle, BattleController, EventTrigger, FlatVersionedEvent, Server};
 
 mod rules;
 

@@ -1,9 +1,10 @@
 use serde::{Deserialize, Serialize};
 use std::any::Any;
-use weasel::battle::{Battle, BattleRules};
-use weasel::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
-use weasel::user::{UserEventPacker, UserRules};
-use weasel::{battle_rules, battle_rules_with_user, rules::empty::*, WeaselError, WeaselResult};
+use weasel::{
+    battle_rules, battle_rules_with_user, rules::empty::*, Battle, BattleRules, Event, EventKind,
+    EventProcessor, EventQueue, EventTrigger, UserEventPacker, UserRules, WeaselError,
+    WeaselResult,
+};
 
 pub(crate) const PIZZAS_CREATED_METRIC: &str = "pizzas_created";
 

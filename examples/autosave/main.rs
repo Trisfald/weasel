@@ -2,12 +2,12 @@ use crate::sink::AutosaveSink;
 use std::convert::TryInto;
 use std::fs::File;
 use std::{env, io::BufRead, io::BufReader, io::Read};
-use weasel::battle::{Battle, BattleController, BattleRules};
-use weasel::creature::CreateCreature;
-use weasel::event::{EventReceiver, EventSinkId, EventTrigger};
-use weasel::serde::FlatVersionedEvent;
-use weasel::team::{CreateTeam, TeamId};
-use weasel::{battle_rules, rules::empty::*, Server};
+use weasel::event::EventSinkId;
+use weasel::team::TeamId;
+use weasel::{
+    battle_rules, rules::empty::*, Battle, BattleController, BattleRules, CreateCreature,
+    CreateTeam, EventReceiver, EventTrigger, FlatVersionedEvent, Server,
+};
 
 mod sink;
 

@@ -1,10 +1,8 @@
 use std::env;
 use std::fs::{File, OpenOptions};
 use std::io::Write;
-use weasel::battle::BattleRules;
-use weasel::event::{ClientSink, EventSink, EventSinkId, VersionedEventWrapper};
-use weasel::serde::FlatVersionedEvent;
-use weasel::WeaselResult;
+use weasel::event::{ClientSink, EventSink, EventSinkId};
+use weasel::{BattleRules, FlatVersionedEvent, VersionedEventWrapper, WeaselResult};
 
 /// A sink that dumps events into a file.
 pub struct AutosaveSink<R: BattleRules> {

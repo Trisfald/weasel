@@ -1,13 +1,11 @@
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter, Result};
-use weasel::battle::BattleRules;
-use weasel::entity::{Entities, Entity, EntityId, RemoveEntity};
-use weasel::event::{EventQueue, EventTrigger};
-use weasel::metric::WriteMetrics;
-use weasel::round::Rounds;
-use weasel::space::{PositionClaim, SpaceRules};
-use weasel::{battle_rules, battle_rules_with_space, rules::empty::*, WeaselError, WeaselResult};
+use weasel::{
+    battle_rules, battle_rules_with_space, rules::empty::*, BattleRules, Entities, Entity,
+    EntityId, EventQueue, EventTrigger, PositionClaim, RemoveEntity, Rounds, SpaceRules,
+    WeaselError, WeaselResult, WriteMetrics,
+};
 
 /// Length of each dimension of the battlefield.
 const BATTLEFIELD_LENGTH: usize = 5;

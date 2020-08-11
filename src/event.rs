@@ -498,9 +498,10 @@ impl<R: BattleRules> EventProcessor<R> for EventQueue<R> {
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleController, BattleRules};
-/// use weasel::event::{EventTrigger, DummyEvent, EventKind};
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, event::DummyEvent, rules::empty::*, Battle, BattleController, BattleRules,
+///     EventKind, EventTrigger, Server,
+/// };
 ///
 /// battle_rules! {}
 ///
@@ -653,9 +654,10 @@ impl DefaultOutput for () {
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{EndBattle, BattleRules};
-/// use weasel::event::{EventTrigger, DummyEvent, EventKind, Prioritized, EventQueue};
-/// use weasel::{battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, event::DummyEvent, event::Prioritized, rules::empty::*, BattleRules,
+///     EndBattle, EventKind, EventQueue, EventTrigger,
+/// };
 ///
 /// battle_rules! {}
 ///
@@ -692,9 +694,10 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{EndBattle, BattleRules};
-/// use weasel::event::{EventTrigger, DummyEvent, EventKind, LinkedQueue, EventQueue};
-/// use weasel::{battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, event::DummyEvent, rules::empty::*, BattleRules, EndBattle, EventKind,
+///     EventQueue, EventTrigger, LinkedQueue,
+/// };
 ///
 /// battle_rules! {}
 ///
@@ -736,9 +739,10 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleState, BattleRules};
-/// use weasel::event::{EventTrigger, DummyEvent, Conditional};
-/// use weasel::{Server, WeaselError, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, event::Conditional, event::DummyEvent, rules::empty::*, Battle, BattleRules,
+///     BattleState, EventTrigger, Server, WeaselError,
+/// };
 ///
 /// battle_rules! {}
 ///
@@ -1030,9 +1034,10 @@ fn normalize_range<R: BattleRules>(
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleController, BattleRules};
-/// use weasel::event::{EventTrigger, DummyEvent, Originated};
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, event::DummyEvent, event::Originated, rules::empty::*, Battle,
+///     BattleController, BattleRules, EventTrigger, Server,
+/// };
 ///
 /// battle_rules! {}
 ///

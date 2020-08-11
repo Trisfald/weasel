@@ -271,13 +271,10 @@ pub type RoundsModel<R> = <<R as BattleRules>::RR as RoundsRules<R>>::RoundsMode
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleController, BattleRules};
-/// use weasel::creature::CreateCreature;
-/// use weasel::entity::EntityId;
-/// use weasel::event::EventTrigger;
-/// use weasel::round::StartRound;
-/// use weasel::team::CreateTeam;
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, rules::empty::*, Battle, BattleController, BattleRules, CreateCreature,
+///     CreateTeam, EntityId, EventTrigger, Server, StartRound,
+/// };
 ///
 /// battle_rules! {}
 ///
@@ -478,13 +475,10 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleController, BattleRules};
-/// use weasel::creature::CreateCreature;
-/// use weasel::entity::EntityId;
-/// use weasel::event::EventTrigger;
-/// use weasel::round::{EndRound, RoundState, StartRound};
-/// use weasel::team::CreateTeam;
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, round::RoundState, rules::empty::*, Battle, BattleController, BattleRules,
+///     CreateCreature, CreateTeam, EndRound, EntityId, EventTrigger, Server, StartRound,
+/// };
 ///
 /// battle_rules! {}
 ///
@@ -656,10 +650,10 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleController, BattleRules};
-/// use weasel::event::{EventTrigger, EventKind};
-/// use weasel::round::ResetRounds;
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, rules::empty::*, Battle, BattleController, BattleRules, EventKind,
+///     EventTrigger, ResetRounds, Server,
+/// };
 ///
 /// battle_rules! {}
 ///
@@ -783,10 +777,10 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleController, BattleRules};
-/// use weasel::event::EventTrigger;
-/// use weasel::round::EnvironmentRound;
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, rules::empty::*, Battle, BattleController, BattleRules, EnvironmentRound,
+///     EventTrigger, Server,
+/// };
 ///
 /// battle_rules! {}
 ///
@@ -904,10 +898,10 @@ where
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleController, BattleRules};
-/// use weasel::event::EventTrigger;
-/// use weasel::round::EndTurn;
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, rules::empty::*, Battle, BattleController, BattleRules, EndTurn,
+///     EventTrigger, Server,
+/// };
 ///
 /// battle_rules! {}
 ///

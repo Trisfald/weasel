@@ -35,14 +35,10 @@ pub type AbilitiesAlteration<R> = <<R as BattleRules>::AR as ActorRules<R>>::Abi
 ///
 /// # Examples
 /// ```
-/// use weasel::ability::ActivateAbility;
-/// use weasel::battle::{Battle, BattleRules};
-/// use weasel::creature::CreateCreature;
-/// use weasel::entity::EntityId;
-/// use weasel::event::EventTrigger;
-/// use weasel::round::StartRound;
-/// use weasel::team::CreateTeam;
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, rules::empty::*, ActivateAbility, Battle, BattleRules, CreateCreature,
+///     CreateTeam, EntityId, EventTrigger, Server, StartRound,
+/// };
 ///
 /// battle_rules! {}
 ///
@@ -62,7 +58,8 @@ pub type AbilitiesAlteration<R> = <<R as BattleRules>::AR as ActorRules<R>>::Abi
 ///
 /// let ability_id = 99;
 /// let result =
-///     ActivateAbility::trigger(&mut server, EntityId::Creature(creature_id), ability_id).fire();
+///     ActivateAbility::trigger(&mut server, EntityId::Creature(creature_id), ability_id)
+///         .fire();
 /// // We get an error because the creature doesn't know this ability.
 /// // The set of abilities known by creatures must defined in 'ActorRules'.
 /// assert!(result.is_err());

@@ -536,12 +536,10 @@ impl<R: BattleRules> Entities<R> {
 ///
 /// # Examples
 /// ```
-/// use weasel::battle::{Battle, BattleController, BattleRules};
-/// use weasel::creature::CreateCreature;
-/// use weasel::entity::{EntityId, RemoveEntity};
-/// use weasel::event::EventTrigger;
-/// use weasel::team::CreateTeam;
-/// use weasel::{Server, battle_rules, rules::empty::*};
+/// use weasel::{
+///     battle_rules, rules::empty::*, Battle, BattleController, BattleRules, CreateCreature,
+///     CreateTeam, EntityId, EventTrigger, RemoveEntity, Server,
+/// };
 ///
 /// battle_rules! {}
 ///
