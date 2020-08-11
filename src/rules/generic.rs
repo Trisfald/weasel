@@ -30,8 +30,8 @@ macro_rules! battle_rules {
 
         impl CustomRules {
             #[allow(dead_code)]
-            pub(crate) fn new() -> CustomRules {
-                CustomRules {
+            pub(crate) fn new() -> Self {
+                Self {
                     team_rules: <$ty>::default(),
                     character_rules: <$cy>::default(),
                     actor_rules: <$ay>::default(),

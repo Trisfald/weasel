@@ -12,8 +12,8 @@ pub(crate) struct Metrics<R: BattleRules> {
 }
 
 impl<R: BattleRules> Metrics<R> {
-    pub(crate) fn new() -> Metrics<R> {
-        Metrics {
+    pub(crate) fn new() -> Self {
+        Self {
             map: HashMap::new(),
         }
     }

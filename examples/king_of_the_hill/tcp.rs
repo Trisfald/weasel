@@ -40,8 +40,8 @@ impl<R: BattleRules> Drop for TcpServerSink<R> {
 }
 
 impl<R: BattleRules + 'static> TcpServerSink<R> {
-    pub(crate) fn new(stream: TcpStream) -> TcpServerSink<R> {
-        TcpServerSink {
+    pub(crate) fn new(stream: TcpStream) -> Self {
+        Self {
             stream,
             _phantom: std::marker::PhantomData,
         }
@@ -81,8 +81,8 @@ pub(crate) struct TcpClientSink<R: BattleRules> {
 }
 
 impl<R: BattleRules + 'static> TcpClientSink<R> {
-    pub(crate) fn new(id: EventSinkId, stream: TcpStream) -> TcpClientSink<R> {
-        TcpClientSink {
+    pub(crate) fn new(id: EventSinkId, stream: TcpStream) -> Self {
+        Self {
             id,
             stream,
             _phantom: std::marker::PhantomData,
@@ -130,7 +130,7 @@ impl Drop for TcpServer {
 }
 
 impl TcpServer {
-    pub(crate) fn new(server: Server<CustomRules>) -> TcpServer {
+    pub(crate) fn new(server: Server<CustomRules>) -> Self {
         let game_server = Arc::new(Mutex::new(server));
         let game_server_clone = game_server.clone();
         let running = Arc::new(Mutex::new(true));
@@ -187,7 +187,7 @@ impl TcpServer {
             }
             thread::sleep(time::Duration::from_millis(10));
         }
-        TcpServer {
+        Self {
             game_server,
             thread: Some(thread),
             running,
@@ -293,7 +293,7 @@ impl Drop for TcpClient {
 }
 
 impl TcpClient {
-    pub(crate) fn new(server_address: &str) -> TcpClient {
+    pub(crate) fn new(server_address: &str) -> Self {
         // Open a connection to the server.
         let stream = TcpStream::connect(server_address).unwrap();
         stream
@@ -376,7 +376,7 @@ impl TcpClient {
                 thread::sleep(time::Duration::from_millis(10));
             }
         });
-        TcpClient {
+        Self {
             id,
             game_client,
             thread: Some(thread),

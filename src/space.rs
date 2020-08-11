@@ -20,8 +20,8 @@ pub struct Space<R: BattleRules> {
 
 impl<R: BattleRules> Space<R> {
     /// Creates a new space object.
-    pub(crate) fn new(seed: Option<SpaceSeed<R>>, rules: R::SR) -> Space<R> {
-        Space {
+    pub(crate) fn new(seed: Option<SpaceSeed<R>>, rules: R::SR) -> Self {
+        Self {
             model: rules.generate_model(&seed),
             rules,
         }
@@ -203,8 +203,8 @@ impl<R: BattleRules> PositionClaim<'_, R> {
     /// Returns the id of the entity behind this claim.
     pub fn entity_id(&self) -> &EntityId<R> {
         match self {
-            PositionClaim::Spawn(id) => id,
-            PositionClaim::Movement(entity) => entity.entity_id(),
+            Self::Spawn(id) => id,
+            Self::Movement(entity) => entity.entity_id(),
         }
     }
 }
@@ -300,7 +300,7 @@ impl<R: BattleRules> Debug for MoveEntity<R> {
 
 impl<R: BattleRules> Clone for MoveEntity<R> {
     fn clone(&self) -> Self {
-        MoveEntity {
+        Self {
             id: self.id.clone(),
             position: self.position.clone(),
         }
@@ -441,7 +441,7 @@ impl<R: BattleRules> Debug for ResetSpace<R> {
 
 impl<R: BattleRules> Clone for ResetSpace<R> {
     fn clone(&self) -> Self {
-        ResetSpace {
+        Self {
             seed: self.seed.clone(),
         }
     }
@@ -584,7 +584,7 @@ impl<R: BattleRules> Debug for AlterSpace<R> {
 
 impl<R: BattleRules> Clone for AlterSpace<R> {
     fn clone(&self) -> Self {
-        AlterSpace {
+        Self {
             alteration: self.alteration.clone(),
         }
     }

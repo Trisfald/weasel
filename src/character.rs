@@ -292,7 +292,7 @@ impl<R: BattleRules> Debug for AlterStatistics<R> {
 
 impl<R: BattleRules> Clone for AlterStatistics<R> {
     fn clone(&self) -> Self {
-        AlterStatistics {
+        Self {
             id: self.id.clone(),
             alteration: self.alteration.clone(),
         }
@@ -466,7 +466,7 @@ impl<R: BattleRules> Debug for RegenerateStatistics<R> {
 
 impl<R: BattleRules> Clone for RegenerateStatistics<R> {
     fn clone(&self) -> Self {
-        RegenerateStatistics {
+        Self {
             id: self.id.clone(),
             seed: self.seed.clone(),
         }

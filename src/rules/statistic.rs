@@ -21,13 +21,13 @@ pub struct SimpleStatistic<I, V> {
 impl<I: Send, V: Copy + Default> SimpleStatistic<I, V> {
     /// Creates a new `SimpleStatistic` with `value` equal to `max`
     /// and `min` equal to `V::default()`.
-    pub fn new(id: I, max: V) -> SimpleStatistic<I, V> {
-        SimpleStatistic::with_value(id, V::default(), max, max)
+    pub fn new(id: I, max: V) -> Self {
+        Self::with_value(id, V::default(), max, max)
     }
 
     /// Creates a new `SimpleStatistic` with the given value.
-    pub fn with_value(id: I, min: V, max: V, value: V) -> SimpleStatistic<I, V> {
-        SimpleStatistic {
+    pub fn with_value(id: I, min: V, max: V, value: V) -> Self {
+        Self {
             id,
             min,
             max,

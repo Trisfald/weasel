@@ -14,8 +14,8 @@ pub struct History<R: BattleRules> {
 
 impl<R: BattleRules> History<R> {
     /// Creates a new History.
-    pub(crate) fn new() -> History<R> {
-        History { events: Vec::new() }
+    pub(crate) fn new() -> Self {
+        Self { events: Vec::new() }
     }
 
     /// Returns all events inside this timeline.

@@ -178,7 +178,7 @@ impl<R: BattleRules> FlatVersionedEvent<R> {
 
 impl<R: BattleRules + 'static> From<VersionedEventWrapper<R>> for FlatVersionedEvent<R> {
     fn from(event: VersionedEventWrapper<R>) -> Self {
-        FlatVersionedEvent {
+        Self {
             id: event.wrapper().id(),
             origin: event.wrapper().origin(),
             event: FlatEvent::flattened(event.wrapper.event),
@@ -189,7 +189,7 @@ impl<R: BattleRules + 'static> From<VersionedEventWrapper<R>> for FlatVersionedE
 
 impl<R: BattleRules + 'static> From<FlatVersionedEvent<R>> for VersionedEventWrapper<R> {
     fn from(event: FlatVersionedEvent<R>) -> Self {
-        VersionedEventWrapper::new(
+        Self::new(
             EventWrapper::new(event.id, event.origin, event.event.boxed()),
             event.version,
         )
@@ -242,7 +242,7 @@ impl<R: BattleRules> FlatClientEvent<R> {
 impl<R: BattleRules + 'static> From<ClientEventPrototype<R>> for FlatClientEvent<R> {
     fn from(event: ClientEventPrototype<R>) -> Self {
         let player = event.player();
-        FlatClientEvent {
+        Self {
             origin: event.origin(),
             event: FlatEvent::flattened(event.event),
             version: event.version,
@@ -253,7 +253,7 @@ impl<R: BattleRules + 'static> From<ClientEventPrototype<R>> for FlatClientEvent
 
 impl<R: BattleRules + 'static> From<FlatClientEvent<R>> for ClientEventPrototype<R> {
     fn from(event: FlatClientEvent<R>) -> Self {
-        ClientEventPrototype::new(
+        Self::new(
             event.origin,
             event.event.boxed(),
             event.version,

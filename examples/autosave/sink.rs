@@ -14,7 +14,7 @@ pub struct AutosaveSink<R: BattleRules> {
 }
 
 impl<R: BattleRules + 'static> AutosaveSink<R> {
-    pub fn new(id: EventSinkId, filename: &str) -> AutosaveSink<R> {
+    pub fn new(id: EventSinkId, filename: &str) -> Self {
         // Open the autosave file.
         let mut path = env::temp_dir();
         path.push(filename);
@@ -23,7 +23,7 @@ impl<R: BattleRules + 'static> AutosaveSink<R> {
             .create(true)
             .open(path)
             .unwrap();
-        AutosaveSink {
+        Self {
             id,
             file,
             _phantom: std::marker::PhantomData,

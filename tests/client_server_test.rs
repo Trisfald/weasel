@@ -71,8 +71,8 @@ struct SinkImpl {
 }
 
 impl SinkImpl {
-    fn new(id: EventSinkId) -> SinkImpl {
-        SinkImpl {
+    fn new(id: EventSinkId) -> Self {
+        Self {
             id,
             disconnections: 0,
             broken: false,

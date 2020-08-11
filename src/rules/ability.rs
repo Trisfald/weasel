@@ -16,8 +16,8 @@ pub struct SimpleAbility<I, V> {
 
 impl<I: Send, V: Copy> SimpleAbility<I, V> {
     /// Creates a new `SimpleAbility`.
-    pub fn new(id: I, power: V) -> SimpleAbility<I, V> {
-        SimpleAbility { id, power }
+    pub fn new(id: I, power: V) -> Self {
+        Self { id, power }
     }
 
     /// Returns this ability's power.

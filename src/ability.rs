@@ -250,10 +250,7 @@ where
     P: EventProcessor<R>,
 {
     /// Adds an activation profile to customize this ability instance.
-    pub fn activation(
-        &'a mut self,
-        activation: Activation<R>,
-    ) -> &'a mut ActivateAbilityTrigger<'a, R, P> {
+    pub fn activation(&'a mut self, activation: Activation<R>) -> &'a mut Self {
         self.activation = Some(activation);
         self
     }

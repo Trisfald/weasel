@@ -246,7 +246,7 @@ impl<R: BattleRules> Debug for CreateCreature<R> {
 
 impl<R: BattleRules> Clone for CreateCreature<R> {
     fn clone(&self) -> Self {
-        CreateCreature {
+        Self {
             id: self.id.clone(),
             team_id: self.team_id.clone(),
             position: self.position.clone(),
@@ -553,7 +553,7 @@ impl<R: BattleRules> Debug for ConvertCreature<R> {
 
 impl<R: BattleRules> Clone for ConvertCreature<R> {
     fn clone(&self) -> Self {
-        ConvertCreature {
+        Self {
             creature_id: self.creature_id.clone(),
             team_id: self.team_id.clone(),
         }
@@ -709,7 +709,7 @@ impl<R: BattleRules> Debug for RemoveCreature<R> {
 
 impl<R: BattleRules> Clone for RemoveCreature<R> {
     fn clone(&self) -> Self {
-        RemoveCreature {
+        Self {
             id: self.id.clone(),
         }
     }

@@ -18,8 +18,8 @@ pub struct SimpleStatus<I, V> {
 
 impl<I: Send, V: Copy> SimpleStatus<I, V> {
     /// Creates a new `SimpleStatus`.
-    pub fn new(id: I, effect: V, max_duration: Option<StatusDuration>) -> SimpleStatus<I, V> {
-        SimpleStatus {
+    pub fn new(id: I, effect: V, max_duration: Option<StatusDuration>) -> Self {
+        Self {
             id,
             effect,
             max_duration,

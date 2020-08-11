@@ -58,16 +58,16 @@ impl<R: BattleRules> EntityId<R> {
     /// Returns whether this entity id refers to an object that satisfies the `Character` trait.
     pub fn is_character(&self) -> bool {
         match self {
-            EntityId::Creature(_) => true,
-            EntityId::Object(_) => true,
+            Self::Creature(_) => true,
+            Self::Object(_) => true,
         }
     }
 
     /// Returns whether this entity id refers to an object that satisfies the `Actor` trait.
     pub fn is_actor(&self) -> bool {
         match self {
-            EntityId::Creature(_) => true,
-            EntityId::Object(_) => false,
+            Self::Creature(_) => true,
+            Self::Object(_) => false,
         }
     }
 
@@ -76,8 +76,8 @@ impl<R: BattleRules> EntityId<R> {
     /// Returns an error if the entity id's type is not `Creature`.
     pub fn creature(&self) -> WeaselResult<CreatureId<R>, R> {
         match self {
-            EntityId::Creature(id) => Ok(id.clone()),
-            EntityId::Object(_) => Err(WeaselError::NotACreature(self.clone())),
+            Self::Creature(id) => Ok(id.clone()),
+            Self::Object(_) => Err(WeaselError::NotACreature(self.clone())),
         }
     }
 
@@ -86,8 +86,8 @@ impl<R: BattleRules> EntityId<R> {
     /// Returns an error if the entity id's type is not `Object`.
     pub fn object(&self) -> WeaselResult<ObjectId<R>, R> {
         match self {
-            EntityId::Creature(_) => Err(WeaselError::NotAnObject(self.clone())),
-            EntityId::Object(id) => Ok(id.clone()),
+            Self::Creature(_) => Err(WeaselError::NotAnObject(self.clone())),
+            Self::Object(id) => Ok(id.clone()),
         }
     }
 }
@@ -95,8 +95,8 @@ impl<R: BattleRules> EntityId<R> {
 impl<R: BattleRules> Debug for EntityId<R> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match self {
-            EntityId::Creature(id) => write!(f, "EntityId::Creature {{ {:?} }}", id),
-            EntityId::Object(id) => write!(f, "EntityId::Object {{ {:?} }}", id),
+            Self::Creature(id) => write!(f, "EntityId::Creature {{ {:?} }}", id),
+            Self::Object(id) => write!(f, "EntityId::Object {{ {:?} }}", id),
         }
     }
 }
@@ -115,8 +115,8 @@ where
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match self {
-            EntityId::Creature(id) => write!(f, "Creature ({})", id),
-            EntityId::Object(id) => write!(f, "Object ({})", id),
+            Self::Creature(id) => write!(f, "Creature ({})", id),
+            Self::Object(id) => write!(f, "Object ({})", id),
         }
     }
 }
@@ -124,21 +124,21 @@ where
 impl<R: BattleRules> Clone for EntityId<R> {
     fn clone(&self) -> Self {
         match self {
-            EntityId::Creature(id) => EntityId::Creature(id.clone()),
-            EntityId::Object(id) => EntityId::Object(id.clone()),
+            Self::Creature(id) => Self::Creature(id.clone()),
+            Self::Object(id) => Self::Object(id.clone()),
         }
     }
 }
 
-impl<R: BattleRules> PartialEq<EntityId<R>> for EntityId<R> {
-    fn eq(&self, other: &EntityId<R>) -> bool {
+impl<R: BattleRules> PartialEq<Self> for EntityId<R> {
+    fn eq(&self, other: &Self) -> bool {
         match self {
-            EntityId::Creature(id) => match other {
-                EntityId::Creature(other_id) => id == other_id,
+            Self::Creature(id) => match other {
+                Self::Creature(other_id) => id == other_id,
                 _ => false,
             },
-            EntityId::Object(id) => match other {
-                EntityId::Object(other_id) => id == other_id,
+            Self::Object(id) => match other {
+                Self::Object(other_id) => id == other_id,
                 _ => false,
             },
         }
@@ -150,8 +150,8 @@ impl<R: BattleRules> Eq for EntityId<R> {}
 impl<R: BattleRules> Hash for EntityId<R> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         match self {
-            EntityId::Creature(id) => id.hash(state),
-            EntityId::Object(id) => id.hash(state),
+            Self::Creature(id) => id.hash(state),
+            Self::Object(id) => id.hash(state),
         }
     }
 }
@@ -192,8 +192,8 @@ pub struct Entities<R: BattleRules> {
 }
 
 impl<R: BattleRules> Entities<R> {
-    pub(crate) fn new() -> Entities<R> {
-        Entities {
+    pub(crate) fn new() -> Self {
+        Self {
             teams: IndexMap::new(),
             creatures: IndexMap::new(),
             objects: IndexMap::new(),
