@@ -28,7 +28,7 @@ type Statuses<R> =
 
 /// An object is an inanimate entity.
 ///
-/// Objects possess a position and a set of statistics, but they can't start a round
+/// Objects possess a position and a set of statistics, but they can't start a turn
 /// nor activate abilities. They can be target of status effects.\
 /// Objects aren't part of any team.
 pub struct Object<R: BattleRules> {

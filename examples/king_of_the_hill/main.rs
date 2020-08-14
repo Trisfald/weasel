@@ -9,7 +9,7 @@ use weasel::team::TeamId;
 use weasel::{
     ActivateAbility, Actor, Battle, BattleController, BattleState, Character, CreateCreature,
     CreateTeam, Creature, EndRound, EndTurn, EntityId, EventKind, EventProcessor, EventQueue,
-    EventTrigger, EventWrapper, Id, RemoveEntity, ResetObjectives, Server, StartRound,
+    EventTrigger, EventWrapper, Id, RemoveEntity, ResetObjectives, Server, StartTurn,
 };
 
 mod rules;
@@ -81,7 +81,7 @@ fn server_game_loop(mut server: TcpServer) {
     game_status(server.game_server.lock().unwrap().battle(), id);
     loop {
         // Check for the game's end.
-        if completed_turns(&server.game_server) == 3 {
+        if completed_rounds(&server.game_server) == 3 {
             println!("The game has ended!");
             return;
         }
@@ -105,9 +105,9 @@ fn server_game_loop(mut server: TcpServer) {
 fn client_game_loop(mut client: TcpClient) {
     game_status(client.game_client.lock().unwrap().battle(), client.id);
     loop {
-        let turn = completed_turns(&client.game_client);
+        let round = completed_rounds(&client.game_client);
         // Check for the game's end.
-        if turn == 3 {
+        if round == 3 {
             println!("The game has ended!");
             return;
         }
@@ -119,7 +119,7 @@ fn client_game_loop(mut client: TcpClient) {
                         key.to_digit(10).unwrap(),
                         client.id,
                     ) {
-                        // Wait for the turn completion.
+                        // Wait for the round completion.
                         wait(|| {
                             client
                                 .game_client
@@ -127,8 +127,8 @@ fn client_game_loop(mut client: TcpClient) {
                                 .unwrap()
                                 .battle()
                                 .rounds()
-                                .completed_turns()
-                                > turn
+                                .completed_rounds()
+                                > round
                         });
                         game_status(client.game_client.lock().unwrap().battle(), client.id);
                     }
@@ -198,10 +198,10 @@ where
     // each event to be acknowledged. A proper solution would be to have the server sending
     // messages to the clients and the clients themselves having a state machine.
     let last_event = controller.lock().unwrap().battle().history().len();
-    StartRound::trigger(&mut *controller.lock().unwrap(), card_id)
+    StartTurn::trigger(&mut *controller.lock().unwrap(), card_id)
         .fire()
         .unwrap();
-    // Wait to receive the StartRound event validation.
+    // Wait to receive the StartTurn event validation.
     wait(|| controller.lock().unwrap().battle().history().len() > last_event);
     let last_event = controller.lock().unwrap().battle().history().len();
     ActivateAbility::trigger(&mut *controller.lock().unwrap(), card_id, PLAY_CARD_ABILITY)
@@ -209,7 +209,7 @@ where
         .unwrap();
     // Wait to receive the ActivateAbility and MoveEntity events validation.
     wait(|| controller.lock().unwrap().battle().history().len() > last_event + 1);
-    EndRound::trigger(&mut *controller.lock().unwrap())
+    EndTurn::trigger(&mut *controller.lock().unwrap())
         .fire()
         .unwrap();
     true
@@ -240,14 +240,14 @@ fn server_end_turn(server: &mut Arc<Mutex<Server<CustomRules>>>) {
             .fire()
             .unwrap();
     }
-    // Close the turn.
-    EndTurn::trigger(&mut *server.lock().unwrap())
+    // Close the round.
+    EndRound::trigger(&mut *server.lock().unwrap())
         .fire()
         .unwrap();
 }
 
-/// Returns the number of completed turns.
-fn completed_turns<T>(controller: &Arc<Mutex<T>>) -> TurnsCount
+/// Returns the number of completed rounds.
+fn completed_rounds<T>(controller: &Arc<Mutex<T>>) -> TurnsCount
 where
     T: BattleController<CustomRules> + EventProcessor<CustomRules>,
 {
@@ -256,7 +256,7 @@ where
         .unwrap()
         .battle()
         .rounds()
-        .completed_turns()
+        .completed_rounds()
 }
 
 /// Method to decide who won a turn.

@@ -3,8 +3,8 @@ use std::io::Read;
 use weasel::creature::CreatureId;
 use weasel::team::TeamId;
 use weasel::{
-    ActivateAbility, Battle, BattleController, CreateCreature, CreateTeam, EndRound, EntityId,
-    EventKind, EventReceiver, EventTrigger, Server, StartRound, VersionedEventWrapper,
+    ActivateAbility, Battle, BattleController, CreateCreature, CreateTeam, EndTurn, EntityId,
+    EventKind, EventReceiver, EventTrigger, Server, StartTurn, VersionedEventWrapper,
 };
 
 mod rules;
@@ -131,8 +131,8 @@ fn walk(
 ) {
     // Clean the buffered events to invalidate the redo action.
     event_buffer.clear();
-    // Start a round.
-    StartRound::trigger(server, ENTITY_ID).fire().unwrap();
+    // Start a turn.
+    StartTurn::trigger(server, ENTITY_ID).fire().unwrap();
     // Activate the 'walk' ability of the creature.
     let result = ActivateAbility::trigger(server, ENTITY_ID, WALK)
         .activation(direction)
@@ -141,8 +141,8 @@ fn walk(
     if let Err(e) = result {
         println!("{:?}", e.unfold());
     }
-    // End the round.
-    EndRound::trigger(server).fire().unwrap();
+    // End the turn.
+    EndTurn::trigger(server).fire().unwrap();
 }
 
 /// Undo the last action.
@@ -159,7 +159,7 @@ fn undo(
         .rposition(|e| e.kind() == EventKind::ActivateAbility);
     match last_activation_index {
         Some(last_activation_index) => {
-            // We are gonna undo this round.
+            // We are gonna undo this turn.
             // First save the current history in a buffer, if it's empty. If it's not, it means
             // we are already undoing a series of events.
             if event_buffer.is_empty() {
@@ -174,17 +174,17 @@ fn undo(
             }
             // Create a completely new server.
             let mut server = create_server();
-            // Replay history up to the last ActivateAbility before 'last', to skip rounds in
+            // Replay history up to the last ActivateAbility before 'last', to skip turns in
             // which the player did a wrong move.
-            // To nicely wrap the round we should undo also the StartRound event.
-            let previous_start_round_index = &event_buffer[..last_activation_index]
+            // To nicely wrap the turn we should undo also the StartTurn event.
+            let previous_start_turn_index = &event_buffer[..last_activation_index]
                 .iter()
-                .rposition(|e| e.kind() == EventKind::StartRound);
-            // We replay all events in the buffer up to the start round (excluded).
-            // There will always be a StartRound before an ActivateAbility.
+                .rposition(|e| e.kind() == EventKind::StartTurn);
+            // We replay all events in the buffer up to the start turn (excluded).
+            // There will always be a StartTurn before an ActivateAbility.
             for event in event_buffer
                 .iter()
-                .take(previous_start_round_index.unwrap() as usize)
+                .take(previous_start_turn_index.unwrap() as usize)
             {
                 server.receive(event.clone()).unwrap();
             }
@@ -211,17 +211,17 @@ fn redo(
         let next_activation = future_events
             .iter()
             .position(|e| e.kind() == EventKind::ActivateAbility);
-        // However, since we want to redo an entire rounds, replay up to the EndRound (included).
+        // However, since we want to redo an entire turn, replay up to the EndTurn (included).
         if let Some(next_activation) = next_activation {
-            // Find the EndRound immediately after 'next_activation'.
-            let end_round = &future_events[next_activation..]
+            // Find the EndTurn immediately after 'next_activation'.
+            let end_turn = &future_events[next_activation..]
                 .iter()
-                .position(|e| e.kind() == EventKind::EndRound)
+                .position(|e| e.kind() == EventKind::EndTurn)
                 .unwrap();
-            // Add 'next_activation' index to get the index of 'end_round' in 'future_events'.
-            let end_round = end_round + next_activation;
-            // Replay events up 'end_round' (included).
-            for event in &future_events[..=end_round] {
+            // Add 'next_activation' index to get the index of 'end_turn' in 'future_events'.
+            let end_turn = end_turn + next_activation;
+            // Replay events up 'end_turn' (included).
+            for event in &future_events[..=end_turn] {
                 server.receive(event.clone()).unwrap();
             }
         }

@@ -628,7 +628,7 @@ fn check_objectives() {
 
     #[derive(Default)]
     struct CustomTeamRules {
-        check_round: bool,
+        check_turn: bool,
     }
 
     impl TeamRules<CustomRules> for CustomTeamRules {
@@ -642,7 +642,7 @@ fn check_objectives() {
             _team: &Team<CustomRules>,
             metrics: &ReadMetrics<CustomRules>,
         ) -> Option<Conclusion> {
-            if !self.check_round {
+            if !self.check_turn {
                 if let Some(v) = metrics.user_u64(0) {
                     if v == 1 {
                         return Some(Conclusion::Victory);
@@ -652,13 +652,13 @@ fn check_objectives() {
             None
         }
 
-        fn check_objectives_on_round(
+        fn check_objectives_on_turn(
             &self,
             _state: &BattleState<CustomRules>,
             _team: &Team<CustomRules>,
             metrics: &ReadMetrics<CustomRules>,
         ) -> Option<Conclusion> {
-            if self.check_round {
+            if self.check_turn {
                 if let Some(v) = metrics.user_u64(0) {
                     if v == 1 {
                         return Some(Conclusion::Victory);
@@ -683,24 +683,24 @@ fn check_objectives() {
     const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
     const ABILITY_ID: u32 = 1;
 
-    // Test round checks.
+    // Test turn checks.
     // Create a battle with one creature.
     let mut rules = CustomRules::new();
-    rules.team_rules = CustomTeamRules { check_round: true };
+    rules.team_rules = CustomTeamRules { check_turn: true };
     let mut server = util::server(rules);
     util::team(&mut server, TEAM_1_ID);
     util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, ());
-    // Stard round and fire the ability.
-    util::start_round(&mut server, &ENTITY_1_ID);
+    // Stard a turn and fire the ability.
+    util::start_turn(&mut server, &ENTITY_1_ID);
     assert_eq!(
         ActivateAbility::trigger(&mut server, ENTITY_1_ID, ABILITY_ID)
             .fire()
             .err(),
         None
     );
-    // End round
-    util::end_round(&mut server);
-    // Victory should appear after the end round.
+    // End the turn.
+    util::end_turn(&mut server);
+    // Victory should appear after the end turn.
     assert_eq!(
         server
             .battle()
@@ -719,21 +719,21 @@ fn check_objectives() {
     // Test event checks.
     // Create a battle with one creature.
     let mut rules = CustomRules::new();
-    rules.team_rules = CustomTeamRules { check_round: false };
+    rules.team_rules = CustomTeamRules { check_turn: false };
     let mut server = util::server(rules);
     util::team(&mut server, TEAM_1_ID);
     util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, ());
-    // Stard round and fire the ability.
-    util::start_round(&mut server, &ENTITY_1_ID);
+    // Stard turn and fire the ability.
+    util::start_turn(&mut server, &ENTITY_1_ID);
     assert_eq!(
         ActivateAbility::trigger(&mut server, ENTITY_1_ID, ABILITY_ID)
             .fire()
             .err(),
         None
     );
-    // End round
-    util::end_round(&mut server);
-    // Victory should appear before the end round and the dummy event.
+    // End turn.
+    util::end_turn(&mut server);
+    // Victory should appear before the end turn and the dummy event.
     assert_eq!(
         server
             .battle()

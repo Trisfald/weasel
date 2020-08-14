@@ -31,14 +31,14 @@ pub enum EventKind {
     CreateObject,
     /// Move an entity from one position to another.
     MoveEntity,
-    /// Start a new round.
-    StartRound,
-    /// End the current round.
-    EndRound,
+    /// Start a new turn.
+    StartTurn,
     /// End the current turn.
     EndTurn,
-    /// Perform a round for the environment.
-    EnvironmentRound,
+    /// End the current round.
+    EndRound,
+    /// Perform a turn for the environment.
+    EnvironmentTurn,
     /// Activate an actor's ability.
     ActivateAbility,
     /// Apply the consequences of an impact on the world.

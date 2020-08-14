@@ -4,7 +4,7 @@ use weasel::creature::{CreateCreature, CreatureId};
 use weasel::entity::EntityId;
 use weasel::event::{DefaultOutput, DummyEvent, EventProcessor, EventTrigger, ServerSink};
 use weasel::object::{CreateObject, ObjectId};
-use weasel::round::{EndRound, StartRound};
+use weasel::round::{EndTurn, StartTurn};
 use weasel::server::Server;
 use weasel::space::Position;
 use weasel::team::{CreateTeam, TeamId};
@@ -66,25 +66,22 @@ pub fn object<'a, R: BattleRules + 'static>(
     );
 }
 
-/// Starts a round with the given entity.
-pub fn start_round<'a, R, P>(processor: &'a mut P, id: &EntityId<R>)
+/// Starts a turn with the given entity.
+pub fn start_turn<'a, R, P>(processor: &'a mut P, id: &EntityId<R>)
 where
     R: BattleRules + 'static,
     P: EventProcessor<R>,
 {
-    assert_eq!(
-        StartRound::trigger(processor, id.clone()).fire().err(),
-        None
-    );
+    assert_eq!(StartTurn::trigger(processor, id.clone()).fire().err(), None);
 }
 
-/// Ends the round.
-pub fn end_round<R, P>(processor: &mut P)
+/// Ends the turn.
+pub fn end_turn<R, P>(processor: &mut P)
 where
     R: BattleRules + 'static,
     P: EventProcessor<R>,
 {
-    assert_eq!(EndRound::trigger(processor).fire().err(), None);
+    assert_eq!(EndTurn::trigger(processor).fire().err(), None);
 }
 
 /// Dummy event.

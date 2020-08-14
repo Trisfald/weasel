@@ -102,7 +102,7 @@ fn ability_activation() {
             .map(|e| e.unfold()),
         Some(WeaselError::EntityNotFound(ENTITY_ERR_ID))
     );
-    // Fail when creature has not started the round.
+    // Fail when creature has not started the turn.
     assert_eq!(
         ActivateAbility::trigger(&mut server, ENTITY_1_ID, ABILITY_ID)
             .fire()
@@ -110,8 +110,8 @@ fn ability_activation() {
             .map(|e| e.unfold()),
         Some(WeaselError::ActorNotReady(ENTITY_1_ID))
     );
-    // Start a round.
-    util::start_round(&mut server, &ENTITY_1_ID);
+    // Start a turn.
+    util::start_turn(&mut server, &ENTITY_1_ID);
     // Fail when creature does not know the ability.
     assert_eq!(
         ActivateAbility::trigger(&mut server, ENTITY_1_ID, ABILITY_ERR_ID)
@@ -161,7 +161,7 @@ fn ability_rights() {
     // Give to the player rights to the team without any creature.
     assert_eq!(server.rights_mut().add(PLAYER_1_ID, &TEAM_2_ID).err(), None);
     // Check event rights.
-    util::start_round(&mut server, &ENTITY_1_ID);
+    util::start_turn(&mut server, &ENTITY_1_ID);
     let event = ActivateAbility::trigger(&mut server, ENTITY_1_ID, ABILITY_ID)
         .activation(2)
         .prototype()

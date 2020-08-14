@@ -263,8 +263,8 @@ impl<R: BattleRules + 'static> Battle<R> {
         }
 
         match checkpoint {
-            Checkpoint::RoundEnd => {
-                run_check!(check_objectives_on_round);
+            Checkpoint::TurnEnd => {
+                run_check!(check_objectives_on_turn);
             }
             Checkpoint::EventEnd => {
                 run_check!(check_objectives_on_event);
@@ -275,8 +275,8 @@ impl<R: BattleRules + 'static> Battle<R> {
 
 /// Checkpoint in which a `check_objective` is run.
 pub(crate) enum Checkpoint {
-    /// At the end of a round.
-    RoundEnd,
+    /// At the end of a turn.
+    TurnEnd,
     /// At the end of an event.
     EventEnd,
 }

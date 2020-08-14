@@ -141,8 +141,8 @@ fn simple_attack() {
     util::team(&mut server, TEAM_1_ID);
     util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, ());
     util::creature(&mut server, CREATURE_2_ID, TEAM_1_ID, ());
-    // Start a round.
-    util::start_round(&mut server, &ENTITY_1_ID);
+    // Start a turn.
+    util::start_turn(&mut server, &ENTITY_1_ID);
     // Fire ability.
     assert_eq!(
         ActivateAbility::trigger(&mut server, ENTITY_1_ID, ABILITY_ID)

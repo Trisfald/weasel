@@ -8,7 +8,7 @@ use crate::entity::{Entity, EntityId, Transmutation};
 use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
 use crate::metric::system::*;
-use crate::round::RoundState;
+use crate::round::TurnState;
 use crate::space::{Position, PositionClaim};
 use crate::status::{AppliedStatus, StatusId};
 use crate::team::{EntityAddition, TeamId, TeamRules};
@@ -37,7 +37,7 @@ type Abilities<R> = IndexMap<
 
 /// A creature is the main acting entity of a battle.
 ///
-/// Creatures can activate abilities during their round, occupy a spatial position,
+/// Creatures can activate abilities during their turn, occupy a spatial position,
 /// suffer status effects and are characterized by their statistics.
 pub struct Creature<R: BattleRules> {
     id: EntityId<R>,
@@ -644,7 +644,7 @@ where
 
 /// Event to remove a creature from the battle.
 ///
-/// If the creature is the current actor, its round will be terminated.\
+/// If the creature is the current actor, its turn will be terminated.\
 /// The creature will be removed from the corresponding team and its position will be freed.
 ///
 /// # Examples
@@ -726,8 +726,8 @@ impl<R: BattleRules + 'static> Event<R> for RemoveCreature<R> {
             .entities
             .creature(&self.id)
             .unwrap_or_else(|| panic!("constraint violated: creature {:?} not found", self.id));
-        // End the current round, if this creature was the actor.
-        if let RoundState::Started(actors) = battle.state.rounds.state() {
+        // End the current turn, if this creature was the actor.
+        if let TurnState::Started(actors) = battle.state.rounds.state() {
             if actors.contains(creature.entity_id()) {
                 // Invoke `RoundRules` callback.
                 battle.state.rounds.on_end(
@@ -743,10 +743,10 @@ impl<R: BattleRules + 'static> Event<R> for RemoveCreature<R> {
                     &battle.rules.team_rules(),
                     &battle.metrics.read_handle(),
                     event_queue,
-                    Checkpoint::RoundEnd,
+                    Checkpoint::TurnEnd,
                 );
-                // Set the round state.
-                battle.state.rounds.set_state(RoundState::Ready);
+                // Set the turn state.
+                battle.state.rounds.set_state(TurnState::Ready);
             }
         }
         // Remove the creature.

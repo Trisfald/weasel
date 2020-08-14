@@ -13,7 +13,7 @@ use crate::event::{
 use crate::fight::ApplyImpact;
 use crate::object::{CreateObject, RemoveObject};
 use crate::player::PlayerId;
-use crate::round::{EndRound, EndTurn, EnvironmentRound, ResetRounds, StartRound};
+use crate::round::{EndRound, EndTurn, EnvironmentTurn, ResetRounds, StartTurn};
 use crate::space::{AlterSpace, MoveEntity, ResetSpace};
 use crate::status::{AlterStatuses, ClearStatus, InflictStatus};
 use crate::team::{ConcludeObjectives, CreateTeam, RemoveTeam, ResetObjectives, SetRelations};
@@ -107,10 +107,10 @@ flat_event! {
     CreateCreature, "CreateCreature<R>: Serialize", "CreateCreature<R>: Deserialize<'de>",
     CreateObject, "CreateObject<R>: Serialize", "CreateObject<R>: Deserialize<'de>",
     MoveEntity, "MoveEntity<R>: Serialize", "MoveEntity<R>: Deserialize<'de>",
-    StartRound, "StartRound<R>: Serialize", "StartRound<R>: Deserialize<'de>",
-    EndRound, "EndRound<R>: Serialize", "EndRound<R>: Deserialize<'de>",
+    StartTurn, "StartTurn<R>: Serialize", "StartTurn<R>: Deserialize<'de>",
     EndTurn, "EndTurn<R>: Serialize", "EndTurn<R>: Deserialize<'de>",
-    EnvironmentRound, "EnvironmentRound<R>: Serialize", "EnvironmentRound<R>: Deserialize<'de>",
+    EndRound, "EndRound<R>: Serialize", "EndRound<R>: Deserialize<'de>",
+    EnvironmentTurn, "EnvironmentTurn<R>: Serialize", "EnvironmentTurn<R>: Deserialize<'de>",
     ActivateAbility, "ActivateAbility<R>: Serialize", "ActivateAbility<R>: Deserialize<'de>",
     ApplyImpact, "ApplyImpact<R>: Serialize", "ApplyImpact<R>: Deserialize<'de>",
     AlterStatistics, "AlterStatistics<R>: Serialize", "AlterStatistics<R>: Deserialize<'de>",

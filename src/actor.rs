@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::fmt::{Debug, Formatter, Result};
 
-/// A trait for objects which possess abilities and can act during a round.
+/// A trait for objects which possess abilities and can act during a turn.
 pub trait Actor<R: BattleRules>: Character<R> {
     /// Returns an iterator over abilities.
     fn abilities<'a>(&'a self) -> Box<dyn Iterator<Item = &'a Ability<R>> + 'a>;
@@ -118,10 +118,10 @@ pub trait ActorRules<R: BattleRules> {
     ) {
     }
 
-    /// Invoked when a new round begins.
+    /// Invoked when a new turn begins.
     ///
     /// The provided implementation does nothing.
-    fn on_round_start(
+    fn on_turn_start(
         &self,
         _state: &BattleState<R>,
         _actor: &dyn Actor<R>,
@@ -131,10 +131,10 @@ pub trait ActorRules<R: BattleRules> {
     ) {
     }
 
-    /// Invoked when the current round ends.
+    /// Invoked when the current turn ends.
     ///
     /// The provided implementation does nothing.
-    fn on_round_end(
+    fn on_turn_end(
         &self,
         _state: &BattleState<R>,
         _actor: &dyn Actor<R>,

@@ -9,7 +9,7 @@ use weasel::event::{EventProcessor, EventRights, EventServer, EventTrigger};
 use weasel::metric::WriteMetrics;
 use weasel::player::PlayerId;
 use weasel::round::{
-    EndRound, EndTurn, EnvironmentRound, ResetRounds, RoundState, RoundsRules, StartRound,
+    EndRound, EndTurn, EnvironmentTurn, ResetRounds, RoundsRules, StartTurn, TurnState,
 };
 use weasel::server::Server;
 use weasel::space::Space;
@@ -56,7 +56,7 @@ impl RoundsRules<CustomRules> for CustomRoundsRules {
         if *actor.entity_id() == ENTITY_3_ID {
             return true;
         }
-        // Alterate rounds of entity 1 and 2.
+        // Alterate turns of entity 1 and 2.
         let entity_id = if model.last == Some(ENTITY_1_ID) {
             ENTITY_2_ID
         } else {
@@ -122,7 +122,7 @@ macro_rules! server {
 }
 
 #[test]
-fn start_round() {
+fn start_turn() {
     // Initialize the battle.
     let mut server = server!();
     // Pre-start checks.
@@ -130,50 +130,50 @@ fn start_round() {
         server.battle().rounds().model().adds,
         server.battle().entities().actors().count()
     );
-    assert_eq!(*server.battle().rounds().state(), RoundState::<_>::Ready);
-    // Check start round is prevented for faulty conditions.
+    assert_eq!(*server.battle().rounds().state(), TurnState::<_>::Ready);
+    // Check start turn is prevented for faulty conditions.
     assert_eq!(
-        StartRound::trigger(&mut server, ENTITY_ERR_ID)
+        StartTurn::trigger(&mut server, ENTITY_ERR_ID)
             .fire()
             .err()
             .map(|e| e.unfold()),
         Some(WeaselError::EntityNotFound(ENTITY_ERR_ID))
     );
     assert_eq!(
-        StartRound::trigger(&mut server, ENTITY_2_ID)
+        StartTurn::trigger(&mut server, ENTITY_2_ID)
             .fire()
             .err()
             .map(|e| e.unfold()),
         Some(WeaselError::ActorNotEligible(ENTITY_2_ID))
     );
-    assert_eq!(*server.battle().rounds().state(), RoundState::<_>::Ready);
+    assert_eq!(*server.battle().rounds().state(), TurnState::<_>::Ready);
     assert_eq!(server.battle().rounds().model().starts, 0);
-    assert_eq!(server.battle().rounds().completed_rounds(), 0);
+    assert_eq!(server.battle().rounds().completed_turns(), 0);
     // Check start works.
-    util::start_round(&mut server, &ENTITY_1_ID);
+    util::start_turn(&mut server, &ENTITY_1_ID);
     // Post-start checks.
     assert_eq!(
         *server.battle().rounds().state(),
-        RoundState::<_>::Started(indexset! {ENTITY_1_ID})
+        TurnState::<_>::Started(indexset! {ENTITY_1_ID})
     );
     assert_eq!(server.battle().rounds().model().starts, 1);
     // Another start in a row must not work.
     assert_eq!(
-        StartRound::trigger(&mut server, ENTITY_2_ID)
+        StartTurn::trigger(&mut server, ENTITY_2_ID)
             .fire()
             .err()
             .map(|e| e.unfold()),
-        Some(WeaselError::RoundInProgress)
+        Some(WeaselError::TurnInProgress)
     );
     assert_eq!(
         *server.battle().rounds().state(),
-        RoundState::<_>::Started(indexset! {ENTITY_1_ID})
+        TurnState::<_>::Started(indexset! {ENTITY_1_ID})
     );
     assert_eq!(server.battle().rounds().model().starts, 1);
 }
 
 #[test]
-fn end_round() {
+fn end_turn() {
     // Initialize the battle.
     let mut server = server!();
     // Pre-start checks.
@@ -181,75 +181,75 @@ fn end_round() {
         server.battle().rounds().model().adds,
         server.battle().entities().actors().count()
     );
-    assert_eq!(*server.battle().rounds().state(), RoundState::<_>::Ready);
-    // Check end round is prevented for faulty conditions.
+    assert_eq!(*server.battle().rounds().state(), TurnState::<_>::Ready);
+    // Check end turn is prevented for faulty conditions.
     assert_eq!(
-        EndRound::trigger(&mut server)
+        EndTurn::trigger(&mut server)
             .fire()
             .err()
             .map(|e| e.unfold()),
-        Some(WeaselError::NoRoundInProgress)
+        Some(WeaselError::NoTurnInProgress)
     );
     assert_eq!(server.battle().rounds().model().ends, 0);
-    assert_eq!(*server.battle().rounds().state(), RoundState::<_>::Ready);
-    // Start round.
-    util::start_round(&mut server, &ENTITY_1_ID);
+    assert_eq!(*server.battle().rounds().state(), TurnState::<_>::Ready);
+    // Start turn.
+    util::start_turn(&mut server, &ENTITY_1_ID);
     // Check end works.
-    util::end_round(&mut server);
+    util::end_turn(&mut server);
     // Post-end checks.
     assert_eq!(server.battle().rounds().model().ends, 1);
-    assert_eq!(*server.battle().rounds().state(), RoundState::<_>::Ready);
-    assert_eq!(server.battle().rounds().completed_rounds(), 1);
-    // Check a new round can start.
-    util::start_round(&mut server, &ENTITY_2_ID);
+    assert_eq!(*server.battle().rounds().state(), TurnState::<_>::Ready);
+    assert_eq!(server.battle().rounds().completed_turns(), 1);
+    // Check a new turn can start.
+    util::start_turn(&mut server, &ENTITY_2_ID);
 }
 
 #[test]
 fn reset_rounds() {
     // Initialize the battle.
     let mut server = server!();
-    // Start a round.
-    util::start_round(&mut server, &ENTITY_1_ID);
-    // Check that rounds model can't be changed while the round is in progress.
+    // Start a turn.
+    util::start_turn(&mut server, &ENTITY_1_ID);
+    // Check that rounds model can't be changed while the turn is in progress.
     assert_eq!(
         ResetRounds::trigger(&mut server)
             .fire()
             .err()
             .map(|e| e.unfold()),
-        Some(WeaselError::RoundInProgress)
+        Some(WeaselError::TurnInProgress)
     );
-    // Changing the rounds model in between rounds should be fine.
-    util::end_round(&mut server);
+    // Changing the rounds model in between turns should be fine.
+    util::end_turn(&mut server);
     assert_eq!(ResetRounds::trigger(&mut server).fire().err(), None);
 }
 
 #[test]
-fn environment_round() {
+fn environment_turn() {
     // Initialize the battle.
     let mut server = server!();
-    // Start a round.
-    util::start_round(&mut server, &ENTITY_1_ID);
-    // Check environment round is prevented for faulty conditions.
+    // Start a turn.
+    util::start_turn(&mut server, &ENTITY_1_ID);
+    // Check environment turn is prevented for faulty conditions.
     assert_eq!(
-        EnvironmentRound::trigger(&mut server)
+        EnvironmentTurn::trigger(&mut server)
             .fire()
             .err()
             .map(|e| e.unfold()),
-        Some(WeaselError::RoundInProgress)
+        Some(WeaselError::TurnInProgress)
     );
-    // End the current round and perform an enviroment round.
-    util::end_round(&mut server);
-    assert_eq!(EnvironmentRound::trigger(&mut server).fire().err(), None);
-    assert_eq!(server.battle().rounds().completed_rounds(), 2);
+    // End the current turn and perform an environment turn.
+    util::end_turn(&mut server);
+    assert_eq!(EnvironmentTurn::trigger(&mut server).fire().err(), None);
+    assert_eq!(server.battle().rounds().completed_turns(), 2);
 }
 
 #[test]
-fn round_multiple_actors() {
+fn turn_multiple_actors() {
     // Initialize the battle.
     let mut server = server!();
-    // Check that start round is prevented when at least one actor do not exist.
+    // Check that start turn is prevented when at least one actor do not exist.
     assert_eq!(
-        StartRound::trigger_with_actors(&mut server, vec![ENTITY_1_ID, ENTITY_ERR_ID])
+        StartTurn::trigger_with_actors(&mut server, vec![ENTITY_1_ID, ENTITY_ERR_ID])
             .fire()
             .err()
             .map(|e| e.unfold()),
@@ -257,15 +257,15 @@ fn round_multiple_actors() {
     );
     // Check eligibility.
     assert_eq!(
-        StartRound::trigger_with_actors(&mut server, vec![ENTITY_1_ID, ENTITY_2_ID])
+        StartTurn::trigger_with_actors(&mut server, vec![ENTITY_1_ID, ENTITY_2_ID])
             .fire()
             .err()
             .map(|e| e.unfold()),
         Some(WeaselError::ActorNotEligible(ENTITY_2_ID))
     );
-    // Start a round.
+    // Start a turn.
     assert_eq!(
-        StartRound::trigger_with_actors(&mut server, vec![ENTITY_1_ID, ENTITY_3_ID])
+        StartTurn::trigger_with_actors(&mut server, vec![ENTITY_1_ID, ENTITY_3_ID])
             .fire()
             .err(),
         None
@@ -273,24 +273,24 @@ fn round_multiple_actors() {
     // Post-start checks.
     assert_eq!(
         *server.battle().rounds().state(),
-        RoundState::<_>::Started(indexset! {ENTITY_1_ID, ENTITY_3_ID})
+        TurnState::<_>::Started(indexset! {ENTITY_1_ID, ENTITY_3_ID})
     );
     assert_eq!(server.battle().rounds().model().starts, 2);
-    // End the round.
-    util::end_round(&mut server);
+    // End the turn.
+    util::end_turn(&mut server);
     // Post-end checks.
     assert_eq!(server.battle().rounds().model().ends, 2);
-    assert_eq!(*server.battle().rounds().state(), RoundState::<_>::Ready);
-    assert_eq!(server.battle().rounds().completed_rounds(), 1);
+    assert_eq!(*server.battle().rounds().state(), TurnState::<_>::Ready);
+    assert_eq!(server.battle().rounds().completed_turns(), 1);
 }
 
 #[test]
-fn round_actor_uniqueness() {
+fn turn_actor_uniqueness() {
     // Initialize the battle.
     let mut server = server!();
-    // Start a round with duplicated ids.
+    // Start a turn with duplicated ids.
     assert_eq!(
-        StartRound::trigger_with_actors(
+        StartTurn::trigger_with_actors(
             &mut server,
             vec![ENTITY_1_ID, ENTITY_3_ID, ENTITY_3_ID, ENTITY_1_ID]
         )
@@ -314,15 +314,15 @@ fn player_rights() {
     util::creature(&mut server, CREATURE_3_ID, TEAM_2_ID, ());
     // Give to the player rights to only one team.
     assert_eq!(server.rights_mut().add(PLAYER_1_ID, &TEAM_2_ID).err(), None);
-    // Verify rights for StartRound.
+    // Verify rights for StartTurn.
     let prototype =
-        StartRound::trigger_with_actors(&mut server, vec![ENTITY_1_ID, ENTITY_3_ID]).prototype();
+        StartTurn::trigger_with_actors(&mut server, vec![ENTITY_1_ID, ENTITY_3_ID]).prototype();
     let event = prototype.clone().client_prototype(0, Some(PLAYER_1_ID));
     assert_eq!(
         event.rights(server.battle()),
         EventRights::Teams(vec![&TEAM_1_ID, &TEAM_2_ID])
     );
-    // StartRound should be blocked.
+    // StartTurn should be blocked.
     assert_eq!(
         server.process_client(event).err().map(|e| e.unfold()),
         Some(WeaselError::AuthenticationError(
@@ -330,18 +330,18 @@ fn player_rights() {
             TEAM_1_ID
         ))
     );
-    // We need to start a real round in order to verify EndRound.
+    // We need to start a real turn in order to verify EndTurn.
     // Bypass the rights checks by processing the event as a server.
     assert_eq!(server.process(prototype).err(), None);
-    // Verify rights for EndRound.
-    let event = EndRound::trigger(&mut server)
+    // Verify rights for EndTurn.
+    let event = EndTurn::trigger(&mut server)
         .prototype()
         .client_prototype(0, Some(PLAYER_1_ID));
     assert_eq!(
         event.rights(server.battle()),
         EventRights::Teams(vec![&TEAM_1_ID, &TEAM_2_ID])
     );
-    // EndRound should be blocked.
+    // EndTurn should be blocked.
     assert_eq!(
         server
             .process_client(event.clone())
@@ -354,26 +354,26 @@ fn player_rights() {
     );
     // Give rights to the player.
     assert_eq!(server.rights_mut().add(PLAYER_1_ID, &TEAM_1_ID).err(), None);
-    // Check that now he can end the round.
+    // Check that now he can end the turn.
     assert_eq!(server.process_client(event).err(), None);
 }
 
 #[test]
-fn end_turn() {
+fn end_round() {
     // Initialize the battle.
     let mut server = server!();
-    // Start a round.
-    util::start_round(&mut server, &ENTITY_1_ID);
-    // Check that ending the turn is prevented.
+    // Start a turn.
+    util::start_turn(&mut server, &ENTITY_1_ID);
+    // Check that ending the round is prevented.
     assert_eq!(
-        EndTurn::trigger(&mut server)
+        EndRound::trigger(&mut server)
             .fire()
             .err()
             .map(|e| e.unfold()),
-        Some(WeaselError::RoundInProgress)
+        Some(WeaselError::TurnInProgress)
     );
-    // End the current round and try to end the turn.
-    util::end_round(&mut server);
-    assert_eq!(EndTurn::trigger(&mut server).fire().err(), None);
-    assert_eq!(server.battle().rounds().completed_turns(), 1);
+    // End the current turn and try to end the round.
+    util::end_turn(&mut server);
+    assert_eq!(EndRound::trigger(&mut server).fire().err(), None);
+    assert_eq!(server.battle().rounds().completed_rounds(), 1);
 }

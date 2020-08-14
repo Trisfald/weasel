@@ -2,7 +2,7 @@
 
 This example shows how to implement `RoundsRules` to decide the order of acting during a battle.
 
-The first step is to create five creatures, each one with a different value of *speed*. Then, we will repeatedly start and end rounds while also displaying the global order of initiative.
+The first step is to create five creatures, each one with a different value of *speed*. Then, we will repeatedly start and end turns while also displaying the global order of initiative.
 
 Run the example with:
 ```

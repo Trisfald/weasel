@@ -15,7 +15,7 @@ use weasel::event::{
 use weasel::fight::ApplyImpact;
 use weasel::metric::WriteMetrics;
 use weasel::object::{CreateObject, RemoveObject};
-use weasel::round::{EndRound, EndTurn, EnvironmentRound, ResetRounds, RoundsModel, StartRound};
+use weasel::round::{EndRound, EndTurn, EnvironmentTurn, ResetRounds, RoundsModel, StartTurn};
 use weasel::rules::ability::SimpleAbility;
 #[cfg(feature = "serialization")]
 use weasel::serde::FlatEvent;
@@ -211,8 +211,8 @@ fn conditional() {
     let mut server = util::server(CustomRules::new());
     util::team(&mut server, TEAM_1_ID);
     util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, ());
-    // Start round.
-    util::start_round(&mut server, &ENTITY_1_ID);
+    // Start turn.
+    util::start_turn(&mut server, &ENTITY_1_ID);
     // Fire an ability to alter the creature's ability, which will also fire
     // a dummy event if the power is twice the original.
     assert_eq!(
@@ -362,10 +362,10 @@ macro_rules! events_vec {
         events.push(CreateCreature::trigger(&mut (), TEAM_1_ID, CREATURE_1_ID, ()).event());
         events.push(CreateObject::trigger(&mut (), OBJECT_1_ID, ()).event());
         events.push(MoveEntity::trigger(&mut (), ENTITY_1_ID, ()).event());
-        events.push(StartRound::trigger(&mut (), ENTITY_1_ID).event());
-        events.push(EndRound::trigger(&mut ()).event());
+        events.push(StartTurn::trigger(&mut (), ENTITY_1_ID).event());
         events.push(EndTurn::trigger(&mut ()).event());
-        events.push(EnvironmentRound::trigger(&mut ()).event());
+        events.push(EndRound::trigger(&mut ()).event());
+        events.push(EnvironmentTurn::trigger(&mut ()).event());
         events.push(ActivateAbility::trigger(&mut (), ENTITY_1_ID, ABILITY_1_ID).event());
         events.push(ApplyImpact::trigger(&mut (), ()).event());
         events.push(AlterStatistics::trigger(&mut (), ENTITY_1_ID, ()).event());

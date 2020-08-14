@@ -8,9 +8,9 @@ use weasel::creature::CreatureId;
 use weasel::team::TeamId;
 use weasel::{
     ActivateAbility, AlterStatistics, Battle, BattleController, BattleState, Character,
-    CreateCreature, CreateTeam, EndBattle, EndRound, EntityId, EventKind, EventQueue,
-    EventReceiver, EventTrigger, EventWrapper, FlatVersionedEvent, RemoveCreature, ResetEntropy,
-    Server, StartRound,
+    CreateCreature, CreateTeam, EndBattle, EndTurn, EntityId, EventKind, EventQueue, EventReceiver,
+    EventTrigger, EventWrapper, FlatVersionedEvent, RemoveCreature, ResetEntropy, Server,
+    StartTurn,
 };
 
 // Constants to identify teams.
@@ -70,8 +70,8 @@ impl Game {
     }
 
     pub fn fire_cannonball(&mut self) {
-        // Before our ship can attack we must start a player round.
-        StartRound::trigger(&mut self.server, EntityId::Creature(PLAYER_SHIP))
+        // Before our ship can attack we must start a player turn.
+        StartTurn::trigger(&mut self.server, EntityId::Creature(PLAYER_SHIP))
             .fire()
             .unwrap();
         // Now activate the 'cannonball' ability of the player's ship.
@@ -85,13 +85,13 @@ impl Game {
         .activation(EntityId::Creature(ENEMY_SHIP))
         .fire()
         .unwrap();
-        // After the ship's attack we just end the player round.
-        EndRound::trigger(&mut self.server).fire().unwrap();
+        // After the ship's attack we just end the player turn.
+        EndTurn::trigger(&mut self.server).fire().unwrap();
     }
 
     pub fn fire_grapeshot(&mut self) {
         // Some logic as fire_cannonball, but fire another ability.
-        StartRound::trigger(&mut self.server, EntityId::Creature(PLAYER_SHIP))
+        StartTurn::trigger(&mut self.server, EntityId::Creature(PLAYER_SHIP))
             .fire()
             .unwrap();
         ActivateAbility::trigger(
@@ -102,12 +102,12 @@ impl Game {
         .activation(EntityId::Creature(ENEMY_SHIP))
         .fire()
         .unwrap();
-        EndRound::trigger(&mut self.server).fire().unwrap();
+        EndTurn::trigger(&mut self.server).fire().unwrap();
     }
 
-    pub fn enemy_round(&mut self) {
-        // Before the enemy ship can attack we must start an enemy round.
-        StartRound::trigger(&mut self.server, EntityId::Creature(ENEMY_SHIP))
+    pub fn enemy_turn(&mut self) {
+        // Before the enemy ship can attack we must start an enemy turn.
+        StartTurn::trigger(&mut self.server, EntityId::Creature(ENEMY_SHIP))
             .fire()
             .unwrap();
         // Fire a random ability.
@@ -126,8 +126,8 @@ impl Game {
         .activation(EntityId::Creature(PLAYER_SHIP))
         .fire()
         .unwrap();
-        // After the ship's attack we just end the enemy round.
-        EndRound::trigger(&mut self.server).fire().unwrap();
+        // After the ship's attack we just end the enemy turn.
+        EndTurn::trigger(&mut self.server).fire().unwrap();
     }
 
     /// Saves the battle's history as json in a temporary file.

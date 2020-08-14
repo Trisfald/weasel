@@ -37,7 +37,7 @@ pub type AbilitiesAlteration<R> = <<R as BattleRules>::AR as ActorRules<R>>::Abi
 /// ```
 /// use weasel::{
 ///     battle_rules, rules::empty::*, ActivateAbility, Battle, BattleRules, CreateCreature,
-///     CreateTeam, EntityId, EventTrigger, Server, StartRound,
+///     CreateTeam, EntityId, EventTrigger, Server, StartTurn,
 /// };
 ///
 /// battle_rules! {}
@@ -52,7 +52,7 @@ pub type AbilitiesAlteration<R> = <<R as BattleRules>::AR as ActorRules<R>>::Abi
 /// CreateCreature::trigger(&mut server, creature_id, team_id, position)
 ///     .fire()
 ///     .unwrap();
-/// StartRound::trigger(&mut server, EntityId::Creature(creature_id))
+/// StartTurn::trigger(&mut server, EntityId::Creature(creature_id))
 ///     .fire()
 ///     .unwrap();
 ///

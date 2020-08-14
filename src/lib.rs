@@ -55,7 +55,7 @@
 //! - Long lasting status effects.
 //! - Player managed teams.
 //! - Team objectives and diplomacy.
-//! - Division of the battle into rounds.
+//! - Division of the battle into turns and rounds.
 //! - Rules to govern the game subdivided into orthogonal traits.
 //! - Fully serializable battle history.
 //! - Cause-effect relationship between events.
@@ -174,7 +174,7 @@ pub use crate::player::PlayerId;
 
 pub mod round;
 pub use crate::round::{
-    EndRound, EndTurn, EnvironmentRound, ResetRounds, Rounds, RoundsRules, StartRound,
+    EndRound, EndTurn, EnvironmentTurn, ResetRounds, Rounds, RoundsRules, StartTurn,
 };
 
 pub mod rules;

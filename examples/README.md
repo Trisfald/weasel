@@ -20,7 +20,7 @@ Example program showing the different ways to manage the space dimension in weas
 
 ## [Initiative](initiative/)
 
-A simple implementation of `RoundsRules` to decide the order of rounds based on a creature's statistic.
+A simple implementation of `RoundsRules` to decide the order of turns based on a creature's statistic.
 
 ## [Undo](undo/)
 

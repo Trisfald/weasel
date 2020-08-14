@@ -6,7 +6,7 @@ use weasel::entropy::Entropy;
 use weasel::event::{EventKind, EventQueue, EventTrigger, LinkedQueue};
 use weasel::fight::FightRules;
 use weasel::metric::WriteMetrics;
-use weasel::round::EnvironmentRound;
+use weasel::round::EnvironmentTurn;
 use weasel::rules::statistic::SimpleStatistic;
 use weasel::rules::status::SimpleStatus;
 use weasel::status::{
@@ -317,9 +317,9 @@ fn status_update() {
         creature!(server).statistic(&STATISTIC_ID).unwrap().value(),
         STATUS_INTENSITY * STATISTIC_VALUE
     );
-    // Do a round.
-    util::start_round(&mut server, &ENTITY_C1_ID);
-    util::end_round(&mut server);
+    // Do a turn.
+    util::start_turn(&mut server, &ENTITY_C1_ID);
+    util::end_turn(&mut server);
     // Check that the statistic's value changed.
     assert_eq!(
         creature!(server).statistic(&STATISTIC_ID).unwrap().value(),
@@ -345,9 +345,9 @@ fn status_update() {
         .unwrap()
         .origin();
     assert_eq!(alter_origin, Some(inflict_id));
-    // Do another round.
-    util::start_round(&mut server, &ENTITY_C1_ID);
-    util::end_round(&mut server);
+    // Do another turn.
+    util::start_turn(&mut server, &ENTITY_C1_ID);
+    util::end_turn(&mut server);
     // The status should have been terminated now.
     assert!(creature!(server).status(&STATUS_1_ID).is_none());
     // Check that the side effects have been deleted.
@@ -383,8 +383,8 @@ fn status_for_objects() {
         object!(server).statistic(&STATISTIC_ID).unwrap().value(),
         STATUS_INTENSITY * STATISTIC_VALUE
     );
-    // Trigger a round for the environment.
-    assert_eq!(EnvironmentRound::trigger(&mut server).fire().err(), None);
+    // Trigger a turn for the environment.
+    assert_eq!(EnvironmentTurn::trigger(&mut server).fire().err(), None);
     // Check that both objects have been altered by the status update.
     assert_eq!(
         object!(server).statistic(&STATISTIC_ID).unwrap().value(),
@@ -410,8 +410,8 @@ fn status_for_objects() {
         object!(server).statistic(&STATISTIC_ID).unwrap().value(),
         STATISTIC_VALUE
     );
-    // Do another round.
-    assert_eq!(EnvironmentRound::trigger(&mut server).fire().err(), None);
+    // Do another turn.
+    assert_eq!(EnvironmentTurn::trigger(&mut server).fire().err(), None);
     // Check that the status expired from the second object.
     assert!(object!(server, &OBJECT_2_ID).status(&STATUS_1_ID).is_none());
     assert_eq!(

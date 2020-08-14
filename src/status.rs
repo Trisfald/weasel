@@ -17,8 +17,8 @@ use std::fmt::{Debug, Formatter, Result};
 /// A long lasting effect altering an entity's condition.
 ///
 /// Statuses are used to represent anything that changes at least one property of an entity,
-/// for a given amount of rounds. DoTs (damage over time) are one example.\
-/// A status can alter an entity just once or at every round.
+/// for a given amount of turns. DoTs (damage over time) are one example.\
+/// A status can alter an entity just once or at every turn.
 pub type Status<R> = <<R as BattleRules>::CR as CharacterRules<R>>::Status;
 
 /// Alias for `Status<R>::Id`.
@@ -30,7 +30,7 @@ pub type Potency<R> = <<R as BattleRules>::FR as FightRules<R>>::Potency;
 /// Contains the changes to apply an alteration to one or more statuses.
 pub type StatusesAlteration<R> = <<R as BattleRules>::CR as CharacterRules<R>>::StatusesAlteration;
 
-/// Type for duration of statuses (in number of rounds).
+/// Type for duration of statuses (in number of turns).
 pub type StatusDuration = EventId;
 
 /// Stores a `Status` and additional information about it.
@@ -77,8 +77,8 @@ impl<R: BattleRules> AppliedStatus<R> {
         self.origin
     }
 
-    /// Returns for how many rounds the status has been in place.\
-    /// Duration is increased at every round start.
+    /// Returns for how many turns the status has been in place.\
+    /// Duration is increased at every turn start.
     pub fn duration(&self) -> StatusDuration {
         self.duration
     }

@@ -2,7 +2,7 @@ use std::convert::TryInto;
 use weasel::battle::{BattleController, BattleRules};
 use weasel::entropy::ResetEntropy;
 use weasel::event::{EventId, EventKind, EventTrigger};
-use weasel::round::EndRound;
+use weasel::round::EndTurn;
 use weasel::{battle_rules, rules::empty::*};
 
 const TEAM_1_ID: u32 = 1;
@@ -17,7 +17,7 @@ fn timeline_populated() {
     util::team(&mut server, TEAM_1_ID);
     util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, ());
     // Create some more faulty events.
-    assert!(EndRound::trigger(&mut server).fire().is_err());
+    assert!(EndTurn::trigger(&mut server).fire().is_err());
     // Create some more good events.
     assert_eq!(ResetEntropy::trigger(&mut server).fire().err(), None);
     // Verify if the events are in the timeline.
