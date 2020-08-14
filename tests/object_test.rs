@@ -10,7 +10,7 @@ use weasel::entropy::Entropy;
 use weasel::event::{EventQueue, EventTrigger};
 use weasel::metric::{system::*, WriteMetrics};
 use weasel::object::{CreateObject, RemoveObject};
-use weasel::round::StartRound;
+use weasel::round::StartTurn;
 use weasel::rules::empty::EmptyStat;
 use weasel::rules::statistic::SimpleStatistic;
 use weasel::space::{PositionClaim, SpaceRules};
@@ -56,9 +56,9 @@ fn object_cannot_act() {
     // Create a battle with one object.
     let mut server = util::server(CustomRules::new());
     util::object(&mut server, OBJECT_1_ID, ());
-    // Verify that objects can't start rounds.
+    // Verify that objects can't start turns.
     assert_eq!(
-        StartRound::trigger(&mut server, ENTITY_1_ID)
+        StartTurn::trigger(&mut server, ENTITY_1_ID)
             .fire()
             .err()
             .map(|e| e.unfold()),

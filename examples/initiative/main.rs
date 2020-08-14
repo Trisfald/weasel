@@ -2,8 +2,8 @@ use crate::rules::*;
 use std::time::SystemTime;
 use weasel::team::TeamId;
 use weasel::{
-    Battle, BattleController, CreateCreature, CreateTeam, EndRound, EventTrigger, RemoveCreature,
-    ResetEntropy, Server, StartRound,
+    Battle, BattleController, CreateCreature, CreateTeam, EndTurn, EventTrigger, RemoveCreature,
+    ResetEntropy, Server, StartTurn,
 };
 
 mod rules;
@@ -31,23 +31,23 @@ fn main() {
             .fire()
             .unwrap();
     }
-    // Carry out five rounds.
+    // Carry out five turn.
     for _ in 0..5 {
-        round(&mut server);
+        turn(&mut server);
     }
     // Remove one creature.
     println!("Creature (1) removed!");
     println!();
     RemoveCreature::trigger(&mut server, 1).fire().unwrap();
-    // Do a final round.
-    round(&mut server);
+    // Do a final turn.
+    turn(&mut server);
 }
 
-fn round(server: &mut Server<CustomRules>) {
-    // Display in which round we are.
+fn turn(server: &mut Server<CustomRules>) {
+    // Display in which turn we are.
     println!(
-        "Round {} - Initiative table:",
-        server.battle().rounds().completed_rounds() + 1
+        "Turn {} - Initiative table:",
+        server.battle().rounds().completed_turns() + 1
     );
     println!();
     // Display the order of initiative.
@@ -58,8 +58,8 @@ fn round(server: &mut Server<CustomRules>) {
     let actor_id = initiative.top();
     println!("It's the turn of: {}", actor_id);
     println!();
-    // Start the round.
-    StartRound::trigger(server, actor_id).fire().unwrap();
-    // Since this's an example, creatures do nothing and immediately end the round.
-    EndRound::trigger(server).fire().unwrap();
+    // Start the turn.
+    StartTurn::trigger(server, actor_id).fire().unwrap();
+    // Since this's an example, creatures do nothing and immediately end the turn.
+    EndTurn::trigger(server).fire().unwrap();
 }

@@ -7,7 +7,7 @@ use weasel::event::{
     EventSinkId, EventTrigger, ServerSink, VersionedEventWrapper,
 };
 use weasel::player::PlayerId;
-use weasel::round::StartRound;
+use weasel::round::StartTurn;
 use weasel::team::CreateTeam;
 use weasel::{battle_rules, rules::empty::*};
 use weasel::{Client, Server};
@@ -311,7 +311,7 @@ fn integrity_checks() {
     assert_eq!(server_sink.sink.lock().unwrap().disconnections, 1);
     // Fire another event in the client.
     assert_eq!(
-        StartRound::trigger(&mut *client.lock().unwrap(), ENTITY_1_ID)
+        StartTurn::trigger(&mut *client.lock().unwrap(), ENTITY_1_ID)
             .fire()
             .err(),
         Some(WeaselError::EntityNotFound(ENTITY_1_ID))
@@ -467,7 +467,7 @@ fn rights() {
     );
     // Check that rights are enforced for the wrong client.
     assert_eq!(
-        StartRound::trigger(&mut *client.lock().unwrap(), ENTITY_1_ID)
+        StartTurn::trigger(&mut *client.lock().unwrap(), ENTITY_1_ID)
             .fire()
             .err(),
         Some(WeaselError::AuthenticationError(
@@ -489,7 +489,7 @@ fn rights() {
     assert_eq!(client_sink.receive().err(), None);
     // Client events should be rejected.
     assert_eq!(
-        StartRound::trigger(&mut *client.lock().unwrap(), ENTITY_1_ID)
+        StartTurn::trigger(&mut *client.lock().unwrap(), ENTITY_1_ID)
             .fire()
             .err(),
         Some(WeaselError::MissingAuthentication)
@@ -509,7 +509,7 @@ fn rights() {
     assert_eq!(client_sink.receive().err(), None);
     // Check that the good client can send events.
     assert_eq!(
-        StartRound::trigger(&mut *client.lock().unwrap(), ENTITY_1_ID)
+        StartTurn::trigger(&mut *client.lock().unwrap(), ENTITY_1_ID)
             .fire()
             .err(),
         None,
@@ -549,7 +549,7 @@ fn server_only_events() {
 #[test]
 fn client_server_serde() {
     use weasel::creature::RemoveCreature;
-    use weasel::round::EndRound;
+    use weasel::round::EndTurn;
 
     const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
     // Create a server.
@@ -565,7 +565,7 @@ fn client_server_serde() {
     util::creature(&mut *server.lock().unwrap(), TEAM_1_ID, CREATURE_1_ID, ());
     assert_eq!(client_sink.receive().err(), None);
     assert_eq!(
-        StartRound::trigger(&mut *client.lock().unwrap(), ENTITY_1_ID)
+        StartTurn::trigger(&mut *client.lock().unwrap(), ENTITY_1_ID)
             .fire()
             .err(),
         None
@@ -577,7 +577,7 @@ fn client_server_serde() {
         vec![
             EventKind::CreateTeam,
             EventKind::CreateCreature,
-            EventKind::StartRound
+            EventKind::StartTurn
         ]
     );
     assert_eq!(
@@ -585,7 +585,7 @@ fn client_server_serde() {
         vec![
             EventKind::CreateTeam,
             EventKind::CreateCreature,
-            EventKind::StartRound
+            EventKind::StartTurn
         ]
     );
     // Start a new server and load history.
@@ -602,7 +602,7 @@ fn client_server_serde() {
     add_sink!(server, client_sink);
     // Fire new events.
     assert_eq!(
-        EndRound::trigger(&mut *client.lock().unwrap()).fire().err(),
+        EndTurn::trigger(&mut *client.lock().unwrap()).fire().err(),
         None
     );
     assert_eq!(
@@ -618,8 +618,8 @@ fn client_server_serde() {
         vec![
             EventKind::CreateTeam,
             EventKind::CreateCreature,
-            EventKind::StartRound,
-            EventKind::EndRound,
+            EventKind::StartTurn,
+            EventKind::EndTurn,
             EventKind::RemoveCreature,
         ]
     );
@@ -628,8 +628,8 @@ fn client_server_serde() {
         vec![
             EventKind::CreateTeam,
             EventKind::CreateCreature,
-            EventKind::StartRound,
-            EventKind::EndRound,
+            EventKind::StartTurn,
+            EventKind::EndTurn,
             EventKind::RemoveCreature,
         ]
     );

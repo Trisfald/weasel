@@ -58,7 +58,7 @@ fn game_loop() {
                     if game.check_winner() {
                         break;
                     }
-                    game.enemy_round();
+                    game.enemy_turn();
                     if game.check_winner() {
                         break;
                     }
@@ -70,7 +70,7 @@ fn game_loop() {
                     if game.check_winner() {
                         break;
                     }
-                    game.enemy_round();
+                    game.enemy_turn();
                     if game.check_winner() {
                         break;
                     }

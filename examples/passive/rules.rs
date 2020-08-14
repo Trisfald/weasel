@@ -82,7 +82,7 @@ impl ActorRules<CustomRules> for CustomActorRules {
         }
     }
 
-    fn on_round_end(
+    fn on_turn_end(
         &self,
         state: &BattleState<CustomRules>,
         actor: &dyn Actor<CustomRules>,

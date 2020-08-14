@@ -22,7 +22,7 @@ impl<R: BattleRules + 'static> ActorRules<R> for CustomActorRules {
     type Activation = u32;
     type AbilitiesAlteration = ();
 
-    fn on_round_start(
+    fn on_turn_start(
         &self,
         _state: &BattleState<R>,
         actor: &dyn Actor<R>,
@@ -38,7 +38,7 @@ impl<R: BattleRules + 'static> ActorRules<R> for CustomActorRules {
         .fire();
     }
 
-    fn on_round_end(
+    fn on_turn_end(
         &self,
         _state: &BattleState<R>,
         actor: &dyn Actor<R>,
@@ -58,23 +58,23 @@ impl<R: BattleRules + 'static> ActorRules<R> for CustomActorRules {
 battle_rules_with_actor! { CustomActorRules }
 
 #[test]
-fn round_start_and_end() {
+fn turn_start_and_end() {
     // Create a new creature.
     let mut server = util::server(CustomRules::new());
     util::team(&mut server, TEAM_1_ID);
     util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, ());
-    // Start a round, by the rules a move entity event should have been spawned.
-    util::start_round(&mut server, &ENTITY_1_ID);
+    // Start a turn, by the rules a move entity event should have been spawned.
+    util::start_turn(&mut server, &ENTITY_1_ID);
     {
         let events = server.battle().history().events();
-        assert_eq!(events[2].kind(), EventKind::StartRound);
+        assert_eq!(events[2].kind(), EventKind::StartTurn);
         assert_eq!(events[3].kind(), EventKind::MoveEntity);
     }
-    // End the round, by the rules another move entity event should have been spawned.
-    util::end_round(&mut server);
+    // End the turn, by the rules another move entity event should have been spawned.
+    util::end_turn(&mut server);
     {
         let events = server.battle().history().events();
-        assert_eq!(events[4].kind(), EventKind::EndRound);
+        assert_eq!(events[4].kind(), EventKind::EndTurn);
         assert_eq!(events[5].kind(), EventKind::MoveEntity);
     }
 }

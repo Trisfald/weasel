@@ -1,4 +1,4 @@
-//! Everything related to the battle's rounds.
+//! Everything related to the battle's turns and rounds.
 
 use crate::actor::{Actor, ActorRules};
 use crate::battle::{Battle, BattleRules, Checkpoint};
@@ -25,7 +25,7 @@ pub type TurnsCount = u32;
 
 /// Manages the battle's rounds. The main purpose is to tell which actor(s) will act next.
 pub struct Rounds<R: BattleRules> {
-    state: RoundStateType<R>,
+    state: TurnStateType<R>,
     model: RoundsModel<R>,
     rules: R::RR,
     rounds: RoundsCount,
@@ -35,7 +35,7 @@ pub struct Rounds<R: BattleRules> {
 impl<R: BattleRules> Rounds<R> {
     pub(crate) fn new(seed: Option<RoundsSeed<R>>, rules: R::RR) -> Self {
         Self {
-            state: RoundState::Ready,
+            state: TurnState::Ready,
             model: rules.generate_model(&seed),
             rules,
             rounds: 0,
@@ -65,13 +65,13 @@ impl<R: BattleRules> Rounds<R> {
         self.rules.eligible(&self.model, actor)
     }
 
-    /// Returns the state of the current round.
-    pub fn state(&self) -> &RoundStateType<R> {
+    /// Returns the state of the current turn.
+    pub fn state(&self) -> &TurnStateType<R> {
         &self.state
     }
 
-    /// Sets the state of the current round.
-    pub(crate) fn set_state(&mut self, state: RoundStateType<R>) {
+    /// Sets the state of the current turn.
+    pub(crate) fn set_state(&mut self, state: TurnStateType<R>) {
         self.state = state;
     }
 
@@ -127,7 +127,7 @@ impl<R: BattleRules> Rounds<R> {
             .on_actor_removed(&mut self.model, actor, entropy, metrics);
     }
 
-    /// Invoked when a round ends.
+    /// Invoked when a turn ends.
     pub(crate) fn on_end(
         &mut self,
         entities: &Entities<R>,
@@ -146,26 +146,26 @@ impl<R: BattleRules> Rounds<R> {
     }
 }
 
-/// `RoundState` alias parameterized on the `BattleRules` R.
-pub type RoundStateType<R> = RoundState<EntityId<R>>;
+/// `TurnState` alias parameterized on the `BattleRules` R.
+pub type TurnStateType<R> = TurnState<EntityId<R>>;
 
-/// State machine to manage the rounds' state.
+/// State machine to manage the turns' state.
 #[derive(Debug, Clone, PartialEq)]
-pub enum RoundState<EI>
+pub enum TurnState<EI>
 where
     EI: Debug + Hash + Eq,
 {
-    /// A new round is ready to start.
+    /// A new turn is ready to start.
     Ready,
-    /// A round is in progress.
+    /// A turn is in progress.
     Started(IndexSet<EI>),
 }
 
-impl<EI> RoundState<EI>
+impl<EI> TurnState<EI>
 where
     EI: Debug + Hash + Eq,
 {
-    /// Returns true if the round state is `Started` and the entity is one of its actors.
+    /// Returns true if the turn state is `Started` and the entity is one of its actors.
     pub fn has_actor(&self, entity_id: &EI) -> bool {
         if let Self::Started(actors) = self {
             actors.contains(entity_id)
@@ -175,11 +175,11 @@ where
     }
 }
 
-/// Rules to determine the order of rounds among actors.
+/// Rules to determine the order of turns among actors.
 ///
 /// These rules must provide to the battle system the information needed to know
 /// if an actor can take an action in a given moment. In other words, they manage the
-/// time dimension, which is by definition divided in *turns* (or *rounds*).
+/// time dimension, which is by definition divided in *turns* and *rounds*.
 pub trait RoundsRules<R: BattleRules> {
     #[cfg(not(feature = "serialization"))]
     /// See [RoundsSeed](type.RoundsSeed.html).
@@ -201,7 +201,7 @@ pub trait RoundsRules<R: BattleRules> {
         true
     }
 
-    /// Invoked when a new round begins.
+    /// Invoked when a new turn begins.
     ///
     /// The provided implementation does nothing.
     fn on_start(
@@ -215,7 +215,7 @@ pub trait RoundsRules<R: BattleRules> {
     ) {
     }
 
-    /// Invoked when the current round ends.
+    /// Invoked when the current turn ends.
     ///
     /// The provided implementation does nothing.
     fn on_end(
@@ -258,22 +258,22 @@ pub trait RoundsRules<R: BattleRules> {
 /// It is used to bootstrap the `RoundsModel` for a game.
 pub type RoundsSeed<R> = <<R as BattleRules>::RR as RoundsRules<R>>::RoundsSeed;
 
-/// Type to store all information about the order of rounds in the game.
+/// Type to store all information about the order of turns and rounds in the game.
 ///
 /// The round model should contain enough data to compute which actor will act next.
 /// It might be based on a round-robin policy, on the actor's quickness or on any other
 /// arbitrary metric.
 pub type RoundsModel<R> = <<R as BattleRules>::RR as RoundsRules<R>>::RoundsModel;
 
-/// Event to make an actor start a new round.
+/// Event to make an actor start a new turn.
 ///
-/// When an actor starts a round all his status effects will be updated.
+/// When an actor starts a turn all his status effects will be updated.
 ///
 /// # Examples
 /// ```
 /// use weasel::{
 ///     battle_rules, rules::empty::*, Battle, BattleController, BattleRules, CreateCreature,
-///     CreateTeam, EntityId, EventTrigger, Server, StartRound,
+///     CreateTeam, EntityId, EventTrigger, Server, StartTurn,
 /// };
 ///
 /// battle_rules! {}
@@ -289,7 +289,7 @@ pub type RoundsModel<R> = <<R as BattleRules>::RR as RoundsRules<R>>::RoundsMode
 ///     .fire()
 ///     .unwrap();
 ///
-/// StartRound::trigger(&mut server, EntityId::Creature(creature_id))
+/// StartTurn::trigger(&mut server, EntityId::Creature(creature_id))
 ///     .fire()
 ///     .unwrap();
 /// assert!(server
@@ -299,7 +299,7 @@ pub type RoundsModel<R> = <<R as BattleRules>::RR as RoundsRules<R>>::RoundsMode
 ///     .has_actor(&EntityId::Creature(creature_id)));
 /// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
-pub struct StartRound<R: BattleRules> {
+pub struct StartTurn<R: BattleRules> {
     #[cfg_attr(
         feature = "serialization",
         serde(bound(
@@ -310,44 +310,44 @@ pub struct StartRound<R: BattleRules> {
     ids: Vec<EntityId<R>>,
 }
 
-impl<R: BattleRules> StartRound<R> {
-    /// Returns a trigger for this event, to start a round with a single actor.
+impl<R: BattleRules> StartTurn<R> {
+    /// Returns a trigger for this event, to start a turn with a single actor.
     pub fn trigger<P: EventProcessor<R>>(
         processor: &mut P,
         id: EntityId<R>,
-    ) -> StartRoundTrigger<R, P> {
-        StartRoundTrigger {
+    ) -> StartTurnTrigger<R, P> {
+        StartTurnTrigger {
             processor,
             ids: vec![id],
         }
     }
 
-    /// Returns a trigger for this event, to start a round with a list of actors.\
+    /// Returns a trigger for this event, to start a turn with a list of actors.\
     /// Duplicated ids will be dropped during the event's processing.
-    pub fn trigger_with_actors<P, I>(processor: &mut P, ids: I) -> StartRoundTrigger<R, P>
+    pub fn trigger_with_actors<P, I>(processor: &mut P, ids: I) -> StartTurnTrigger<R, P>
     where
         P: EventProcessor<R>,
         I: IntoIterator<Item = EntityId<R>>,
     {
-        StartRoundTrigger {
+        StartTurnTrigger {
             processor,
             ids: ids.into_iter().collect(),
         }
     }
 
-    /// Returns the ids of the entities that will start the round.
+    /// Returns the ids of the entities that will start the turn.
     pub fn ids(&self) -> &Vec<EntityId<R>> {
         &self.ids
     }
 }
 
-impl<R: BattleRules> Debug for StartRound<R> {
+impl<R: BattleRules> Debug for StartTurn<R> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "StartRound {{ ids: {:?} }}", self.ids)
+        write!(f, "StartTurn {{ ids: {:?} }}", self.ids)
     }
 }
 
-impl<R: BattleRules> Clone for StartRound<R> {
+impl<R: BattleRules> Clone for StartTurn<R> {
     fn clone(&self) -> Self {
         Self {
             ids: self.ids.clone(),
@@ -355,11 +355,11 @@ impl<R: BattleRules> Clone for StartRound<R> {
     }
 }
 
-impl<R: BattleRules + 'static> Event<R> for StartRound<R> {
+impl<R: BattleRules + 'static> Event<R> for StartTurn<R> {
     fn verify(&self, battle: &Battle<R>) -> WeaselResult<(), R> {
-        // Verify if a round can start.
-        if let RoundState::Started(_) = battle.rounds().state() {
-            return Err(WeaselError::RoundInProgress);
+        // Verify if a turn can start.
+        if let TurnState::Started(_) = battle.rounds().state() {
+            return Err(WeaselError::TurnInProgress);
         }
         for id in &self.ids {
             // Verify if entity is an actor.
@@ -380,12 +380,12 @@ impl<R: BattleRules + 'static> Event<R> for StartRound<R> {
     }
 
     fn apply(&self, battle: &mut Battle<R>, event_queue: &mut Option<EventQueue<R>>) {
-        // Set the round state.
+        // Set the turn state.
         let actors_ids: IndexSet<_> = self.ids.iter().cloned().collect();
         battle
             .state
             .rounds
-            .set_state(RoundState::Started(actors_ids.clone()));
+            .set_state(TurnState::Started(actors_ids.clone()));
         // Perform some operations on every actor.
         for id in &actors_ids {
             let metrics = &mut battle.metrics.write_handle();
@@ -405,7 +405,7 @@ impl<R: BattleRules + 'static> Event<R> for StartRound<R> {
                 metrics,
             );
             // Invoke `CharacterRules` callback.
-            battle.rules.actor_rules().on_round_start(
+            battle.rules.actor_rules().on_turn_start(
                 &battle.state,
                 actor,
                 event_queue,
@@ -419,7 +419,7 @@ impl<R: BattleRules + 'static> Event<R> for StartRound<R> {
     }
 
     fn kind(&self) -> EventKind {
-        EventKind::StartRound
+        EventKind::StartTurn
     }
 
     fn box_clone(&self) -> Box<dyn Event<R> + Send> {
@@ -444,8 +444,8 @@ impl<R: BattleRules + 'static> Event<R> for StartRound<R> {
     }
 }
 
-/// Trigger to build and fire a `StartRound` event.
-pub struct StartRoundTrigger<'a, R, P>
+/// Trigger to build and fire a `StartTurn` event.
+pub struct StartTurnTrigger<'a, R, P>
 where
     R: BattleRules,
     P: EventProcessor<R>,
@@ -454,7 +454,7 @@ where
     ids: Vec<EntityId<R>>,
 }
 
-impl<'a, R, P> EventTrigger<'a, R, P> for StartRoundTrigger<'a, R, P>
+impl<'a, R, P> EventTrigger<'a, R, P> for StartTurnTrigger<'a, R, P>
 where
     R: BattleRules + 'static,
     P: EventProcessor<R>,
@@ -463,21 +463,21 @@ where
         self.processor
     }
 
-    /// Returns an `StartRound` event.
+    /// Returns an `StartTurn` event.
     fn event(&self) -> Box<dyn Event<R> + Send> {
-        Box::new(StartRound {
+        Box::new(StartTurn {
             ids: self.ids.clone(),
         })
     }
 }
 
-/// Event to end the current round.
+/// Event to end the current turn.
 ///
 /// # Examples
 /// ```
 /// use weasel::{
-///     battle_rules, round::RoundState, rules::empty::*, Battle, BattleController, BattleRules,
-///     CreateCreature, CreateTeam, EndRound, EntityId, EventTrigger, Server, StartRound,
+///     battle_rules, round::TurnState, rules::empty::*, Battle, BattleController, BattleRules,
+///     CreateCreature, CreateTeam, EndTurn, EntityId, EventTrigger, Server, StartTurn,
 /// };
 ///
 /// battle_rules! {}
@@ -492,36 +492,36 @@ where
 /// CreateCreature::trigger(&mut server, creature_id, team_id, position)
 ///     .fire()
 ///     .unwrap();
-/// StartRound::trigger(&mut server, EntityId::Creature(creature_id))
+/// StartTurn::trigger(&mut server, EntityId::Creature(creature_id))
 ///     .fire()
 ///     .unwrap();
 ///
-/// EndRound::trigger(&mut server).fire().unwrap();
-/// assert_eq!(*server.battle().rounds().state(), RoundState::Ready);
+/// EndTurn::trigger(&mut server).fire().unwrap();
+/// assert_eq!(*server.battle().rounds().state(), TurnState::Ready);
 /// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
-pub struct EndRound<R> {
+pub struct EndTurn<R> {
     #[cfg_attr(feature = "serialization", serde(skip))]
     _phantom: PhantomData<R>,
 }
 
-impl<R: BattleRules> EndRound<R> {
+impl<R: BattleRules> EndTurn<R> {
     /// Returns a trigger for this event.
-    pub fn trigger<P: EventProcessor<R>>(processor: &mut P) -> EndRoundTrigger<R, P> {
-        EndRoundTrigger {
+    pub fn trigger<P: EventProcessor<R>>(processor: &mut P) -> EndTurnTrigger<R, P> {
+        EndTurnTrigger {
             processor,
             _phantom: PhantomData,
         }
     }
 }
 
-impl<R> Debug for EndRound<R> {
+impl<R> Debug for EndTurn<R> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "EndRound {{ }}")
+        write!(f, "EndTurn {{ }}")
     }
 }
 
-impl<R> Clone for EndRound<R> {
+impl<R> Clone for EndTurn<R> {
     fn clone(&self) -> Self {
         Self {
             _phantom: PhantomData,
@@ -529,22 +529,22 @@ impl<R> Clone for EndRound<R> {
     }
 }
 
-impl<R: BattleRules + 'static> Event<R> for EndRound<R> {
+impl<R: BattleRules + 'static> Event<R> for EndTurn<R> {
     fn verify(&self, battle: &Battle<R>) -> WeaselResult<(), R> {
-        // Verify if the round can end.
-        if let RoundState::Ready = battle.rounds().state() {
-            return Err(WeaselError::NoRoundInProgress);
+        // Verify if the turn can end.
+        if let TurnState::Ready = battle.rounds().state() {
+            return Err(WeaselError::NoTurnInProgress);
         }
         Ok(())
     }
 
     fn apply(&self, battle: &mut Battle<R>, event_queue: &mut Option<EventQueue<R>>) {
-        let actors_ids = if let RoundState::Started(actors) = battle.state.rounds.state() {
+        let actors_ids = if let TurnState::Started(actors) = battle.state.rounds.state() {
             actors.clone()
         } else {
-            panic!("constraint violated: end round called when state is not started");
+            panic!("constraint violated: end turn called when state is not started");
         };
-        // End the round for each actor.
+        // End the turn for each actor.
         for actor_id in actors_ids {
             let actor = battle.state.entities.actor(&actor_id).unwrap_or_else(|| {
                 panic!(
@@ -554,7 +554,7 @@ impl<R: BattleRules + 'static> Event<R> for EndRound<R> {
             });
             let metrics = &mut battle.metrics.write_handle();
             // Invoke `CharacterRules` callback.
-            battle.rules.actor_rules().on_round_end(
+            battle.rules.actor_rules().on_turn_end(
                 &battle.state,
                 actor,
                 event_queue,
@@ -575,17 +575,17 @@ impl<R: BattleRules + 'static> Event<R> for EndRound<R> {
                 &battle.rules.team_rules(),
                 &battle.metrics.read_handle(),
                 event_queue,
-                Checkpoint::RoundEnd,
+                Checkpoint::TurnEnd,
             );
         }
-        // Set the round state.
-        battle.state.rounds.set_state(RoundState::Ready);
-        // Increase the rounds counter.
-        battle.rounds_mut().increase_completed_rounds();
+        // Set the turn state.
+        battle.state.rounds.set_state(TurnState::Ready);
+        // Increase the turns counter.
+        battle.rounds_mut().increase_completed_turns();
     }
 
     fn kind(&self) -> EventKind {
-        EventKind::EndRound
+        EventKind::EndTurn
     }
 
     fn box_clone(&self) -> Box<dyn Event<R> + Send> {
@@ -597,10 +597,10 @@ impl<R: BattleRules + 'static> Event<R> for EndRound<R> {
     }
 
     fn rights<'a>(&'a self, battle: &'a Battle<R>) -> EventRights<'a, R> {
-        let actors = if let RoundState::Started(actors) = battle.state.rounds.state() {
+        let actors = if let TurnState::Started(actors) = battle.state.rounds.state() {
             actors
         } else {
-            panic!("constraint violated: end round called when state is not started");
+            panic!("constraint violated: end turn called when state is not started");
         };
         // Collect the rights to all teams involved.
         let mut teams = Vec::new();
@@ -617,8 +617,8 @@ impl<R: BattleRules + 'static> Event<R> for EndRound<R> {
     }
 }
 
-/// Trigger to build and fire an `EndRound` event.
-pub struct EndRoundTrigger<'a, R, P>
+/// Trigger to build and fire an `EndTurn` event.
+pub struct EndTurnTrigger<'a, R, P>
 where
     R: BattleRules,
     P: EventProcessor<R>,
@@ -627,7 +627,7 @@ where
     _phantom: PhantomData<R>,
 }
 
-impl<'a, R, P> EventTrigger<'a, R, P> for EndRoundTrigger<'a, R, P>
+impl<'a, R, P> EventTrigger<'a, R, P> for EndTurnTrigger<'a, R, P>
 where
     R: BattleRules + 'static,
     P: EventProcessor<R>,
@@ -636,9 +636,9 @@ where
         self.processor
     }
 
-    /// Returns an `EndRound` event.
+    /// Returns an `EndTurn` event.
     fn event(&self) -> Box<dyn Event<R> + Send> {
-        Box::new(EndRound {
+        Box::new(EndTurn {
             _phantom: self._phantom,
         })
     }
@@ -646,7 +646,7 @@ where
 
 /// Event to reset the rounds model.
 ///
-/// This event can be fired only if no round is in progress.
+/// This event can be fired only if no turn is in progress.
 ///
 /// # Examples
 /// ```
@@ -709,9 +709,9 @@ impl<R: BattleRules> Clone for ResetRounds<R> {
 
 impl<R: BattleRules + 'static> Event<R> for ResetRounds<R> {
     fn verify(&self, battle: &Battle<R>) -> WeaselResult<(), R> {
-        // Verify that no round is in progress.
-        if let RoundState::Started(_) = battle.rounds().state() {
-            return Err(WeaselError::RoundInProgress);
+        // Verify that no turn is in progress.
+        if let TurnState::Started(_) = battle.rounds().state() {
+            return Err(WeaselError::TurnInProgress);
         }
         Ok(())
     }
@@ -772,13 +772,13 @@ where
     }
 }
 
-/// Event to perform a collective round for the environment's inanimate entities.\
+/// Event to perform a collective turn for the environment's inanimate entities.\
 /// The purpose of this event is to update the statuses of all objects.
 ///
 /// # Examples
 /// ```
 /// use weasel::{
-///     battle_rules, rules::empty::*, Battle, BattleController, BattleRules, EnvironmentRound,
+///     battle_rules, rules::empty::*, Battle, BattleController, BattleRules, EnvironmentTurn,
 ///     EventTrigger, Server,
 /// };
 ///
@@ -787,35 +787,35 @@ where
 /// let battle = Battle::builder(CustomRules::new()).build();
 /// let mut server = Server::builder(battle).build();
 ///
-/// EnvironmentRound::trigger(&mut server).fire().unwrap();
+/// EnvironmentTurn::trigger(&mut server).fire().unwrap();
 /// assert_eq!(
-///     server.battle().rounds().completed_rounds(),
+///     server.battle().rounds().completed_turns(),
 ///     1
 /// );
 /// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
-pub struct EnvironmentRound<R> {
+pub struct EnvironmentTurn<R> {
     #[cfg_attr(feature = "serialization", serde(skip))]
     _phantom: PhantomData<R>,
 }
 
-impl<R: BattleRules> EnvironmentRound<R> {
+impl<R: BattleRules> EnvironmentTurn<R> {
     /// Returns a trigger for this event.
-    pub fn trigger<P: EventProcessor<R>>(processor: &mut P) -> EnvironmentRoundTrigger<R, P> {
-        EnvironmentRoundTrigger {
+    pub fn trigger<P: EventProcessor<R>>(processor: &mut P) -> EnvironmentTurnTrigger<R, P> {
+        EnvironmentTurnTrigger {
             processor,
             _phantom: PhantomData,
         }
     }
 }
 
-impl<R> Debug for EnvironmentRound<R> {
+impl<R> Debug for EnvironmentTurn<R> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "EnvironmentRound {{ }}")
+        write!(f, "EnvironmentTurn {{ }}")
     }
 }
 
-impl<R> Clone for EnvironmentRound<R> {
+impl<R> Clone for EnvironmentTurn<R> {
     fn clone(&self) -> Self {
         Self {
             _phantom: PhantomData,
@@ -823,11 +823,11 @@ impl<R> Clone for EnvironmentRound<R> {
     }
 }
 
-impl<R: BattleRules + 'static> Event<R> for EnvironmentRound<R> {
+impl<R: BattleRules + 'static> Event<R> for EnvironmentTurn<R> {
     fn verify(&self, battle: &Battle<R>) -> WeaselResult<(), R> {
-        // Verify that no other round is in progress.
-        if let RoundState::Started(_) = battle.rounds().state() {
-            return Err(WeaselError::RoundInProgress);
+        // Verify that no other turn is in progress.
+        if let TurnState::Started(_) = battle.rounds().state() {
+            return Err(WeaselError::TurnInProgress);
         }
         Ok(())
     }
@@ -845,11 +845,11 @@ impl<R: BattleRules + 'static> Event<R> for EnvironmentRound<R> {
                 .unwrap_or_else(|err| panic!("constraint violated: {:?}", err));
         }
         // The turn started and ended, atomically.
-        battle.rounds_mut().increase_completed_rounds();
+        battle.rounds_mut().increase_completed_turns();
     }
 
     fn kind(&self) -> EventKind {
-        EventKind::EnvironmentRound
+        EventKind::EnvironmentTurn
     }
 
     fn box_clone(&self) -> Box<dyn Event<R> + Send> {
@@ -861,8 +861,8 @@ impl<R: BattleRules + 'static> Event<R> for EnvironmentRound<R> {
     }
 }
 
-/// Trigger to build and fire an `EnvironmentRound` event.
-pub struct EnvironmentRoundTrigger<'a, R, P>
+/// Trigger to build and fire an `EnvironmentTurn` event.
+pub struct EnvironmentTurnTrigger<'a, R, P>
 where
     R: BattleRules,
     P: EventProcessor<R>,
@@ -871,7 +871,7 @@ where
     _phantom: PhantomData<R>,
 }
 
-impl<'a, R, P> EventTrigger<'a, R, P> for EnvironmentRoundTrigger<'a, R, P>
+impl<'a, R, P> EventTrigger<'a, R, P> for EnvironmentTurnTrigger<'a, R, P>
 where
     R: BattleRules + 'static,
     P: EventProcessor<R>,
@@ -880,26 +880,26 @@ where
         self.processor
     }
 
-    /// Returns an `EnvironmentRound` event.
+    /// Returns an `EnvironmentTurn` event.
     fn event(&self) -> Box<dyn Event<R> + Send> {
-        Box::new(EnvironmentRound {
+        Box::new(EnvironmentTurn {
             _phantom: self._phantom,
         })
     }
 }
 
-/// Event to trigger the end of the current turn.
+/// Event to trigger the end of the current round.
 ///
-/// A turn is a logical separator between rounds and it can contain any
+/// A round is a logical separator between turns and it can contain any
 /// number of these.\
-/// Managing turns is optional and not required in order to start or end rounds.
+/// Managing rounds is optional and not required in order to start or end turns.
 ///
-/// The first turn is implicitly started at the beginning of the battle.
+/// The first round is implicitly started at the beginning of the battle.
 ///
 /// # Examples
 /// ```
 /// use weasel::{
-///     battle_rules, rules::empty::*, Battle, BattleController, BattleRules, EndTurn,
+///     battle_rules, rules::empty::*, Battle, BattleController, BattleRules, EndRound,
 ///     EventTrigger, Server,
 /// };
 ///
@@ -908,35 +908,35 @@ where
 /// let battle = Battle::builder(CustomRules::new()).build();
 /// let mut server = Server::builder(battle).build();
 ///
-/// EndTurn::trigger(&mut server).fire().unwrap();
+/// EndRound::trigger(&mut server).fire().unwrap();
 /// assert_eq!(
-///     server.battle().rounds().completed_turns(),
+///     server.battle().rounds().completed_rounds(),
 ///     1
 /// );
 /// ```
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
-pub struct EndTurn<R> {
+pub struct EndRound<R> {
     #[cfg_attr(feature = "serialization", serde(skip))]
     _phantom: PhantomData<R>,
 }
 
-impl<R: BattleRules> EndTurn<R> {
+impl<R: BattleRules> EndRound<R> {
     /// Returns a trigger for this event.
-    pub fn trigger<P: EventProcessor<R>>(processor: &mut P) -> EndTurnTrigger<R, P> {
-        EndTurnTrigger {
+    pub fn trigger<P: EventProcessor<R>>(processor: &mut P) -> EndRoundTrigger<R, P> {
+        EndRoundTrigger {
             processor,
             _phantom: PhantomData,
         }
     }
 }
 
-impl<R> Debug for EndTurn<R> {
+impl<R> Debug for EndRound<R> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "EndTurn {{ }}")
+        write!(f, "EndRound {{ }}")
     }
 }
 
-impl<R> Clone for EndTurn<R> {
+impl<R> Clone for EndRound<R> {
     fn clone(&self) -> Self {
         Self {
             _phantom: PhantomData,
@@ -944,21 +944,21 @@ impl<R> Clone for EndTurn<R> {
     }
 }
 
-impl<R: BattleRules + 'static> Event<R> for EndTurn<R> {
+impl<R: BattleRules + 'static> Event<R> for EndRound<R> {
     fn verify(&self, battle: &Battle<R>) -> WeaselResult<(), R> {
-        // Verify that no round is in progress.
-        if let RoundState::Started(_) = battle.rounds().state() {
-            return Err(WeaselError::RoundInProgress);
+        // Verify that no turn is in progress.
+        if let TurnState::Started(_) = battle.rounds().state() {
+            return Err(WeaselError::TurnInProgress);
         }
         Ok(())
     }
 
     fn apply(&self, battle: &mut Battle<R>, _: &mut Option<EventQueue<R>>) {
-        battle.rounds_mut().increase_completed_turns();
+        battle.rounds_mut().increase_completed_rounds();
     }
 
     fn kind(&self) -> EventKind {
-        EventKind::EndTurn
+        EventKind::EndRound
     }
 
     fn box_clone(&self) -> Box<dyn Event<R> + Send> {
@@ -970,8 +970,8 @@ impl<R: BattleRules + 'static> Event<R> for EndTurn<R> {
     }
 }
 
-/// Trigger to build and fire an `EndTurn` event.
-pub struct EndTurnTrigger<'a, R, P>
+/// Trigger to build and fire an `EndRound` event.
+pub struct EndRoundTrigger<'a, R, P>
 where
     R: BattleRules,
     P: EventProcessor<R>,
@@ -980,7 +980,7 @@ where
     _phantom: PhantomData<R>,
 }
 
-impl<'a, R, P> EventTrigger<'a, R, P> for EndTurnTrigger<'a, R, P>
+impl<'a, R, P> EventTrigger<'a, R, P> for EndRoundTrigger<'a, R, P>
 where
     R: BattleRules + 'static,
     P: EventProcessor<R>,
@@ -989,9 +989,9 @@ where
         self.processor
     }
 
-    /// Returns an `EndTurn` event.
+    /// Returns an `EndRound` event.
     fn event(&self) -> Box<dyn Event<R> + Send> {
-        Box::new(EndTurn {
+        Box::new(EndRound {
             _phantom: self._phantom,
         })
     }

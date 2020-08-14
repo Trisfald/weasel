@@ -6,7 +6,7 @@ use weasel::entity::EntityId;
 use weasel::entropy::Entropy;
 use weasel::event::{DummyEvent, EventQueue, EventTrigger};
 use weasel::metric::WriteMetrics;
-use weasel::round::{EndRound, StartRound};
+use weasel::round::{EndTurn, StartTurn};
 use weasel::rules::empty::EmptyAbility;
 use weasel::WeaselError;
 use weasel::{battle_rules, rules::empty::*};
@@ -45,7 +45,7 @@ impl<R: BattleRules + 'static> ActorRules<R> for CustomActorRules {
     ) {
         DummyEvent::trigger(&mut event_queue).fire();
         EndBattle::trigger(&mut event_queue).fire();
-        EndRound::trigger(&mut event_queue).fire();
+        EndTurn::trigger(&mut event_queue).fire();
     }
 }
 
@@ -61,7 +61,7 @@ fn end_battle() {
     // End the battle and checks that new events aren't accepted.
     assert_eq!(EndBattle::trigger(&mut server).fire().err(), None);
     assert_eq!(
-        StartRound::trigger(&mut server, ENTITY_1_ID)
+        StartTurn::trigger(&mut server, ENTITY_1_ID)
             .fire()
             .err()
             .map(|e| e.unfold()),
@@ -77,8 +77,8 @@ fn end_battle_during_events() {
     util::team(&mut server, TEAM_1_ID);
     util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, ());
     assert_eq!(server.battle().phase(), BattlePhase::Started);
-    util::start_round(&mut server, &ENTITY_1_ID);
-    // Fire an ability that creates a dummy, an endbattle and an endround.
+    util::start_turn(&mut server, &ENTITY_1_ID);
+    // Fire an ability that creates a dummy, an endbattle and an EndTurn.
     // Last event should have been rejected.
     assert_eq!(
         ActivateAbility::trigger(&mut server, ENTITY_1_ID, ABILITY_ID)

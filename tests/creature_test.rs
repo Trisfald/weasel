@@ -11,7 +11,7 @@ use weasel::entity::{EntityId, RemoveEntity, Transmutation};
 use weasel::entropy::Entropy;
 use weasel::event::{EventQueue, EventTrigger};
 use weasel::metric::{system::*, WriteMetrics};
-use weasel::round::{RoundState, RoundsRules};
+use weasel::round::{RoundsRules, TurnState};
 use weasel::rules::empty::{EmptyAbility, EmptyStat};
 use weasel::rules::{ability::SimpleAbility, statistic::SimpleStatistic};
 use weasel::space::{PositionClaim, SpaceRules};
@@ -497,9 +497,9 @@ fn remove_creature() {
         .unwrap()
         .creatures()
         .any(|e| *e == CREATURE_1_ID));
-    // Create another creature and start a round.
+    // Create another creature and start a turn.
     util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, POSITION_1);
-    util::start_round(&mut server, &ENTITY_1_ID);
+    util::start_turn(&mut server, &ENTITY_1_ID);
     // Remove the creature.
     assert_eq!(
         RemoveCreature::trigger(&mut server, CREATURE_1_ID)
@@ -507,7 +507,7 @@ fn remove_creature() {
             .err(),
         None
     );
-    // Check that the creature was removed and the round ended.
+    // Check that the creature was removed and the turn ended.
     let entities = server.battle().entities();
     assert!(entities.creature(&CREATURE_1_ID).is_none());
     assert!(!entities
@@ -515,7 +515,7 @@ fn remove_creature() {
         .unwrap()
         .creatures()
         .any(|e| *e == CREATURE_1_ID));
-    assert_eq!(*server.battle().rounds().state(), RoundState::<_>::Ready);
+    assert_eq!(*server.battle().rounds().state(), TurnState::<_>::Ready);
     // Position must have been freed.
     assert!(!server.battle().space().model().contains(&POSITION_1));
     // Creature with id 1 must have been removed twice from the round model.

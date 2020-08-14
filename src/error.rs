@@ -64,11 +64,11 @@ pub enum WeaselError<V, TI, EI, CI, OI, PI, AI, SI, MI, E> {
     EntityNotFound(EI),
     /// The event id is not contiguous.
     NonContiguousEventId(EventId, EventId),
-    /// A round is already in progress.
-    RoundInProgress,
-    /// No round is in progress.
-    NoRoundInProgress,
-    /// The actor can't start a new round.
+    /// A turn is already in progress.
+    TurnInProgress,
+    /// No turn is in progress.
+    NoTurnInProgress,
+    /// The actor can't start a new turn.
     ActorNotEligible(EI),
     /// The actor can't act at the moment.
     ActorNotReady(EI),
@@ -175,12 +175,10 @@ where
             NonContiguousEventId(id, expected) => {
                 write!(f, "event has id {:?}, expected {:?}", id, expected)
             }
-            RoundInProgress => write!(f, "a round is already in progress"),
-            NoRoundInProgress => write!(f, "no round is in progress"),
-            ActorNotEligible(id) => {
-                write!(f, "actor {:?} is not eligible to start a new round", id)
-            }
-            ActorNotReady(id) => write!(f, "actor {:?} can't act outside of his round", id),
+            TurnInProgress => write!(f, "a turn is already in progress"),
+            NoTurnInProgress => write!(f, "no turn is in progress"),
+            ActorNotEligible(id) => write!(f, "actor {:?} is not eligible to start a new turn", id),
+            ActorNotReady(id) => write!(f, "actor {:?} can't act outside of his turn", id),
             AbilityNotKnown(actor_id, ability_id) => write!(
                 f,
                 "actor {:?} doesn't known ability {:?}",
@@ -433,14 +431,14 @@ mod tests {
         assert_eq!(error.filter(filter_fn).err(), None);
         // Filter only the right errors.
         let error: WeaselErrorType<CustomRules> =
-            WeaselError::InvalidEvent(trigger.event(), Box::new(WeaselError::RoundInProgress));
+            WeaselError::InvalidEvent(trigger.event(), Box::new(WeaselError::TurnInProgress));
         let error: WeaselErrorType<CustomRules> =
             WeaselError::MultiError(vec![error_to_filter, error]);
         assert_eq!(
             error.filter(filter_fn).err(),
             Some(WeaselError::InvalidEvent(
                 trigger.event(),
-                Box::new(WeaselError::RoundInProgress)
+                Box::new(WeaselError::TurnInProgress)
             ))
         );
     }

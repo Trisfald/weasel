@@ -91,7 +91,7 @@ impl RoundsRules<CustomRules> for MyRoundsRules {
         _: &mut Entropy<CustomRules>,
         _: &mut WriteMetrics<CustomRules>,
     ) {
-        // When a player round end bump the counter, wrapping at 3
+        // When a player turn ends bump the counter, wrapping at 3
         // so that it cycles between 0, 1 and 2.
         *model = (*model + 1) % 3;
     }

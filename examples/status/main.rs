@@ -3,8 +3,8 @@ use weasel::creature::CreatureId;
 use weasel::object::ObjectId;
 use weasel::team::TeamId;
 use weasel::{
-    Battle, BattleController, ClearStatus, CreateCreature, CreateObject, CreateTeam, EndRound,
-    EntityId, EnvironmentRound, EventKind, EventTrigger, Id, InflictStatus, Server, StartRound,
+    Battle, BattleController, ClearStatus, CreateCreature, CreateObject, CreateTeam, EndTurn,
+    EntityId, EnvironmentTurn, EventKind, EventTrigger, Id, InflictStatus, Server, StartTurn,
 };
 
 mod rules;
@@ -40,7 +40,7 @@ fn main() {
         .potency((50, None))
         .fire()
         .unwrap();
-    // Inflict a DoT status effect on the object, for two rounds.
+    // Inflict a DoT status effect on the object, for two turns.
     println!("Inflicting a DoT on the object...");
     InflictStatus::trigger(&mut server, ENTITY_2_ID, DOT)
         .potency((10, Some(2)))
@@ -48,9 +48,9 @@ fn main() {
         .unwrap();
     // Display the entities' state.
     print_state(&server);
-    // Do two full turns.
+    // Do two full rounds.
     for i in 1..=2 {
-        turn(&mut server, i);
+        round(&mut server, i);
     }
     // The DoT should have been cleared automatically.
     // Remove the power-up manually.
@@ -63,18 +63,18 @@ fn main() {
     print_dot_effects(&server);
 }
 
-/// Performs a turn.
-fn turn(server: &mut Server<CustomRules>, turn: u32) {
-    // Display in which turn we are.
-    println!("Turn {}", turn);
+/// Performs a round.
+fn round(server: &mut Server<CustomRules>, turn: u32) {
+    // Display in which round we are.
+    println!("Round {}", turn);
     println!();
-    // Start and end a round for the creature.
-    println!("Round of Creature (1)...");
-    StartRound::trigger(server, ENTITY_1_ID).fire().unwrap();
-    EndRound::trigger(server).fire().unwrap();
-    // Do a round for all non-actor entities, to update their statuses.
-    println!("Round of environment...");
-    EnvironmentRound::trigger(server).fire().unwrap();
+    // Start and end a turn for the creature.
+    println!("Turn of Creature (1)...");
+    StartTurn::trigger(server, ENTITY_1_ID).fire().unwrap();
+    EndTurn::trigger(server).fire().unwrap();
+    // Do a turn for all non-actor entities, to update their statuses.
+    println!("Turn of environment...");
+    EnvironmentTurn::trigger(server).fire().unwrap();
     // Display the entities' state.
     print_state(server);
 }

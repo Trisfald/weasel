@@ -2,8 +2,8 @@ use crate::rules::*;
 use weasel::creature::CreatureId;
 use weasel::team::TeamId;
 use weasel::{
-    Actor, Battle, BattleController, CreateCreature, CreateTeam, EndRound, Entity, EntityId,
-    EventTrigger, Server, StartRound,
+    Actor, Battle, BattleController, CreateCreature, CreateTeam, EndTurn, Entity, EntityId,
+    EventTrigger, Server, StartTurn,
 };
 
 mod rules;
@@ -32,29 +32,31 @@ fn main() {
         .abilities_seed(vec![PUNCH, POWER_UP])
         .fire()
         .unwrap();
-    println!("Now doing three turns of combat. Notice how Creature (2) punches get more powerful!");
+    println!(
+        "Now doing three rounds of combat. Notice how Creature (2) punches get more powerful!"
+    );
     println!();
-    // Carry out three turns.
+    // Carry out three round.
     for i in 0..3 {
-        turn(&mut server, i);
+        round(&mut server, i);
     }
 }
 
-/// Does a turn, containing a round for each creatures.
-fn turn(server: &mut Server<CustomRules>, turn: u32) {
-    // Display in which turn we are.
-    println!("Turn {}", turn + 1);
+/// Does a round, containing a turn for each creatures.
+fn round(server: &mut Server<CustomRules>, turn: u32) {
+    // Display in which round we are.
+    println!("Round {}", turn + 1);
     println!();
     print_power(server, CREATURE_1_ID);
     print_power(server, CREATURE_2_ID);
-    // Start and end a round for the first creature.
-    println!("Round of Creature (1)...");
-    StartRound::trigger(server, ENTITY_1_ID).fire().unwrap();
-    EndRound::trigger(server).fire().unwrap();
-    // Start and end a round for the second creature.
-    println!("Round of Creature (2)...");
-    StartRound::trigger(server, ENTITY_2_ID).fire().unwrap();
-    EndRound::trigger(server).fire().unwrap();
+    // Start and end a turn for the first creature.
+    println!("Turn of Creature (1)...");
+    StartTurn::trigger(server, ENTITY_1_ID).fire().unwrap();
+    EndTurn::trigger(server).fire().unwrap();
+    // Start and end a turn for the second creature.
+    println!("Turn of Creature (2)...");
+    StartTurn::trigger(server, ENTITY_2_ID).fire().unwrap();
+    EndTurn::trigger(server).fire().unwrap();
     print_power(server, CREATURE_1_ID);
     print_power(server, CREATURE_2_ID);
     println!();

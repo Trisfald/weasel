@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Rounds and turns now reflect the most used definition (a round is made of multiple turns).
+- Renamed `StartRound` into `StartTurn`, swapped `EndRound` and `EndTurn` and renamed `EnvironmentRound` into `EnvironmentTurn`.
+- Renamed `check_objectives_on_round` into `check_objectives_on_turn`.
+- Renamed `on_round_start` into `on_turn_start` and `on_round_end` into `on_turn_end`.
+- Renamed `RoundState` into `TurnState`.
 
 ## [0.8.1] - 2020-08-12
 ### Added

@@ -33,8 +33,8 @@ impl TeamRules<PiratesRules> for PiratesTeamRules {
         seed.as_ref().unwrap().clone()
     }
 
-    // We override the function to check objectives each time a round is finished.
-    fn check_objectives_on_round(
+    // We override the function to check objectives each time a turn is finished.
+    fn check_objectives_on_turn(
         &self,
         state: &BattleState<PiratesRules>,
         team: &Team<PiratesRules>,
@@ -215,7 +215,7 @@ battle_rules! {
     EmptyUserRules,
     // In our game ships don't move.
     EmptySpaceRules,
-    // We handle rounds manually. The player always goes first.
+    // We handle turns manually. The player always goes first.
     EmptyRoundsRules,
     UniformDistribution<i16>
 }

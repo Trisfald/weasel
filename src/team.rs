@@ -127,13 +127,13 @@ pub trait TeamRules<R: BattleRules> {
     }
 
     /// Checks if the team has completed its objectives.
-    /// This check is called every time a round ends.
+    /// This check is called every time a turn ends.
     ///
     /// The provided implementation does not return any conclusion.\
     /// If you set team `Conclusion` manually, you may avoid implementing this method.
     ///
     /// Returns the `Conclusion` for this team, or none if it did not reach any.
-    fn check_objectives_on_round(
+    fn check_objectives_on_turn(
         &self,
         _state: &BattleState<R>,
         _team: &Team<R>,
