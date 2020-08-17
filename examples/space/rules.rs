@@ -28,10 +28,10 @@ impl SpaceRules<CustomRules> for CustomSpaceRules {
         Battlefield::from_seed(*seed)
     }
 
-    fn check_move<'a>(
+    fn check_move(
         &self,
         model: &Self::SpaceModel,
-        _claim: PositionClaim<'a, CustomRules>,
+        _claim: PositionClaim<CustomRules>,
         position: &Self::Position,
     ) -> WeaselResult<(), CustomRules> {
         // An entity can move into a square if it's free.
@@ -42,10 +42,10 @@ impl SpaceRules<CustomRules> for CustomSpaceRules {
         }
     }
 
-    fn move_entity<'a>(
+    fn move_entity(
         &self,
         model: &mut Self::SpaceModel,
-        claim: PositionClaim<'a, CustomRules>,
+        claim: PositionClaim<CustomRules>,
         position: Option<&Self::Position>,
         _metrics: &mut WriteMetrics<CustomRules>,
     ) {
