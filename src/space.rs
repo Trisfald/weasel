@@ -28,18 +28,18 @@ impl<R: BattleRules> Space<R> {
     }
 
     /// See [check_move](trait.SpaceRules.html#method.check_move).
-    pub(crate) fn check_move<'a>(
+    pub(crate) fn check_move(
         &self,
-        claim: PositionClaim<'a, R>,
+        claim: PositionClaim<R>,
         position: &Position<R>,
     ) -> WeaselResult<(), R> {
         self.rules.check_move(&self.model, claim, position)
     }
 
     /// See [move_entity](trait.SpaceRules.html#method.move_entity).
-    pub(crate) fn move_entity<'a>(
+    pub(crate) fn move_entity(
         &mut self,
-        claim: PositionClaim<'a, R>,
+        claim: PositionClaim<R>,
         position: Option<&Position<R>>,
         metrics: &mut WriteMetrics<R>,
     ) {
@@ -106,10 +106,10 @@ pub trait SpaceRules<R: BattleRules> {
     /// The claim tells in which context the entity is trying to acquire the position.
     ///
     /// The provided implementation accepts every move.
-    fn check_move<'a>(
+    fn check_move(
         &self,
         _model: &Self::SpaceModel,
-        _claim: PositionClaim<'a, R>,
+        _claim: PositionClaim<R>,
         _position: &Self::Position,
     ) -> WeaselResult<(), R> {
         Ok(())
@@ -123,10 +123,10 @@ pub trait SpaceRules<R: BattleRules> {
     /// The claim tells in which context the entity is trying to acquire the position.\
     ///
     /// The provided implementation does nothing.
-    fn move_entity<'a>(
+    fn move_entity(
         &self,
         _model: &mut Self::SpaceModel,
-        _claim: PositionClaim<'a, R>,
+        _claim: PositionClaim<R>,
         _position: Option<&Self::Position>,
         _metrics: &mut WriteMetrics<R>,
     ) {

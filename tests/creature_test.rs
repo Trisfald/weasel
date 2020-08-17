@@ -427,10 +427,10 @@ fn remove_creature() {
             HashSet::new()
         }
 
-        fn check_move<'a>(
+        fn check_move(
             &self,
             model: &Self::SpaceModel,
-            _claim: PositionClaim<'a, CustomRules>,
+            _claim: PositionClaim<CustomRules>,
             position: &Self::Position,
         ) -> WeaselResult<(), CustomRules> {
             if !model.contains(position) {
@@ -440,10 +440,10 @@ fn remove_creature() {
             }
         }
 
-        fn move_entity<'a>(
+        fn move_entity(
             &self,
             model: &mut Self::SpaceModel,
-            claim: PositionClaim<'a, CustomRules>,
+            claim: PositionClaim<CustomRules>,
             position: Option<&Self::Position>,
             _metrics: &mut WriteMetrics<CustomRules>,
         ) {

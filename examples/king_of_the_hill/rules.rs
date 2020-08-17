@@ -116,10 +116,10 @@ impl SpaceRules<CustomRules> for MySpaceRules {
         [None, None, None]
     }
 
-    fn check_move<'a>(
+    fn check_move(
         &self,
         model: &Self::SpaceModel,
-        _claim: PositionClaim<'a, CustomRules>,
+        _claim: PositionClaim<CustomRules>,
         position: &Self::Position,
     ) -> WeaselResult<(), CustomRules> {
         // We can play a card only if the table isn't full.
@@ -133,10 +133,10 @@ impl SpaceRules<CustomRules> for MySpaceRules {
         Ok(())
     }
 
-    fn move_entity<'a>(
+    fn move_entity(
         &self,
         model: &mut Self::SpaceModel,
-        claim: PositionClaim<'a, CustomRules>,
+        claim: PositionClaim<CustomRules>,
         position: Option<&Self::Position>,
         _: &mut WriteMetrics<CustomRules>,
     ) {
