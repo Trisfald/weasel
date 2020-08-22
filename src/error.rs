@@ -368,7 +368,7 @@ impl<V, TI, EI, CI, OI, PI, AI, SI, MI, E> WeaselError<V, TI, EI, CI, OI, PI, AI
     }
 }
 
-impl<R> DefaultOutput for WeaselResult<(), R>
+impl<R> DefaultOutput<R> for WeaselResult<(), R>
 where
     R: BattleRules,
 {
@@ -380,6 +380,10 @@ where
 
     fn err(self) -> Option<Self::Error> {
         self.err()
+    }
+
+    fn result(self) -> WeaselResult<(), R> {
+        self
     }
 }
 

@@ -10,7 +10,8 @@ use weasel::creature::{ConvertCreature, CreateCreature, RemoveCreature};
 use weasel::entity::EntityId;
 use weasel::entropy::{Entropy, EntropyModel, ResetEntropy};
 use weasel::event::{
-    Conditional, DummyEvent, Event, EventKind, EventProcessor, EventQueue, EventTrigger,
+    ClientEventPrototype, Conditional, DefaultOutput, DummyEvent, Event, EventKind, EventProcessor,
+    EventQueue, EventSink, EventSinkId, EventTrigger, ServerSink,
 };
 use weasel::fight::ApplyImpact;
 use weasel::metric::WriteMetrics;
@@ -426,4 +427,39 @@ fn events_serde() {
     // Ser/de should work without any error.
     // Events should 'roughly' be the same as before (Eq for Events checks only the event kind).
     assert_eq!(deserialized_events, events);
+}
+
+fn fire_event<R, P>(processor: &mut P) -> WeaselResult<(), R>
+where
+    R: BattleRules + 'static,
+    P: EventProcessor<R>,
+{
+    DummyEvent::trigger(processor).fire().result()?;
+    Ok(())
+}
+
+#[test]
+fn event_processor_generic() {
+    battle_rules! {}
+
+    struct TestServerSink {}
+
+    impl EventSink for TestServerSink {
+        fn id(&self) -> EventSinkId {
+            1
+        }
+    }
+
+    impl<R: BattleRules + 'static> ServerSink<R> for TestServerSink {
+        fn send(&mut self, _: &ClientEventPrototype<R>) -> WeaselResult<(), R> {
+            Ok(())
+        }
+    }
+
+    // Create a server and a client.
+    let mut server = util::server(CustomRules::new());
+    let mut client = util::client(CustomRules::new(), TestServerSink {});
+    // It should be possible to fire the event in a generic processor.
+    assert!(fire_event(&mut server).is_ok());
+    assert!(fire_event(&mut client).is_ok());
 }

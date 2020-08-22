@@ -431,19 +431,21 @@ impl<R: BattleRules> Clone for ClientEventPrototype<R> {
 
 /// A trait to describe an output type from an event processor.
 /// The requirement of this type is to be able to return an object for an ok state.
-pub trait DefaultOutput {
+pub trait DefaultOutput<R: BattleRules> {
     /// Error type for this `DefaultOutput`.
     type Error: Sized + PartialEq + Debug;
     /// Returns the `ok` result for this type.
     fn ok() -> Self;
-    /// Convert this output to a Option.
+    /// Convert this output into an `Option`.
     fn err(self) -> Option<Self::Error>;
+    /// Convert this output into a `WeaselResult`.
+    fn result(self) -> WeaselResult<(), R>;
 }
 
 /// A trait for objects that can process new local events.
 pub trait EventProcessor<R: BattleRules> {
     /// Return type for this processor's `process()`.
-    type ProcessOutput: DefaultOutput;
+    type ProcessOutput: DefaultOutput<R>;
 
     /// Processes a local event prototype.
     fn process(&mut self, event: EventPrototype<R>) -> Self::ProcessOutput;
@@ -641,11 +643,17 @@ where
     }
 }
 
-impl DefaultOutput for () {
+impl<R: BattleRules> DefaultOutput<R> for () {
     type Error = ();
+
     fn ok() -> Self {}
+
     fn err(self) -> Option<Self::Error> {
         None
+    }
+
+    fn result(self) -> WeaselResult<(), R> {
+        Ok(())
     }
 }
 
