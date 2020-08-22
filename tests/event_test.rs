@@ -10,8 +10,8 @@ use weasel::creature::{ConvertCreature, CreateCreature, RemoveCreature};
 use weasel::entity::EntityId;
 use weasel::entropy::{Entropy, EntropyModel, ResetEntropy};
 use weasel::event::{
-    ClientEventPrototype, Conditional, DummyEvent, Event, EventKind, EventProcessor, EventQueue,
-    EventSink, EventSinkId, EventTrigger, ServerSink,
+    ClientEventPrototype, Conditional, DefaultOutput, DummyEvent, Event, EventKind, EventProcessor,
+    EventQueue, EventSink, EventSinkId, EventTrigger, ServerSink,
 };
 use weasel::fight::ApplyImpact;
 use weasel::metric::WriteMetrics;
@@ -434,7 +434,7 @@ where
     R: BattleRules + 'static,
     P: EventProcessor<R>,
 {
-    DummyEvent::trigger(processor).fire()?;
+    DummyEvent::trigger(processor).fire().result()?;
     Ok(())
 }
 
