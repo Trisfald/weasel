@@ -205,7 +205,7 @@ where
     P: EventProcessor<R>,
 {
     /// Adds a seed to drive the generation of the new entropy model.
-    pub fn seed(&'a mut self, seed: EntropySeed<R>) -> &'a mut ResetEntropyTrigger<'a, R, P> {
+    pub fn seed(&'a mut self, seed: EntropySeed<R>) -> &'a mut Self {
         self.seed = Some(seed);
         self
     }

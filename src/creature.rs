@@ -418,19 +418,13 @@ where
     P: EventProcessor<R>,
 {
     /// Adds a seed to drive the generation of this creature's statistics.
-    pub fn statistics_seed(
-        &'a mut self,
-        seed: StatisticsSeed<R>,
-    ) -> &'a mut CreateCreatureTrigger<'a, R, P> {
+    pub fn statistics_seed(&'a mut self, seed: StatisticsSeed<R>) -> &'a mut Self {
         self.statistics_seed = Some(seed);
         self
     }
 
     /// Adds a seed to drive the generation of this creature's abilities.
-    pub fn abilities_seed(
-        &'a mut self,
-        seed: AbilitiesSeed<R>,
-    ) -> &'a mut CreateCreatureTrigger<'a, R, P> {
+    pub fn abilities_seed(&'a mut self, seed: AbilitiesSeed<R>) -> &'a mut Self {
         self.abilities_seed = Some(seed);
         self
     }

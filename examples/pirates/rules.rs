@@ -24,7 +24,7 @@ impl TeamRules<PiratesRules> for PiratesTeamRules {
     // Teams don't have powers in this example.
     type Power = EmptyPower;
     type PowersSeed = ();
-    type PowersAlteration = ();    
+    type PowersAlteration = ();
     // We we'll use the id of the opposing team both seed and objective, to check if the
     // goal of sinking the enemy ship was achieved.
     type ObjectivesSeed = Self::Id;

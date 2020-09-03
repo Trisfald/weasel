@@ -303,10 +303,7 @@ where
     P: EventProcessor<R>,
 {
     /// Adds a seed to drive the generation of this object's statistics.
-    pub fn statistics_seed(
-        &'a mut self,
-        seed: StatisticsSeed<R>,
-    ) -> &'a mut CreateObjectTrigger<'a, R, P> {
+    pub fn statistics_seed(&'a mut self, seed: StatisticsSeed<R>) -> &'a mut Self {
         self.statistics_seed = Some(seed);
         self
     }
