@@ -49,10 +49,14 @@ pub enum EventKind {
     AlterStatuses,
     /// Modify the abilities of an actor.
     AlterAbilities,
+    /// Modify the powers of a team.
+    AlterPowers,
     /// Regenerate the statistics of a character.
     RegenerateStatistics,
     /// Regenerate the abilities of an actor.
     RegenerateAbilities,
+    /// Regenerate the powers of a team.
+    RegeneratePowers,
     /// Inflict a status effect on a character.
     InflictStatus,
     /// Frees a character from a status effect.

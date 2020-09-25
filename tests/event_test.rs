@@ -23,7 +23,8 @@ use weasel::serde::FlatEvent;
 use weasel::space::{AlterSpace, MoveEntity, ResetSpace, SpaceModel};
 use weasel::status::{AlterStatuses, ClearStatus, InflictStatus};
 use weasel::team::{
-    ConcludeObjectives, Conclusion, CreateTeam, Relation, RemoveTeam, ResetObjectives, SetRelations,
+    AlterPowers, ConcludeObjectives, Conclusion, CreateTeam, RegeneratePowers, Relation,
+    RemoveTeam, ResetObjectives, SetRelations,
 };
 #[cfg(feature = "serialization")]
 use weasel::user::UserEventPacker;
@@ -372,8 +373,10 @@ macro_rules! events_vec {
         events.push(AlterStatistics::trigger(&mut (), ENTITY_1_ID, ()).event());
         events.push(AlterStatuses::trigger(&mut (), ENTITY_1_ID, ()).event());
         events.push(AlterAbilities::trigger(&mut (), ENTITY_1_ID, ()).event());
+        events.push(AlterPowers::trigger(&mut (), TEAM_1_ID, ()).event());
         events.push(RegenerateStatistics::trigger(&mut (), ENTITY_1_ID.clone()).event());
         events.push(RegenerateAbilities::trigger(&mut (), ENTITY_1_ID.clone()).event());
+        events.push(RegeneratePowers::trigger(&mut (), TEAM_1_ID.clone()).event());
         events.push(InflictStatus::trigger(&mut (), ENTITY_1_ID.clone(), STATUS_1_ID).event());
         events.push(ClearStatus::trigger(&mut (), ENTITY_1_ID.clone(), STATUS_1_ID).event());
         events.push(ConvertCreature::trigger(&mut (), CREATURE_1_ID, TEAM_1_ID).event());

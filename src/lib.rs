@@ -195,8 +195,8 @@ pub use crate::status::{AlterStatuses, Application, AppliedStatus, ClearStatus, 
 
 pub mod team;
 pub use crate::team::{
-    ConcludeObjectives, Conclusion, CreateTeam, EntityAddition, Relation, RemoveTeam,
-    ResetObjectives, SetRelations, Team, TeamRules,
+    AlterPowers, ConcludeObjectives, Conclusion, CreateTeam, EntityAddition, RegeneratePowers,
+    Relation, RemoveTeam, ResetObjectives, SetRelations, Team, TeamRules,
 };
 
 pub mod user;

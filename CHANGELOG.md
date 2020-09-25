@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added team powers.
 - New associated types `Power`, `PowersSeed` and `PowersAlteration` in `TeamRules`.
 - New methods `generate_powers` and `alter_powers` in `TeamRules`.
+- New events `AlterPowers` and `RegeneratePowers`.
 
 ## [0.10.0] - 2020-08-22
 ### Fixed
@@ -60,7 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `StatusNotPresent` to `WeaselError`.
 - Mutable iterators over statistics and abilities.
 - New event `EnvironmentRound`.
-- New associated type `Potency` in `FightRules`. 
+- New associated type `Potency` in `FightRules`.
 - New associated types `Status` and `StatusesAlteration` in `CharacterRules`.
 - Example to showcase status effects.
 
