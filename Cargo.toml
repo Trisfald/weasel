@@ -10,8 +10,10 @@ documentation = "https://docs.rs/weasel"
 keywords = ["game", "weasel", "turn-based"]
 categories = ["game-development"]
 license = "MIT"
-exclude = [
-    "resources/*",
+include = [
+  "Cargo.toml",
+  "LICENSE",
+  "src/**/*",
 ]
 
 [badges]
