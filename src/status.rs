@@ -374,7 +374,7 @@ where
     P: EventProcessor<R>,
 {
     /// Specify the potency of the status.
-    pub fn potency(&'a mut self, potency: Potency<R>) -> &'a mut InflictStatusTrigger<'a, R, P> {
+    pub fn potency(&'a mut self, potency: Potency<R>) -> &'a mut Self {
         self.potency = Some(potency);
         self
     }

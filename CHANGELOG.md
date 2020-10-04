@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Added team powers.
+- New associated types `Power`, `PowersSeed` and `PowersAlteration` in `TeamRules`.
+- New methods `generate_powers` and `alter_powers` in `TeamRules`.
 
 ## [0.10.0] - 2020-08-22
 ### Fixed

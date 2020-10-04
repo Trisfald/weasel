@@ -749,7 +749,7 @@ where
     P: EventProcessor<R>,
 {
     /// Adds a seed to drive the generation of the new rounds model.
-    pub fn seed(&'a mut self, seed: RoundsSeed<R>) -> &'a mut ResetRoundsTrigger<'a, R, P> {
+    pub fn seed(&'a mut self, seed: RoundsSeed<R>) -> &'a mut Self {
         self.seed = Some(seed);
         self
     }

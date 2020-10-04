@@ -541,10 +541,7 @@ where
     P: EventProcessor<R>,
 {
     /// Adds a seed to drive the regeneration of this character's statistics.
-    pub fn seed(
-        &'a mut self,
-        seed: StatisticsSeed<R>,
-    ) -> &'a mut RegenerateStatisticsTrigger<'a, R, P> {
+    pub fn seed(&'a mut self, seed: StatisticsSeed<R>) -> &'a mut Self {
         self.seed = Some(seed);
         self
     }

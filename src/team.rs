@@ -2,16 +2,23 @@
 
 use crate::battle::{Battle, BattleRules, BattleState};
 use crate::creature::{Creature, CreatureId};
+use crate::entropy::Entropy;
 use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
 use crate::metric::system::*;
-use crate::metric::ReadMetrics;
-use crate::util::Id;
+use crate::metric::{ReadMetrics, WriteMetrics};
+use crate::util::{collect_from_iter, Id};
+use indexmap::IndexMap;
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
 use std::fmt::{Debug, Formatter, Result};
 use std::hash::{Hash, Hasher};
 use std::{any::Any, iter};
+
+type Powers<R> = IndexMap<
+    <<<R as BattleRules>::TR as TeamRules<R>>::Power as Id>::Id,
+    <<R as BattleRules>::TR as TeamRules<R>>::Power,
+>;
 
 /// A team is an alliance of entities.
 ///
@@ -22,6 +29,8 @@ pub struct Team<R: BattleRules> {
     id: TeamId<R>,
     /// Ids of all creatures which are currently part of this team.
     creatures: Vec<CreatureId<R>>,
+    /// All the team's powers.
+    powers: Powers<R>,
     /// `Conclusion`, if any, reached by this team.
     conclusion: Option<Conclusion>,
     /// Team objectives.
@@ -36,6 +45,38 @@ impl<R: BattleRules> Team<R> {
 
     pub(crate) fn creatures_mut(&mut self) -> &mut Vec<CreatureId<R>> {
         &mut self.creatures
+    }
+
+    /// Returns an iterator over powers.
+    pub fn powers(&self) -> impl Iterator<Item = &Power<R>> {
+        Box::new(self.powers.values())
+    }
+
+    /// Returns a mutable iterator over powers.
+    pub fn powers_mut(&mut self) -> impl Iterator<Item = &mut Power<R>> {
+        Box::new(self.powers.values_mut())
+    }
+
+    /// Returns the power with the given id.
+    pub fn power(&self, id: &PowerId<R>) -> Option<&Power<R>> {
+        self.powers.get(id)
+    }
+
+    /// Returns a mutable reference to the power with the given id.
+    pub fn power_mut(&mut self, id: &PowerId<R>) -> Option<&mut Power<R>> {
+        self.powers.get_mut(id)
+    }
+
+    /// Adds a new power. Replaces an existing power with the same id.
+    /// Returns the replaced power, if present.    
+    pub fn add_power(&mut self, power: Power<R>) -> Option<Power<R>> {
+        self.powers.insert(power.id().clone(), power)
+    }
+
+    /// Removes a power.
+    /// Returns the removed power, if present.
+    pub fn remove_power(&mut self, id: &PowerId<R>) -> Option<Power<R>> {
+        self.powers.remove(id)
     }
 
     /// Returns the conclusion reached by this team, if any.
@@ -80,15 +121,32 @@ pub trait TeamRules<R: BattleRules> {
     /// See [TeamId](type.TeamId.html).
     type Id: Hash + Eq + PartialOrd + Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
+    /// See [Power](type.Power.html).
+    type Power: Id + 'static;
+
+    #[cfg(not(feature = "serialization"))]
+    /// See [PowersSeed](type.PowersSeed.html).
+    type PowersSeed: Clone + Debug + Send;
+    #[cfg(feature = "serialization")]
+    /// See [PowersSeed](type.PowersSeed.html).
+    type PowersSeed: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
+
+    #[cfg(not(feature = "serialization"))]
+    /// See [PowersAlteration](type.PowersAlteration.html).
+    type PowersAlteration: Clone + Debug + Send;
+    #[cfg(feature = "serialization")]
+    /// See [PowersAlteration](type.PowersAlteration.html).
+    type PowersAlteration: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
+
+    /// See [Objectives](type.Objectives.html).
+    type Objectives: Default;
+
     #[cfg(not(feature = "serialization"))]
     /// See [ObjectivesSeed](type.ObjectivesSeed.html).
     type ObjectivesSeed: Clone + Debug + Send;
     #[cfg(feature = "serialization")]
     /// See [ObjectivesSeed](type.ObjectivesSeed.html).
     type ObjectivesSeed: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
-
-    /// See [Objectives](type.Objectives.html).
-    type Objectives: Default;
 
     /// Checks if the addition of a new entity in the given team is allowed.
     ///
@@ -100,6 +158,31 @@ pub trait TeamRules<R: BattleRules> {
         _type: EntityAddition<R>,
     ) -> WeaselResult<(), R> {
         Ok(())
+    }
+
+    /// Generates all powers of a team.
+    /// Powers should have unique ids, otherwise only the last entry will be persisted.
+    ///
+    /// The provided implementation generates an empty set of powers.
+    fn generate_powers(
+        &self,
+        _seed: &Option<Self::PowersSeed>,
+        _entropy: &mut Entropy<R>,
+        _metrics: &mut WriteMetrics<R>,
+    ) -> Box<dyn Iterator<Item = Self::Power>> {
+        Box::new(std::iter::empty())
+    }
+
+    /// Alters one or more powers starting from the given alteration object.
+    ///
+    /// The provided implementation does nothing.
+    fn alter_powers(
+        &self,
+        _team: &mut Team<R>,
+        _alteration: &Self::PowersAlteration,
+        _entropy: &mut Entropy<R>,
+        _metrics: &mut WriteMetrics<R>,
+    ) {
     }
 
     /// Generate the objectives for a team.
@@ -142,6 +225,21 @@ pub trait TeamRules<R: BattleRules> {
         None
     }
 }
+
+/// Type to represent a special power of a team.
+///
+/// Powers are both a statistic and an ability. Thus, they can be used to give a team
+/// a certain property and/or an activable skill.
+pub type Power<R> = <<R as BattleRules>::TR as TeamRules<R>>::Power;
+
+/// Alias for `Power<R>::Id`.
+pub type PowerId<R> = <Power<R> as Id>::Id;
+
+/// Type to drive the generation of the powers for a given team.
+pub type PowersSeed<R> = <<R as BattleRules>::TR as TeamRules<R>>::PowersSeed;
+
+/// Encapsulates the data used to describe an alteration of one or more powers.
+pub type PowersAlteration<R> = <<R as BattleRules>::TR as TeamRules<R>>::PowersAlteration;
 
 /// Type to drive the generation of the objectives for a given team.
 ///
@@ -208,6 +306,15 @@ pub struct CreateTeam<R: BattleRules> {
     #[cfg_attr(
         feature = "serialization",
         serde(bound(
+            serialize = "Option<PowersSeed<R>>: Serialize",
+            deserialize = "Option<PowersSeed<R>>: Deserialize<'de>"
+        ))
+    )]
+    powers_seed: Option<PowersSeed<R>>,
+
+    #[cfg_attr(
+        feature = "serialization",
+        serde(bound(
             serialize = "Option<ObjectivesSeed<R>>: Serialize",
             deserialize = "Option<ObjectivesSeed<R>>: Deserialize<'de>"
         ))
@@ -230,6 +337,7 @@ impl<R: BattleRules> Clone for CreateTeam<R> {
         Self {
             id: self.id.clone(),
             relations: self.relations.clone(),
+            powers_seed: self.powers_seed.clone(),
             objectives_seed: self.objectives_seed.clone(),
         }
     }
@@ -245,6 +353,7 @@ impl<R: BattleRules> CreateTeam<R> {
             processor,
             id,
             relations: None,
+            powers_seed: None,
             objectives_seed: None,
         }
     }
@@ -257,6 +366,11 @@ impl<R: BattleRules> CreateTeam<R> {
     /// Returns the optional relations for the new team.
     pub fn relations(&self) -> &Option<Vec<(TeamId<R>, Relation)>> {
         &self.relations
+    }
+
+    /// Returns the seed to generate the team's powers.
+    pub fn powers_seed(&self) -> &Option<PowersSeed<R>> {
+        &self.powers_seed
     }
 
     /// Returns the seed to generate the team's objectives.
@@ -291,10 +405,18 @@ impl<R: BattleRules + 'static> Event<R> for CreateTeam<R> {
     }
 
     fn apply(&self, battle: &mut Battle<R>, _: &mut Option<EventQueue<R>>) {
+        // Powers' generation is influenced by the given powers_seed, if present.
+        let it = battle.rules.team_rules().generate_powers(
+            &self.powers_seed,
+            &mut battle.entropy,
+            &mut battle.metrics.write_handle(),
+        );
+        let powers = collect_from_iter(it);
         // Insert the new team.
         battle.state.entities.add_team(Team {
             id: self.id.clone(),
             creatures: Vec::new(),
+            powers,
             conclusion: None,
             objectives: battle
                 .rules
@@ -358,6 +480,7 @@ where
     processor: &'a mut P,
     id: TeamId<R>,
     relations: Option<Vec<(TeamId<R>, Relation)>>,
+    powers_seed: Option<PowersSeed<R>>,
     objectives_seed: Option<ObjectivesSeed<R>>,
 }
 
@@ -367,19 +490,19 @@ where
     P: EventProcessor<R>,
 {
     /// Adds a list of relationships between this team and other existing teams.
-    pub fn relations(
-        &'a mut self,
-        relations: &[(TeamId<R>, Relation)],
-    ) -> &'a mut CreateTeamTrigger<'a, R, P> {
+    pub fn relations(&'a mut self, relations: &[(TeamId<R>, Relation)]) -> &'a mut Self {
         self.relations = Some(relations.into());
         self
     }
 
+    /// Adds a seed to drive the generation of this team powers.
+    pub fn powers_seed(&'a mut self, seed: PowersSeed<R>) -> &'a mut Self {
+        self.powers_seed = Some(seed);
+        self
+    }
+
     /// Adds a seed to drive the generation of this team objectives.
-    pub fn objectives_seed(
-        &'a mut self,
-        seed: ObjectivesSeed<R>,
-    ) -> &'a mut CreateTeamTrigger<'a, R, P> {
+    pub fn objectives_seed(&'a mut self, seed: ObjectivesSeed<R>) -> &'a mut Self {
         self.objectives_seed = Some(seed);
         self
     }
@@ -399,6 +522,7 @@ where
         Box::new(CreateTeam {
             id: self.id.clone(),
             relations: self.relations.clone(),
+            powers_seed: self.powers_seed.clone(),
             objectives_seed: self.objectives_seed.clone(),
         })
     }
@@ -898,7 +1022,7 @@ where
     P: EventProcessor<R>,
 {
     /// Adds a seed to drive the generation of the new objectives.
-    pub fn seed(&'a mut self, seed: ObjectivesSeed<R>) -> &'a mut ResetObjectivesTrigger<'a, R, P> {
+    pub fn seed(&'a mut self, seed: ObjectivesSeed<R>) -> &'a mut Self {
         self.seed = Some(seed);
         self
     }
@@ -1052,7 +1176,9 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{battle_rules, rules::empty::*};
+    use crate::rules::statistic::SimpleStatistic;
+    use crate::util::tests::{server, team};
+    use crate::{battle_rules, battle_rules_with_team, rules::empty::*};
     use std::collections::hash_map::DefaultHasher;
 
     fn get_hash<T: Hash>(item: &T) -> u64 {
@@ -1073,5 +1199,35 @@ mod tests {
         assert_eq!(get_hash(&r11), get_hash(&r11));
         assert_eq!(get_hash(&r12), get_hash(&r21));
         assert_ne!(get_hash(&r11), get_hash(&r12));
+    }
+
+    #[derive(Default)]
+    pub struct CustomTeamRules {}
+
+    impl<R: BattleRules> TeamRules<R> for CustomTeamRules {
+        type Id = u32;
+        type Power = SimpleStatistic<u32, u32>;
+        type PowersSeed = ();
+        type PowersAlteration = ();
+        type ObjectivesSeed = ();
+        type Objectives = ();
+    }
+
+    #[test]
+    fn mutable_powers() {
+        battle_rules_with_team! { CustomTeamRules }
+        // Create a battle.
+        let mut server = server(CustomRules::new());
+        team(&mut server, 1);
+        let team = server.battle.state.entities.team_mut(&1).unwrap();
+        assert!(team.power(&1).is_none());
+        team.add_power(SimpleStatistic::new(1, 50));
+        assert!(team.power(&1).is_some());
+        team.power_mut(&1).unwrap().set_value(25);
+        assert_eq!(team.power(&1).unwrap().value(), 25);
+        team.powers_mut().last().unwrap().set_value(30);
+        assert_eq!(team.power(&1).unwrap().value(), 30);
+        team.remove_power(&1);
+        assert!(team.power(&1).is_none());
     }
 }

@@ -52,6 +52,10 @@ pub struct MyTeamRules {}
 
 impl TeamRules<CustomRules> for MyTeamRules {
     type Id = u8;
+    // Teams don't have powers in this example.
+    type Power = EmptyPower;
+    type PowersSeed = ();
+    type PowersAlteration = ();
     // How many turns a team has won.
     type ObjectivesSeed = u8;
     // Our objective is to win 'turns', so a simple counter will suffice.
