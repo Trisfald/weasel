@@ -7,6 +7,7 @@ use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
 use crate::metric::system::*;
 use crate::metric::{ReadMetrics, WriteMetrics};
+use crate::power::{Invocation, Power, PowerId, PowersAlteration, PowersSeed};
 use crate::util::{collect_from_iter, Id};
 use indexmap::IndexMap;
 #[cfg(feature = "serialization")]
@@ -125,17 +126,24 @@ pub trait TeamRules<R: BattleRules> {
     type Power: Id + 'static;
 
     #[cfg(not(feature = "serialization"))]
-    /// See [PowersSeed](type.PowersSeed.html).
+    /// See [PowersSeed](../power/type.PowersSeed.html).
     type PowersSeed: Clone + Debug + Send;
     #[cfg(feature = "serialization")]
-    /// See [PowersSeed](type.PowersSeed.html).
+    /// See [PowersSeed](../power/type.PowersSeed.html).
     type PowersSeed: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     #[cfg(not(feature = "serialization"))]
-    /// See [PowersAlteration](type.PowersAlteration.html).
+    /// See [Invocation](../power/type.Invocation.html).
+    type Invocation: Clone + Debug + Send;
+    #[cfg(feature = "serialization")]
+    /// See [Invocation](../power/type.Invocation.html).
+    type Invocation: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
+
+    #[cfg(not(feature = "serialization"))]
+    /// See [PowersAlteration](../power/type.PowersAlteration.html).
     type PowersAlteration: Clone + Debug + Send;
     #[cfg(feature = "serialization")]
-    /// See [PowersAlteration](type.PowersAlteration.html).
+    /// See [PowersAlteration](../power/type.PowersAlteration.html).
     type PowersAlteration: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     /// See [Objectives](type.Objectives.html).
@@ -171,6 +179,31 @@ pub trait TeamRules<R: BattleRules> {
         _metrics: &mut WriteMetrics<R>,
     ) -> Box<dyn Iterator<Item = Self::Power>> {
         Box::new(std::iter::empty())
+    }
+
+    /// Returns `Ok` if `call.team` can invoke `call.power` with `call.invocation`,
+    /// otherwise returns an error describing the issue preventing the invocation.\
+    /// The power is guaranteed to be known by the team.
+    ///
+    /// The provided implementation accepts any invocation.
+    fn invocable(&self, _state: &BattleState<R>, _call: Call<R>) -> WeaselResult<(), R> {
+        Ok(())
+    }
+
+    /// Invokes a power.
+    /// `call.power` is guaranteed to be known by `call.team`.\
+    /// In order to change the state of the world, powers should insert
+    /// event prototypes in `event_queue`.
+    ///
+    /// The provided implementation does nothing.
+    fn invoke(
+        &self,
+        _state: &BattleState<R>,
+        _call: Call<R>,
+        _event_queue: &mut Option<EventQueue<R>>,
+        _entropy: &mut Entropy<R>,
+        _metrics: &mut WriteMetrics<R>,
+    ) {
     }
 
     /// Alters one or more powers starting from the given alteration object.
@@ -226,21 +259,6 @@ pub trait TeamRules<R: BattleRules> {
     }
 }
 
-/// Type to represent a special power of a team.
-///
-/// Powers are both a statistic and an ability. Thus, they can be used to give a team
-/// a certain property and/or an activable skill.
-pub type Power<R> = <<R as BattleRules>::TR as TeamRules<R>>::Power;
-
-/// Alias for `Power<R>::Id`.
-pub type PowerId<R> = <Power<R> as Id>::Id;
-
-/// Type to drive the generation of the powers for a given team.
-pub type PowersSeed<R> = <<R as BattleRules>::TR as TeamRules<R>>::PowersSeed;
-
-/// Encapsulates the data used to describe an alteration of one or more powers.
-pub type PowersAlteration<R> = <<R as BattleRules>::TR as TeamRules<R>>::PowersAlteration;
-
 /// Type to drive the generation of the objectives for a given team.
 ///
 /// For instance, a seed might contain the identifiers of all enemies who must be defeated.
@@ -261,6 +279,31 @@ pub enum EntityAddition<'a, R: BattleRules> {
 
 /// Type to uniquely identify teams.
 pub type TeamId<R> = <<R as BattleRules>::TR as TeamRules<R>>::Id;
+
+/// A call is comprised by a team that invokes a power with a given invocation profile.
+pub struct Call<'a, R: BattleRules> {
+    /// The team that is invoking the power.
+    pub team: &'a Team<R>,
+    /// The power.
+    pub power: &'a Power<R>,
+    /// The invocation profile for the power.
+    pub invocation: &'a Option<Invocation<R>>,
+}
+
+impl<'a, R: BattleRules> Call<'a, R> {
+    /// Creates a new call.
+    pub fn new(
+        team: &'a Team<R>,
+        power: &'a Power<R>,
+        invocation: &'a Option<Invocation<R>>,
+    ) -> Self {
+        Self {
+            team,
+            power,
+            invocation,
+        }
+    }
+}
 
 /// Event to create a new team.
 ///
@@ -1561,6 +1604,7 @@ mod tests {
         type Id = u32;
         type Power = SimpleStatistic<u32, u32>;
         type PowersSeed = ();
+        type Invocation = ();
         type PowersAlteration = ();
         type ObjectivesSeed = ();
         type Objectives = ();

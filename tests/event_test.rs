@@ -16,6 +16,7 @@ use weasel::event::{
 use weasel::fight::ApplyImpact;
 use weasel::metric::WriteMetrics;
 use weasel::object::{CreateObject, RemoveObject};
+use weasel::power::InvokePower;
 use weasel::round::{EndRound, EndTurn, EnvironmentTurn, ResetRounds, RoundsModel, StartTurn};
 use weasel::rules::ability::SimpleAbility;
 #[cfg(feature = "serialization")]
@@ -355,6 +356,7 @@ macro_rules! events_vec {
         battle_rules! {}
         const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
         const ABILITY_1_ID: u32 = 1;
+        const POWER_1_ID: u32 = 1;
         const OBJECT_1_ID: u32 = 1;
         const STATUS_1_ID: u32 = 1;
         // Collect all events into a vector.
@@ -369,6 +371,7 @@ macro_rules! events_vec {
         events.push(EndRound::trigger(&mut ()).event());
         events.push(EnvironmentTurn::trigger(&mut ()).event());
         events.push(ActivateAbility::trigger(&mut (), ENTITY_1_ID, ABILITY_1_ID).event());
+        events.push(InvokePower::trigger(&mut (), TEAM_1_ID, POWER_1_ID).event());
         events.push(ApplyImpact::trigger(&mut (), ()).event());
         events.push(AlterStatistics::trigger(&mut (), ENTITY_1_ID, ()).event());
         events.push(AlterStatuses::trigger(&mut (), ENTITY_1_ID, ()).event());

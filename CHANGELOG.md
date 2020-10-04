@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Added the possibility to invoke team powers, similarly to actors' abilities.
+- New associated type `Invocation` in `TeamRules`.
+- New methods `invocable` and `invoke` in `TeamRules`.
+- New event `InvokePower`.
 - Added team powers.
 - New associated types `Power`, `PowersSeed` and `PowersAlteration` in `TeamRules`.
 - New methods `generate_powers` and `alter_powers` in `TeamRules`.

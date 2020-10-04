@@ -147,7 +147,7 @@ impl<R: BattleRules> Clone for ActivateAbility<R> {
 
 impl<R: BattleRules + 'static> Event<R> for ActivateAbility<R> {
     fn verify(&self, battle: &Battle<R>) -> WeaselResult<(), R> {
-        // Check if this entity can is an actor.
+        // Check if this entity is an actor.
         if !self.entity_id.is_actor() {
             return Err(WeaselError::NotAnActor(self.entity_id.clone()));
         }

@@ -46,6 +46,7 @@ impl<R: BattleRules> TeamRules<R> for EmptyTeamRules {
     type Id = u32;
     type Power = EmptyPower;
     type PowersSeed = ();
+    type Invocation = ();
     type PowersAlteration = ();
     type ObjectivesSeed = ();
     type Objectives = ();

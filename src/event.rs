@@ -41,6 +41,8 @@ pub enum EventKind {
     EnvironmentTurn,
     /// Activate an actor's ability.
     ActivateAbility,
+    /// Invoke a team's power.
+    InvokePower,
     /// Apply the consequences of an impact on the world.
     ApplyImpact,
     /// Modify the statistics of a character.

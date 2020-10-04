@@ -13,6 +13,7 @@ use crate::event::{
 use crate::fight::ApplyImpact;
 use crate::object::{CreateObject, RemoveObject};
 use crate::player::PlayerId;
+use crate::power::InvokePower;
 use crate::round::{EndRound, EndTurn, EnvironmentTurn, ResetRounds, StartTurn};
 use crate::space::{AlterSpace, MoveEntity, ResetSpace};
 use crate::status::{AlterStatuses, ClearStatus, InflictStatus};
@@ -115,6 +116,7 @@ flat_event! {
     EndRound, "EndRound<R>: Serialize", "EndRound<R>: Deserialize<'de>",
     EnvironmentTurn, "EnvironmentTurn<R>: Serialize", "EnvironmentTurn<R>: Deserialize<'de>",
     ActivateAbility, "ActivateAbility<R>: Serialize", "ActivateAbility<R>: Deserialize<'de>",
+    InvokePower, "InvokePower<R>: Serialize", "InvokePower<R>: Deserialize<'de>",
     ApplyImpact, "ApplyImpact<R>: Serialize", "ApplyImpact<R>: Deserialize<'de>",
     AlterStatistics, "AlterStatistics<R>: Serialize", "AlterStatistics<R>: Deserialize<'de>",
     AlterStatuses, "AlterStatuses<R>: Serialize", "AlterStatuses<R>: Deserialize<'de>",
