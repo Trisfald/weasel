@@ -13,10 +13,14 @@ use crate::event::{
 use crate::fight::ApplyImpact;
 use crate::object::{CreateObject, RemoveObject};
 use crate::player::PlayerId;
+use crate::power::InvokePower;
 use crate::round::{EndRound, EndTurn, EnvironmentTurn, ResetRounds, StartTurn};
 use crate::space::{AlterSpace, MoveEntity, ResetSpace};
 use crate::status::{AlterStatuses, ClearStatus, InflictStatus};
-use crate::team::{ConcludeObjectives, CreateTeam, RemoveTeam, ResetObjectives, SetRelations};
+use crate::team::{
+    AlterPowers, ConcludeObjectives, CreateTeam, RegeneratePowers, RemoveTeam, ResetObjectives,
+    SetRelations,
+};
 use crate::user::{UserEventPackage, UserEventPacker};
 use serde::{Deserialize, Serialize};
 
@@ -112,12 +116,15 @@ flat_event! {
     EndRound, "EndRound<R>: Serialize", "EndRound<R>: Deserialize<'de>",
     EnvironmentTurn, "EnvironmentTurn<R>: Serialize", "EnvironmentTurn<R>: Deserialize<'de>",
     ActivateAbility, "ActivateAbility<R>: Serialize", "ActivateAbility<R>: Deserialize<'de>",
+    InvokePower, "InvokePower<R>: Serialize", "InvokePower<R>: Deserialize<'de>",
     ApplyImpact, "ApplyImpact<R>: Serialize", "ApplyImpact<R>: Deserialize<'de>",
     AlterStatistics, "AlterStatistics<R>: Serialize", "AlterStatistics<R>: Deserialize<'de>",
     AlterStatuses, "AlterStatuses<R>: Serialize", "AlterStatuses<R>: Deserialize<'de>",
     AlterAbilities, "AlterAbilities<R>: Serialize", "AlterAbilities<R>: Deserialize<'de>",
+    AlterPowers, "AlterPowers<R>: Serialize", "AlterPowers<R>: Deserialize<'de>",
     RegenerateStatistics, "RegenerateStatistics<R>: Serialize", "RegenerateStatistics<R>: Deserialize<'de>",
     RegenerateAbilities, "RegenerateAbilities<R>: Serialize", "RegenerateAbilities<R>: Deserialize<'de>",
+    RegeneratePowers, "RegeneratePowers<R>: Serialize", "RegeneratePowers<R>: Deserialize<'de>",
     InflictStatus, "InflictStatus<R>: Serialize", "InflictStatus<R>: Deserialize<'de>",
     ClearStatus, "ClearStatus<R>: Serialize", "ClearStatus<R>: Deserialize<'de>",
     ConvertCreature, "ConvertCreature<R>: Serialize", "ConvertCreature<R>: Deserialize<'de>",

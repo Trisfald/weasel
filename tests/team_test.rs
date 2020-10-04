@@ -2,7 +2,6 @@ use std::cell::RefCell;
 use weasel::ability::ActivateAbility;
 use weasel::actor::{Action, Actor, ActorRules};
 use weasel::battle::{BattleController, BattleRules, BattleState};
-use weasel::battle_rules_with_team;
 use weasel::creature::{ConvertCreature, CreateCreature, RemoveCreature};
 use weasel::entity::EntityId;
 use weasel::entropy::Entropy;
@@ -13,7 +12,7 @@ use weasel::team::{
     ConcludeObjectives, Conclusion, CreateTeam, EntityAddition, Relation, RemoveTeam,
     ResetObjectives, SetRelations, Team, TeamRules,
 };
-use weasel::{battle_rules, rules::empty::*, WeaselError, WeaselResult};
+use weasel::{battle_rules, battle_rules_with_team, rules::empty::*, WeaselError, WeaselResult};
 
 #[derive(Default)]
 struct CustomTeamRules {
@@ -25,6 +24,7 @@ impl<R: BattleRules> TeamRules<R> for CustomTeamRules {
     type Id = u32;
     type Power = EmptyPower;
     type PowersSeed = ();
+    type Invocation = ();
     type PowersAlteration = ();
     type ObjectivesSeed = ();
     type Objectives = ();
@@ -518,6 +518,7 @@ fn reset_objectives() {
         type Id = u32;
         type Power = EmptyPower;
         type PowersSeed = ();
+        type Invocation = ();
         type PowersAlteration = ();
         type ObjectivesSeed = u32;
         type Objectives = u32;
@@ -641,6 +642,7 @@ fn check_objectives() {
         type Id = u32;
         type Power = EmptyPower;
         type PowersSeed = ();
+        type Invocation = ();
         type PowersAlteration = ();
         type ObjectivesSeed = ();
         type Objectives = ();

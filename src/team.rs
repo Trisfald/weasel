@@ -7,6 +7,7 @@ use crate::error::{WeaselError, WeaselResult};
 use crate::event::{Event, EventKind, EventProcessor, EventQueue, EventTrigger};
 use crate::metric::system::*;
 use crate::metric::{ReadMetrics, WriteMetrics};
+use crate::power::{Invocation, Power, PowerId, PowersAlteration, PowersSeed};
 use crate::util::{collect_from_iter, Id};
 use indexmap::IndexMap;
 #[cfg(feature = "serialization")]
@@ -68,7 +69,7 @@ impl<R: BattleRules> Team<R> {
     }
 
     /// Adds a new power. Replaces an existing power with the same id.
-    /// Returns the replaced power, if present.    
+    /// Returns the replaced power, if present.
     pub fn add_power(&mut self, power: Power<R>) -> Option<Power<R>> {
         self.powers.insert(power.id().clone(), power)
     }
@@ -125,17 +126,24 @@ pub trait TeamRules<R: BattleRules> {
     type Power: Id + 'static;
 
     #[cfg(not(feature = "serialization"))]
-    /// See [PowersSeed](type.PowersSeed.html).
+    /// See [PowersSeed](../power/type.PowersSeed.html).
     type PowersSeed: Clone + Debug + Send;
     #[cfg(feature = "serialization")]
-    /// See [PowersSeed](type.PowersSeed.html).
+    /// See [PowersSeed](../power/type.PowersSeed.html).
     type PowersSeed: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     #[cfg(not(feature = "serialization"))]
-    /// See [PowersAlteration](type.PowersAlteration.html).
+    /// See [Invocation](../power/type.Invocation.html).
+    type Invocation: Clone + Debug + Send;
+    #[cfg(feature = "serialization")]
+    /// See [Invocation](../power/type.Invocation.html).
+    type Invocation: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
+
+    #[cfg(not(feature = "serialization"))]
+    /// See [PowersAlteration](../power/type.PowersAlteration.html).
     type PowersAlteration: Clone + Debug + Send;
     #[cfg(feature = "serialization")]
-    /// See [PowersAlteration](type.PowersAlteration.html).
+    /// See [PowersAlteration](../power/type.PowersAlteration.html).
     type PowersAlteration: Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
     /// See [Objectives](type.Objectives.html).
@@ -171,6 +179,31 @@ pub trait TeamRules<R: BattleRules> {
         _metrics: &mut WriteMetrics<R>,
     ) -> Box<dyn Iterator<Item = Self::Power>> {
         Box::new(std::iter::empty())
+    }
+
+    /// Returns `Ok` if `call.team` can invoke `call.power` with `call.invocation`,
+    /// otherwise returns an error describing the issue preventing the invocation.\
+    /// The power is guaranteed to be known by the team.
+    ///
+    /// The provided implementation accepts any invocation.
+    fn invocable(&self, _state: &BattleState<R>, _call: Call<R>) -> WeaselResult<(), R> {
+        Ok(())
+    }
+
+    /// Invokes a power.
+    /// `call.power` is guaranteed to be known by `call.team`.\
+    /// In order to change the state of the world, powers should insert
+    /// event prototypes in `event_queue`.
+    ///
+    /// The provided implementation does nothing.
+    fn invoke(
+        &self,
+        _state: &BattleState<R>,
+        _call: Call<R>,
+        _event_queue: &mut Option<EventQueue<R>>,
+        _entropy: &mut Entropy<R>,
+        _metrics: &mut WriteMetrics<R>,
+    ) {
     }
 
     /// Alters one or more powers starting from the given alteration object.
@@ -226,21 +259,6 @@ pub trait TeamRules<R: BattleRules> {
     }
 }
 
-/// Type to represent a special power of a team.
-///
-/// Powers are both a statistic and an ability. Thus, they can be used to give a team
-/// a certain property and/or an activable skill.
-pub type Power<R> = <<R as BattleRules>::TR as TeamRules<R>>::Power;
-
-/// Alias for `Power<R>::Id`.
-pub type PowerId<R> = <Power<R> as Id>::Id;
-
-/// Type to drive the generation of the powers for a given team.
-pub type PowersSeed<R> = <<R as BattleRules>::TR as TeamRules<R>>::PowersSeed;
-
-/// Encapsulates the data used to describe an alteration of one or more powers.
-pub type PowersAlteration<R> = <<R as BattleRules>::TR as TeamRules<R>>::PowersAlteration;
-
 /// Type to drive the generation of the objectives for a given team.
 ///
 /// For instance, a seed might contain the identifiers of all enemies who must be defeated.
@@ -261,6 +279,31 @@ pub enum EntityAddition<'a, R: BattleRules> {
 
 /// Type to uniquely identify teams.
 pub type TeamId<R> = <<R as BattleRules>::TR as TeamRules<R>>::Id;
+
+/// A call is comprised by a team that invokes a power with a given invocation profile.
+pub struct Call<'a, R: BattleRules> {
+    /// The team that is invoking the power.
+    pub team: &'a Team<R>,
+    /// The power.
+    pub power: &'a Power<R>,
+    /// The invocation profile for the power.
+    pub invocation: &'a Option<Invocation<R>>,
+}
+
+impl<'a, R: BattleRules> Call<'a, R> {
+    /// Creates a new call.
+    pub fn new(
+        team: &'a Team<R>,
+        power: &'a Power<R>,
+        invocation: &'a Option<Invocation<R>>,
+    ) -> Self {
+        Self {
+            team,
+            power,
+            invocation,
+        }
+    }
+}
 
 /// Event to create a new team.
 ///
@@ -1173,6 +1216,359 @@ where
     }
 }
 
+/// An event to alter the powers of a team.
+///
+/// # Examples
+/// ```
+/// use weasel::{
+///     battle_rules, rules::empty::*, AlterPowers, Battle, BattleController, BattleRules,
+///     CreateTeam, EventKind, EventTrigger, Server,
+/// };
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let team_id = 1;
+/// CreateTeam::trigger(&mut server, team_id).fire().unwrap();
+///
+/// let alteration = ();
+/// AlterPowers::trigger(&mut server, team_id, alteration)
+///     .fire()
+///     .unwrap();
+/// assert_eq!(
+///     server.battle().history().events().iter().last().unwrap().kind(),
+///     EventKind::AlterPowers
+/// );
+/// ```
+#[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
+pub struct AlterPowers<R: BattleRules> {
+    #[cfg_attr(
+        feature = "serialization",
+        serde(bound(
+            serialize = "TeamId<R>: Serialize",
+            deserialize = "TeamId<R>: Deserialize<'de>"
+        ))
+    )]
+    id: TeamId<R>,
+
+    #[cfg_attr(
+        feature = "serialization",
+        serde(bound(
+            serialize = "PowersAlteration<R>: Serialize",
+            deserialize = "PowersAlteration<R>: Deserialize<'de>"
+        ))
+    )]
+    alteration: PowersAlteration<R>,
+}
+
+impl<R: BattleRules> AlterPowers<R> {
+    /// Returns a trigger for this event.
+    pub fn trigger<'a, P: EventProcessor<R>>(
+        processor: &'a mut P,
+        id: TeamId<R>,
+        alteration: PowersAlteration<R>,
+    ) -> AlterPowersTrigger<'a, R, P> {
+        AlterPowersTrigger {
+            processor,
+            id,
+            alteration,
+        }
+    }
+
+    /// Returns the team id.
+    pub fn id(&self) -> &TeamId<R> {
+        &self.id
+    }
+
+    /// Returns the definition of the changes to the team's powers.
+    pub fn alteration(&self) -> &PowersAlteration<R> {
+        &self.alteration
+    }
+}
+
+impl<R: BattleRules> Debug for AlterPowers<R> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(
+            f,
+            "AlterPowers {{ id: {:?}, alteration: {:?} }}",
+            self.id, self.alteration
+        )
+    }
+}
+
+impl<R: BattleRules> Clone for AlterPowers<R> {
+    fn clone(&self) -> Self {
+        Self {
+            id: self.id.clone(),
+            alteration: self.alteration.clone(),
+        }
+    }
+}
+
+impl<R: BattleRules + 'static> Event<R> for AlterPowers<R> {
+    fn verify(&self, battle: &Battle<R>) -> WeaselResult<(), R> {
+        // Team must exist.
+        if battle.entities().team(&self.id).is_some() {
+            Ok(())
+        } else {
+            Err(WeaselError::TeamNotFound(self.id.clone()))
+        }
+    }
+
+    fn apply(&self, battle: &mut Battle<R>, _: &mut Option<EventQueue<R>>) {
+        // Retrieve the team.
+        let team = battle
+            .state
+            .entities
+            .team_mut(&self.id)
+            .unwrap_or_else(|| panic!("constraint violated: team {:?} not found", self.id));
+        // Alter the team.
+        battle.rules.team_rules().alter_powers(
+            team,
+            &self.alteration,
+            &mut battle.entropy,
+            &mut battle.metrics.write_handle(),
+        );
+    }
+
+    fn kind(&self) -> EventKind {
+        EventKind::AlterPowers
+    }
+
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
+        Box::new(self.clone())
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+/// Trigger to build and fire an `AlterPowers` event.
+pub struct AlterPowersTrigger<'a, R, P>
+where
+    R: BattleRules,
+    P: EventProcessor<R>,
+{
+    processor: &'a mut P,
+    id: TeamId<R>,
+    alteration: PowersAlteration<R>,
+}
+
+impl<'a, R, P> EventTrigger<'a, R, P> for AlterPowersTrigger<'a, R, P>
+where
+    R: BattleRules + 'static,
+    P: EventProcessor<R>,
+{
+    fn processor(&'a mut self) -> &'a mut P {
+        self.processor
+    }
+
+    /// Returns an `AlterPowers` event.
+    fn event(&self) -> Box<dyn Event<R> + Send> {
+        Box::new(AlterPowers {
+            id: self.id.clone(),
+            alteration: self.alteration.clone(),
+        })
+    }
+}
+
+/// An event to regenerate the powers of a team.
+///
+/// A new set of powers is created from a seed.\
+/// - Powers already present in the team won't be modified.
+/// - Powers that the team didn't have before will be added.
+/// - Current team's powers that are not present in the new set will be removed
+///   from the team.
+///
+/// # Examples
+/// ```
+/// use weasel::{
+///     battle_rules, rules::empty::*, Battle, BattleController, BattleRules, CreateTeam,
+///     EventKind, EventTrigger, RegeneratePowers, Server,
+/// };
+///
+/// battle_rules! {}
+///
+/// let battle = Battle::builder(CustomRules::new()).build();
+/// let mut server = Server::builder(battle).build();
+///
+/// let team_id = 1;
+/// CreateTeam::trigger(&mut server, team_id).fire().unwrap();
+///
+/// RegeneratePowers::trigger(&mut server, team_id)
+///     .fire()
+///     .unwrap();
+/// assert_eq!(
+///     server.battle().history().events().iter().last().unwrap().kind(),
+///     EventKind::RegeneratePowers
+/// );
+/// ```
+#[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
+pub struct RegeneratePowers<R: BattleRules> {
+    #[cfg_attr(
+        feature = "serialization",
+        serde(bound(
+            serialize = "TeamId<R>: Serialize",
+            deserialize = "TeamId<R>: Deserialize<'de>"
+        ))
+    )]
+    id: TeamId<R>,
+
+    #[cfg_attr(
+        feature = "serialization",
+        serde(bound(
+            serialize = "Option<PowersSeed<R>>: Serialize",
+            deserialize = "Option<PowersSeed<R>>: Deserialize<'de>"
+        ))
+    )]
+    seed: Option<PowersSeed<R>>,
+}
+
+impl<R: BattleRules> RegeneratePowers<R> {
+    /// Returns a trigger for this event.
+    pub fn trigger<P: EventProcessor<R>>(
+        processor: &'_ mut P,
+        id: TeamId<R>,
+    ) -> RegeneratePowersTrigger<'_, R, P> {
+        RegeneratePowersTrigger {
+            processor,
+            id,
+            seed: None,
+        }
+    }
+
+    /// Returns the team id.
+    pub fn id(&self) -> &TeamId<R> {
+        &self.id
+    }
+
+    /// Returns the seed to regenerate the team's powers.
+    pub fn seed(&self) -> &Option<PowersSeed<R>> {
+        &self.seed
+    }
+}
+
+impl<R: BattleRules> Debug for RegeneratePowers<R> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(
+            f,
+            "RegeneratePowers {{ id: {:?}, seed: {:?} }}",
+            self.id, self.seed
+        )
+    }
+}
+
+impl<R: BattleRules> Clone for RegeneratePowers<R> {
+    fn clone(&self) -> Self {
+        Self {
+            id: self.id.clone(),
+            seed: self.seed.clone(),
+        }
+    }
+}
+
+impl<R: BattleRules + 'static> Event<R> for RegeneratePowers<R> {
+    fn verify(&self, battle: &Battle<R>) -> WeaselResult<(), R> {
+        // Team must exist.
+        if battle.entities().team(&self.id).is_some() {
+            Ok(())
+        } else {
+            Err(WeaselError::TeamNotFound(self.id.clone()))
+        }
+    }
+
+    fn apply(&self, battle: &mut Battle<R>, _: &mut Option<EventQueue<R>>) {
+        // Retrieve the team.
+        let team = battle
+            .state
+            .entities
+            .team_mut(&self.id)
+            .unwrap_or_else(|| panic!("constraint violated: team {:?} not found", self.id));
+        // Generate a new set of powers.
+        let powers: Vec<_> = battle
+            .rules
+            .team_rules()
+            .generate_powers(
+                &self.seed,
+                &mut battle.entropy,
+                &mut battle.metrics.write_handle(),
+            )
+            .collect();
+        let mut to_remove = Vec::new();
+        // Remove all team's powers not present in the new set.
+        for power in team.powers() {
+            if powers.iter().find(|e| e.id() == power.id()).is_none() {
+                to_remove.push(power.id().clone());
+            }
+        }
+        for power_id in to_remove {
+            team.remove_power(&power_id);
+        }
+        // Add all powers present in the new set but not in the team.
+        for power in powers {
+            if team.power(power.id()).is_none() {
+                team.add_power(power);
+            }
+        }
+    }
+
+    fn kind(&self) -> EventKind {
+        EventKind::RegeneratePowers
+    }
+
+    fn box_clone(&self) -> Box<dyn Event<R> + Send> {
+        Box::new(self.clone())
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+/// Trigger to build and fire a `RegeneratePowers` event.
+pub struct RegeneratePowersTrigger<'a, R, P>
+where
+    R: BattleRules,
+    P: EventProcessor<R>,
+{
+    processor: &'a mut P,
+    id: TeamId<R>,
+    seed: Option<PowersSeed<R>>,
+}
+
+impl<'a, R, P> RegeneratePowersTrigger<'a, R, P>
+where
+    R: BattleRules + 'static,
+    P: EventProcessor<R>,
+{
+    /// Adds a seed to drive the regeneration of this team's powers.
+    pub fn seed(&'a mut self, seed: PowersSeed<R>) -> &'a mut Self {
+        self.seed = Some(seed);
+        self
+    }
+}
+
+impl<'a, R, P> EventTrigger<'a, R, P> for RegeneratePowersTrigger<'a, R, P>
+where
+    R: BattleRules + 'static,
+    P: EventProcessor<R>,
+{
+    fn processor(&'a mut self) -> &'a mut P {
+        self.processor
+    }
+
+    /// Returns a `RegeneratePowers` event.
+    fn event(&self) -> Box<dyn Event<R> + Send> {
+        Box::new(RegeneratePowers {
+            id: self.id.clone(),
+            seed: self.seed.clone(),
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1208,6 +1604,7 @@ mod tests {
         type Id = u32;
         type Power = SimpleStatistic<u32, u32>;
         type PowersSeed = ();
+        type Invocation = ();
         type PowersAlteration = ();
         type ObjectivesSeed = ();
         type Objectives = ();

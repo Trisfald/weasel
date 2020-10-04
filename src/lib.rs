@@ -172,6 +172,9 @@ pub use crate::object::{CreateObject, Object, RemoveObject};
 pub mod player;
 pub use crate::player::PlayerId;
 
+pub mod power;
+pub use crate::power::InvokePower;
+
 pub mod round;
 pub use crate::round::{
     EndRound, EndTurn, EnvironmentTurn, ResetRounds, Rounds, RoundsRules, StartTurn,
@@ -195,8 +198,8 @@ pub use crate::status::{AlterStatuses, Application, AppliedStatus, ClearStatus, 
 
 pub mod team;
 pub use crate::team::{
-    ConcludeObjectives, Conclusion, CreateTeam, EntityAddition, Relation, RemoveTeam,
-    ResetObjectives, SetRelations, Team, TeamRules,
+    AlterPowers, Call, ConcludeObjectives, Conclusion, CreateTeam, EntityAddition,
+    RegeneratePowers, Relation, RemoveTeam, ResetObjectives, SetRelations, Team, TeamRules,
 };
 
 pub mod user;

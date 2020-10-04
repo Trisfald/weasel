@@ -55,6 +55,7 @@ impl TeamRules<CustomRules> for MyTeamRules {
     // Teams don't have powers in this example.
     type Power = EmptyPower;
     type PowersSeed = ();
+    type Invocation = ();
     type PowersAlteration = ();
     // How many turns a team has won.
     type ObjectivesSeed = u8;

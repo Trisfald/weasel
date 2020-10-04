@@ -16,6 +16,7 @@ use weasel::event::{
 use weasel::fight::ApplyImpact;
 use weasel::metric::WriteMetrics;
 use weasel::object::{CreateObject, RemoveObject};
+use weasel::power::InvokePower;
 use weasel::round::{EndRound, EndTurn, EnvironmentTurn, ResetRounds, RoundsModel, StartTurn};
 use weasel::rules::ability::SimpleAbility;
 #[cfg(feature = "serialization")]
@@ -23,7 +24,8 @@ use weasel::serde::FlatEvent;
 use weasel::space::{AlterSpace, MoveEntity, ResetSpace, SpaceModel};
 use weasel::status::{AlterStatuses, ClearStatus, InflictStatus};
 use weasel::team::{
-    ConcludeObjectives, Conclusion, CreateTeam, Relation, RemoveTeam, ResetObjectives, SetRelations,
+    AlterPowers, ConcludeObjectives, Conclusion, CreateTeam, RegeneratePowers, Relation,
+    RemoveTeam, ResetObjectives, SetRelations,
 };
 #[cfg(feature = "serialization")]
 use weasel::user::UserEventPacker;
@@ -354,6 +356,7 @@ macro_rules! events_vec {
         battle_rules! {}
         const ENTITY_1_ID: EntityId<CustomRules> = EntityId::Creature(CREATURE_1_ID);
         const ABILITY_1_ID: u32 = 1;
+        const POWER_1_ID: u32 = 1;
         const OBJECT_1_ID: u32 = 1;
         const STATUS_1_ID: u32 = 1;
         // Collect all events into a vector.
@@ -368,12 +371,15 @@ macro_rules! events_vec {
         events.push(EndRound::trigger(&mut ()).event());
         events.push(EnvironmentTurn::trigger(&mut ()).event());
         events.push(ActivateAbility::trigger(&mut (), ENTITY_1_ID, ABILITY_1_ID).event());
+        events.push(InvokePower::trigger(&mut (), TEAM_1_ID, POWER_1_ID).event());
         events.push(ApplyImpact::trigger(&mut (), ()).event());
         events.push(AlterStatistics::trigger(&mut (), ENTITY_1_ID, ()).event());
         events.push(AlterStatuses::trigger(&mut (), ENTITY_1_ID, ()).event());
         events.push(AlterAbilities::trigger(&mut (), ENTITY_1_ID, ()).event());
+        events.push(AlterPowers::trigger(&mut (), TEAM_1_ID, ()).event());
         events.push(RegenerateStatistics::trigger(&mut (), ENTITY_1_ID.clone()).event());
         events.push(RegenerateAbilities::trigger(&mut (), ENTITY_1_ID.clone()).event());
+        events.push(RegeneratePowers::trigger(&mut (), TEAM_1_ID.clone()).event());
         events.push(InflictStatus::trigger(&mut (), ENTITY_1_ID.clone(), STATUS_1_ID).event());
         events.push(ClearStatus::trigger(&mut (), ENTITY_1_ID.clone(), STATUS_1_ID).event());
         events.push(ConvertCreature::trigger(&mut (), CREATURE_1_ID, TEAM_1_ID).event());
