@@ -1,15 +1,18 @@
-use weasel::battle::{BattleController, BattleRules, BattleState};
+use weasel::battle::{Battle, BattleController, BattleRules, BattleState};
+use weasel::entity::EntityId;
 use weasel::entropy::Entropy;
 use weasel::error::{WeaselError, WeaselResult};
-use weasel::event::{EventQueue, EventTrigger};
+use weasel::event::{EventKind, EventQueue, EventRights, EventServer, EventTrigger};
 use weasel::metric::WriteMetrics;
 use weasel::power::{InvokePower, PowerId};
 use weasel::rules::statistic::SimpleStatistic;
 use weasel::team::{AlterPowers, Call, CreateTeam, RegeneratePowers, Team, TeamRules};
-use weasel::{battle_rules, battle_rules_with_team, rules::empty::*, Id};
+use weasel::{battle_rules, battle_rules_with_team, rules::empty::*, Id, PlayerId, Server};
 
 const TEAM_1_ID: u32 = 1;
+const TEAM_2_ID: u32 = 2;
 const TEAM_ERR_ID: u32 = 99;
+const PLAYER_1_ID: PlayerId = 1;
 
 #[test]
 fn powers_generated() {
@@ -231,61 +234,62 @@ fn regenerate_powers() {
     );
 }
 
-#[test]
-fn invoke_power() {
-    #[derive(Default)]
-    pub struct CustomTeamRules {}
+#[derive(Default)]
+pub struct CustomTeamRules {}
 
-    impl TeamRules<CustomRules> for CustomTeamRules {
-        type Id = u32;
-        type Power = EmptyPower;
-        type PowersSeed = u32;
-        type Invocation = ();
-        type PowersAlteration = ();
-        type ObjectivesSeed = ();
-        type Objectives = ();
+impl TeamRules<CustomRules> for CustomTeamRules {
+    type Id = u32;
+    type Power = EmptyPower;
+    type PowersSeed = u32;
+    type Invocation = ();
+    type PowersAlteration = ();
+    type ObjectivesSeed = ();
+    type Objectives = ();
 
-        fn generate_powers(
-            &self,
-            _seed: &Option<Self::PowersSeed>,
-            _entropy: &mut Entropy<CustomRules>,
-            _metrics: &mut WriteMetrics<CustomRules>,
-        ) -> Box<dyn Iterator<Item = Self::Power>> {
-            let v = vec![EmptyPower { id: POWER_1_ID }, EmptyPower { id: POWER_2_ID }];
-            Box::new(v.into_iter())
-        }
+    fn generate_powers(
+        &self,
+        _seed: &Option<Self::PowersSeed>,
+        _entropy: &mut Entropy<CustomRules>,
+        _metrics: &mut WriteMetrics<CustomRules>,
+    ) -> Box<dyn Iterator<Item = Self::Power>> {
+        let v = vec![EmptyPower { id: POWER_1_ID }, EmptyPower { id: POWER_2_ID }];
+        Box::new(v.into_iter())
+    }
 
-        fn invocable(
-            &self,
-            _state: &BattleState<CustomRules>,
-            call: Call<CustomRules>,
-        ) -> WeaselResult<(), CustomRules> {
-            // Only the first power can be invoked.
-            if *call.power.id() == POWER_1_ID {
-                Ok(())
-            } else {
-                Err(WeaselError::GenericError)
-            }
-        }
-
-        fn invoke(
-            &self,
-            _state: &BattleState<CustomRules>,
-            _call: Call<CustomRules>,
-            event_queue: &mut Option<EventQueue<CustomRules>>,
-            _entropy: &mut Entropy<CustomRules>,
-            _metrics: &mut WriteMetrics<CustomRules>,
-        ) {
-            // We trigger a dummy event to check if this method gets called.
-            util::dummy(event_queue);
+    fn invocable(
+        &self,
+        _state: &BattleState<CustomRules>,
+        call: Call<CustomRules>,
+    ) -> WeaselResult<(), CustomRules> {
+        // Only the first power can be invoked.
+        if *call.power.id() == POWER_1_ID {
+            Ok(())
+        } else {
+            Err(WeaselError::GenericError)
         }
     }
 
-    battle_rules_with_team! { CustomTeamRules }
+    fn invoke(
+        &self,
+        _state: &BattleState<CustomRules>,
+        _call: Call<CustomRules>,
+        event_queue: &mut Option<EventQueue<CustomRules>>,
+        _entropy: &mut Entropy<CustomRules>,
+        _metrics: &mut WriteMetrics<CustomRules>,
+    ) {
+        // We trigger a dummy event to check if this method gets called.
+        util::dummy(event_queue);
+    }
+}
 
-    static POWER_1_ID: PowerId<CustomRules> = 1;
-    static POWER_2_ID: PowerId<CustomRules> = 2;
-    static POWER_ERR_ID: PowerId<CustomRules> = 99;
+battle_rules_with_team! { CustomTeamRules }
+
+static POWER_1_ID: PowerId<CustomRules> = 1;
+static POWER_2_ID: PowerId<CustomRules> = 2;
+static POWER_ERR_ID: PowerId<CustomRules> = 99;
+
+#[test]
+fn invoke_power() {
     // Create a server with a team having two powers.
     let mut server = util::server(CustomRules::new());
     util::team(&mut server, TEAM_1_ID);
@@ -318,7 +322,91 @@ fn invoke_power() {
         ))
     );
     // Fire a well defined event.
-    // TODO
+    assert_eq!(
+        InvokePower::trigger(&mut server, TEAM_1_ID, POWER_1_ID)
+            .fire()
+            .err(),
+        None
+    );
     // Verify that a dummy event was fired as a side effect of the power.
-    // TODO
+    assert_eq!(
+        server
+            .battle()
+            .history()
+            .events()
+            .iter()
+            .last()
+            .unwrap()
+            .kind(),
+        EventKind::DummyEvent
+    );
+}
+
+#[test]
+fn invoke_power_rights() {
+    // Create a server with a team. Require authentication.
+    let mut server = Server::builder(Battle::builder(CustomRules::new()).build())
+        .enforce_authentication()
+        .build();
+    util::team(&mut server, TEAM_1_ID);
+    // Create another team.
+    util::team(&mut server, TEAM_2_ID);
+    // Give to the player rights to the first team.
+    assert_eq!(server.rights_mut().add(PLAYER_1_ID, &TEAM_1_ID).err(), None);
+    // Check event rights.
+    let event = InvokePower::trigger(&mut server, TEAM_2_ID, POWER_1_ID)
+        .prototype()
+        .client_prototype(0, Some(PLAYER_1_ID));
+    assert_eq!(
+        event.event().rights(server.battle()),
+        EventRights::Team(&TEAM_2_ID)
+    );
+    // Power invocation should be rejected.
+    assert_eq!(
+        server
+            .process_client(event.clone())
+            .err()
+            .map(|e| e.unfold()),
+        Some(WeaselError::AuthenticationError(
+            Some(PLAYER_1_ID),
+            TEAM_2_ID
+        ))
+    );
+    // Give rights to the player.
+    assert_eq!(server.rights_mut().add(PLAYER_1_ID, &TEAM_2_ID).err(), None);
+    // Check that now he can invoke the power.
+    assert_eq!(server.process_client(event).err(), None);
+}
+
+#[test]
+fn invoke_power_team_ready() {
+    const CREATURE_1_ID: u32 = 1;
+    // Create a server with two teams.
+    let mut server = util::server(CustomRules::new());
+    util::team(&mut server, TEAM_1_ID);
+    util::creature(&mut server, CREATURE_1_ID, TEAM_1_ID, ());
+    util::team(&mut server, TEAM_2_ID);
+    // Powers can be invoked between turns.
+    assert_eq!(
+        InvokePower::trigger(&mut server, TEAM_1_ID, POWER_1_ID)
+            .fire()
+            .err(),
+        None
+    );
+    // Powers can be invoked during a team's creature's turn.
+    util::start_turn(&mut server, &EntityId::Creature(CREATURE_1_ID));
+    assert_eq!(
+        InvokePower::trigger(&mut server, TEAM_1_ID, POWER_1_ID)
+            .fire()
+            .err(),
+        None
+    );
+    // Powers can't be invoked during the turn of another team's creature.
+    assert_eq!(
+        InvokePower::trigger(&mut server, TEAM_2_ID, POWER_1_ID)
+            .fire()
+            .err()
+            .map(|e| e.unfold()),
+        Some(WeaselError::TeamNotReady(TEAM_2_ID))
+    );
 }
