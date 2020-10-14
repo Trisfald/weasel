@@ -418,13 +418,7 @@ mod tests {
         battle_rules! {}
         let mut processor = ();
         let trigger = DummyEvent::trigger(&mut (processor));
-        let filter_fn = |err: &WeaselErrorType<_>| {
-            if let WeaselError::EmptyEventProcessor = err {
-                false
-            } else {
-                true
-            }
-        };
+        let filter_fn = |err: &WeaselErrorType<_>| !matches!(err, WeaselError::EmptyEventProcessor);
         // Test a direct filtering.
         let error_to_filter: WeaselErrorType<CustomRules> =
             WeaselError::InvalidEvent(trigger.event(), Box::new(WeaselError::EmptyEventProcessor));

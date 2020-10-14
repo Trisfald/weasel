@@ -485,7 +485,7 @@ impl<R: BattleRules> Entities<R> {
         let current_team = self
             .teams
             .get_mut(&current_team_id)
-            .ok_or_else(|| WeaselError::TeamNotFound(current_team_id))?;
+            .ok_or(WeaselError::TeamNotFound(current_team_id))?;
         current_team.remove_creature(creature_id);
         // Change the new team's creature lists.
         let new_team = self
