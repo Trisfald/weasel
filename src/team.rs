@@ -122,7 +122,7 @@ pub trait TeamRules<R: BattleRules> {
     /// See [TeamId](type.TeamId.html).
     type Id: Hash + Eq + PartialOrd + Clone + Debug + Send + Serialize + for<'a> Deserialize<'a>;
 
-    /// See [Power](type.Power.html).
+    /// See [Power](../power/type.Power.html).
     type Power: Id + 'static;
 
     #[cfg(not(feature = "serialization"))]
